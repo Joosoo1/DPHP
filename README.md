@@ -12,6 +12,9 @@ Dynamic Explorer是一个用于动态环境探索与路径规划的机器人系�
 - [支持场景](#支持场景)
 - [安装说明](#安装说明)
 - [使用方法](#使用方法)
+- [开发规范](#开发规范)
+  - [代码质量](#代码质量)
+  - [提交信息规范](#提交信息规范)
 - [许可证](#许可证)
 
 ## 系统概述
@@ -195,6 +198,89 @@ roslaunch explorer explore.launch rosbag_record:=true
 # 启动实时绘图工具
 rosrun visualization_tools realTimePlot.py
 ```
+
+## 开发规范
+
+### 代码质量
+
+本项目使用 pre-commit 钩子来保证代码质量。在提交代码前会自动进行代码格式化和规范检查。
+
+安装 pre-commit：
+```bash
+pip install pre-commit
+cd /path/to/project
+pre-commit install
+```
+
+手动运行所有检查：
+```bash
+pre-commit run --all-files
+```
+
+### 提交信息规范
+
+本项目使用 Commitizen 和 Conventional Commits 规范来统一提交信息格式。
+
+#### 安装 Commitizen
+
+Commitizen 需要 Node.js 版本 >= 12，如果您的系统版本较低，可以使用以下方法之一：
+
+1. 使用 Node Version Manager (NVM) 安装新版本 Node.js：
+```bash
+# 安装 nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+# 重新加载终端配置
+source ~/.bashrc
+# 安装并使用新版本 Node.js
+nvm install node
+```
+
+2. 或者使用 sudo 权限安装（如果已有合适版本的 Node.js）：
+```bash
+sudo npm install -g commitizen cz-conventional-changelog
+```
+
+#### 使用 Commitizen
+
+安装完成后，使用以下命令代替 `git commit` 来生成规范的提交信息：
+```bash
+git cz
+```
+
+#### 手动提交格式（无 Commitizen 时）
+
+如果您无法安装 Commitizen，也可以手动按照以下格式编写提交信息：
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+例如：
+```
+feat(explorer): 添加新的路径规划算法
+
+实现A*算法用于全局路径规划，提高规划效率30%
+
+Closes #123
+```
+
+#### 提交类型说明
+
+常见的提交类型：
+- `feat`: 新功能
+- `fix`: 修复bug
+- `docs`: 文档更新
+- `style`: 代码格式调整（不影响代码运行）
+- `refactor`: 代码重构
+- `perf`: 性能优化
+- `test`: 测试相关
+- `build`: 构建系统或外部依赖变更
+- `ci`: CI配置相关
+- `chore`: 其他不修改源代码或测试代码的变更
 
 ## 许可证
 
