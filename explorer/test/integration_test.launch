@@ -1,0 +1,10 @@
+<launch>
+  <!-- 启动explorer节点 -->
+  <node name="explorer" pkg="explorer" type="explorer_node" output="screen">
+    <!-- 加载测试参数 -->
+    <rosparam command="load" file="$(find explorer)/config/indoor.yaml"/>
+  </node>
+  
+  <!-- 启动测试节点 -->
+  <test test-name="explorer_integration_test" pkg="explorer" type="explorer_integration_test" time-limit="60.0"/>
+</launch>

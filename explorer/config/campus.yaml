@@ -1,0 +1,246 @@
+# Sensor Coverage Planner Ground 传感器覆盖规划器基础参数
+# 订阅开始探索话题
+sub_start_exploration_topic_: /start_exploration
+# 订阅地形图话题
+sub_terrain_map_topic_: /terrain_map
+# 订阅扩展地形图话题
+sub_terrain_map_ext_topic_: /terrain_map_ext
+# 订阅状态估计话题
+sub_state_estimation_topic_: /state_estimation_at_scan
+# 订阅注册扫描点云话题
+sub_registered_scan_topic_: /registered_scan
+# 订阅覆盖边界话题
+sub_coverage_boundary_topic_: /sensor_coverage_planner/coverage_boundary
+# 订阅视点边界话题
+sub_viewpoint_boundary_topic_: /navigation_boundary
+# 订阅禁止区域边界话题
+sub_nogo_boundary_topic_: /sensor_coverage_planner/nogo_boundary
+# 发布探索完成话题
+pub_exploration_finish_topic_: exploration_finish
+# 发布运行时详细信息话题
+pub_runtime_breakdown_topic_: runtime_breakdown
+# 发布运行时信息话题
+pub_runtime_topic_: /runtime
+# 发布航路点话题
+pub_waypoint_topic_: /way_point
+# 发布动量激活计数话题
+pub_momentum_activation_count_topic_: momentum_activation_count
+
+# ========== 关键参数 ==========
+# 是否自动开始探索 [关键参数]
+kAutoStart: true
+# 是否启用快速回家功能 [关键参数]
+kRushHome: true
+# 是否使用地形高度信息 [关键参数]
+kUseTerrainHeight: false
+# 是否检查地形碰撞 [关键参数]
+kCheckTerrainCollision: false
+# 是否扩展航路点 [关键参数]
+kExtendWayPoint: true
+# 是否使用视线范围内的前瞻点 [关键参数]
+kUseLineOfSightLookAheadPoint: false
+# 无探索目标时是否返回起点 [关键参数]
+kNoExplorationReturnHome: true
+# 航路点最大扩展距离 [关键参数]
+kExtendWayPointDistanceBig: 8.0
+# 航路点最小扩展距离 [关键参数]
+kExtendWayPointDistanceSmall: 3.5
+# ========== 关键参数 ==========
+
+# 关键姿态点云的体素滤波器叶大小
+kKeyposeCloudDwzFilterLeafSize: 0.2
+# 快速回家的距离阈值
+kRushHomeDist: 10
+# 判断是否到家的距离阈值
+kAtHomeDistThreshold: 0.5
+# 地形碰撞检测阈值
+kTerrainCollisionThreshold: 0.5
+# 前瞻距离
+kLookAheadDistance: 8
+# 是否使用动量（运动惯性）
+kUseMomentum: false
+# 方向改变计数器阈值
+kDirectionChangeCounterThr: 6
+# 方向无改变计数器阈值
+kDirectionNoChangeCounterThr: 5
+
+# PlanningEnv 规划环境参数
+# 是否使用前沿点（Frontier）
+kUseFrontier: true
+# 前沿点聚类容忍度
+kFrontierClusterTolerance: 1.0
+# 前沿点聚类最小尺寸
+kFrontierClusterMinSize: 30
+# 是否在前沿点上使用覆盖边界
+kUseCoverageBoundaryOnFrontier: false
+# 是否在物体表面使用覆盖边界
+kUseCoverageBoundaryOnObjectSurface: false
+
+# Rolling occupancy grid 滚动占据栅格参数
+# ========== 关键参数 ==========
+# 栅格在x方向的分辨率 [关键参数]
+rolling_occupancy_grid/resolution_x: 0.3
+# 栅格在y方向的分辨率 [关键参数]
+rolling_occupancy_grid/resolution_y: 0.3
+# 栅格在z方向的分辨率 [关键参数]
+rolling_occupancy_grid/resolution_z: 0.3
+# ========== 关键参数 ==========
+
+# 表面点云的体素滤波器叶大小
+kSurfaceCloudDwzLeafSize: 0.5
+# 碰撞点云的体素滤波器叶大小
+kCollisionCloudDwzLeafSize: 0.2
+# 关键姿态点云堆叠数量
+kKeyposeCloudStackNum: 5
+# 点云在行方向的数量
+kPointCloudRowNum: 50
+# 点云在列方向的数量
+kPointCloudColNum: 50
+# 点云在层方向的数量
+kPointCloudLevelNum: 30
+# 每个栅格单元的最大点数
+kMaxCellPointNum: 100000
+# 点云栅格单元的尺寸
+kPointCloudCellSize: 18
+# 点云栅格单元的高度
+kPointCloudCellHeight: 1.8
+# 点云管理器的邻居单元数
+kPointCloudManagerNeighborCellNum: 5
+# 覆盖点云Z轴压缩比率
+kCoverCloudZSqueezeRatio: 2.0
+
+# KeyposeGraph 关键姿态图参数
+# ========== 关键参数 ==========
+# 添加节点的最小距离 [关键参数]
+keypose_graph/kAddNodeMinDist: 1.0
+# 添加边的连接距离阈值 [关键参数]
+keypose_graph/kAddEdgeConnectDistThr: 3.0
+# 边碰撞检测的半径 [关键参数]
+keypose_graph/kAddEdgeCollisionCheckRadius: 0.4
+# ========== 关键参数 ==========
+
+# 添加非关键姿态节点的最小距离
+keypose_graph/kAddNonKeyposeNodeMinDist: 0.5
+# 添加到上一个关键姿态的边距离阈值
+keypose_graph/kAddEdgeToLastKeyposeDistThr: 3.0
+# 添加边的垂直阈值
+keypose_graph/kAddEdgeVerticalThreshold: 1.0
+# 边碰撞检测的分辨率
+keypose_graph/kAddEdgeCollisionCheckResolution: 0.4
+# 边碰撞检测的点数阈值
+keypose_graph/kAddEdgeCollisionCheckPointNumThr: 1
+
+# ViewPointManager 视点管理器参数
+# ========== 关键参数 ==========
+# 在x方向上的视点数量 [关键参数]
+viewpoint_manager/number_x: 40
+# 在y方向上的视点数量 [关键参数]
+viewpoint_manager/number_y: 40
+# 在z方向上的视点数量 [关键参数]
+viewpoint_manager/number_z: 1
+# 在x方向上的视点分辨率 [关键参数]
+viewpoint_manager/resolution_x: 1.2
+# 在y方向上的视点分辨率 [关键参数]
+viewpoint_manager/resolution_y: 1.2
+# 在z方向上的视点分辨率 [关键参数]
+viewpoint_manager/resolution_z: 0.0
+# 视点碰撞边界 [关键参数]
+kViewPointCollisionMargin: 0.7
+# 传感器范围 [关键参数]
+kSensorRange: 15.0
+# ========== 关键参数 ==========
+
+# 连接性高度差异阈值
+kConnectivityHeightDiffThr: 0.25
+# 贪婪视点采样范围
+kGreedyViewPointSampleRange: 3
+# 局部路径优化的最大迭代次数
+kLocalPathOptimizationItrMax: 10
+# 视点在Z轴正方向的碰撞边界
+kViewPointCollisionMarginZPlus: 0.5
+# 视点在Z轴负方向的碰撞边界
+kViewPointCollisionMarginZMinus: 0.5
+# 碰撞栅格在Z轴的缩放
+kCollisionGridZScale: 1.0
+# 碰撞栅格在X轴的分辨率
+kCollisionGridResolutionX: 0.2
+# 碰撞栅格在Y轴的分辨率
+kCollisionGridResolutionY: 0.2
+# 碰撞栅格在Z轴的分辨率
+kCollisionGridResolutionZ: 0.0
+# 碰撞点阈值
+kCollisionPointThr: 1
+# 视线检测是否在最近障碍物处停止
+kLineOfSightStopAtNearestObstacle: true
+# 视点相对于地形的高度
+kViewPointHeightFromTerrain: 0.75
+# 视点相对于地形高度变化的阈值
+kViewPointHeightFromTerrainChangeThreshold: 0.6
+# 是否检查动态障碍物碰撞
+kCheckDynamicObstacleCollision: false
+# 碰撞帧计数最大值
+kCollisionFrameCountMax: 3
+
+# 邻居范围
+kNeighborRange: 3.0
+# 覆盖遮挡阈值
+kCoverageOcclusionThr: 0.3
+# 覆盖膨胀半径
+kCoverageDilationRadius: 1.0
+
+# Grid World 栅格世界参数
+# ========== 关键参数 ==========
+# 栅格世界在X轴方向的单元数 [关键参数]
+kGridWorldXNum: 121
+# 栅格世界在Y轴方向的单元数 [关键参数]
+kGridWorldYNum: 121
+# 栅格世界在Z轴方向的单元数 [关键参数]
+kGridWorldZNum: 121
+# 栅格世界单元高度 [关键参数]
+kGridWorldCellHeight: 3.0
+# 附近栅格数量 [关键参数]
+kGridWorldNearbyGridNum: 5
+# ========== 关键参数 ==========
+
+# 添加点的最小数量（小）
+kMinAddPointNumSmall: 40
+# 添加点的最小数量（大）
+kMinAddPointNumBig: 60
+# 添加前沿点的最小数量
+kMinAddFrontierPointNum: 20
+# 单元从探索到覆盖的状态转换阈值
+kCellExploringToCoveredThr: 1
+# 单元从覆盖到探索的状态转换阈值
+kCellCoveredToExploringThr: 10
+# 单元从探索到几乎覆盖的状态转换阈值
+kCellExploringToAlmostCoveredThr: 10
+# 单元从几乎覆盖到探索的状态转换阈值
+kCellAlmostCoveredToExploringThr: 20
+# 单元从未知到探索的状态转换阈值
+kCellUnknownToExploringThr: 1
+
+# Visualization 可视化参数
+# 探索子空间标记颜色是否使用渐变透明度
+kExploringSubspaceMarkerColorGradientAlpha: true
+# 探索子空间标记颜色的最大透明度
+kExploringSubspaceMarkerColorMaxAlpha: 0.8
+# 探索子空间标记颜色R值
+kExploringSubspaceMarkerColorR: 0.0
+# 探索子空间标记颜色G值
+kExploringSubspaceMarkerColorG: 1.0
+# 探索子空间标记颜色B值
+kExploringSubspaceMarkerColorB: 0.0
+# 探索子空间标记颜色A值
+kExploringSubspaceMarkerColorA: 1.0
+# 局部规划视野标记颜色R值
+kLocalPlanningHorizonMarkerColorR: 0.0
+# 局部规划视野标记颜色G值
+kLocalPlanningHorizonMarkerColorG: 1.0
+# 局部规划视野标记颜色B值
+kLocalPlanningHorizonMarkerColorB: 0.0
+# 局部规划视野标记颜色A值
+kLocalPlanningHorizonMarkerColorA: 1.0
+# 局部规划视野标记宽度
+kLocalPlanningHorizonMarkerWidth: 0.3
+# 局部规划视野高度
+kLocalPlanningHorizonHeight: 3.0

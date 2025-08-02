@@ -1,0 +1,25 @@
+<launch>
+    <arg name="scenario" default="garage"/>
+    <arg name="rviz" default="true"/>
+    <arg name="rosbag_record" default="false"/>
+    <arg name="bag_path" default="Desktop"/>
+    <arg name="bag_name_prefix" default="tare"/>
+
+    <!-- 启用可视化 -->
+    <group if="$(arg rviz)">
+        <node launch-prefix="nice" pkg="rviz" type="rviz" name="tare_planner_ground_rviz" args="-d $(find explorer)/rviz/tare_planner_ground.rviz" respawn="true"/>
+    </group>
+
+    <!-- 日志记录 -->
+    <group if="$(arg rosbag_record)">
+        <include file="$(find explorer)/launch/record_bag.launch">
+        <arg name="bag_path" value="$(arg bag_path)"/>
+        <arg name="bag_name_prefix" value="$(arg bag_name_prefix)"/>
+        </include>
+    </group>
+
+    <!-- 主节点 -->
+    <node pkg="explorer" type="explorer_node" name="explorer_node" output="screen" ns="sensor_coverage_planner">
+        <rosparam command="load" file="$(find explorer)/config/$(arg scenario).yaml" />
+    </node>
+</launch>
