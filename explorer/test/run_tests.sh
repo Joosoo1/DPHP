@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Explorer项目单元测试运行脚本
 # 这个脚本用于编译和运行Explorer项目的所有单元测试
 

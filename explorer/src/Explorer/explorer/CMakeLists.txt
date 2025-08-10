@@ -218,8 +218,23 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(graph_test test/graph_test.cpp)
   target_link_libraries(graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
   
+  catkin_add_gtest(graph_refactored_test test/graph_refactored_test.cpp)
+  target_link_libraries(graph_refactored_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
+  catkin_add_gtest(grid_world_test test/grid_world_test.cpp)
+  target_link_libraries(grid_world_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
+  catkin_add_gtest(viewpoint_test test/viewpoint_test.cpp)
+  target_link_libraries(viewpoint_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
+  catkin_add_gtest(viewpoint_refactored_test test/viewpoint_refactored_test.cpp)
+  target_link_libraries(viewpoint_refactored_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
   catkin_add_gtest(tsp_solver_test test/tsp_solver_test.cpp)
   target_link_libraries(tsp_solver_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main ${OR_TOOLS_LIBRARIES})
+  
+  catkin_add_gtest(tsp_solver_refactored_test test/tsp_solver_refactored_test.cpp)
+  target_link_libraries(tsp_solver_refactored_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main ${OR_TOOLS_LIBRARIES})
   
   catkin_add_gtest(keypose_graph_test test/keypose_graph_test.cpp)
   target_link_libraries(keypose_graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
@@ -230,13 +245,21 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(planning_env_test test/planning_env_test.cpp)
   target_link_libraries(planning_env_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
   
+  # 添加局部规划器测试
+  catkin_add_gtest(local_coverage_planner_test test/local_coverage_planner_test.cpp)
+  target_link_libraries(local_coverage_planner_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
+  # 添加全局规划器测试
+  catkin_add_gtest(grid_world_global_planner_test test/grid_world_global_planner_test.cpp)
+  target_link_libraries(grid_world_global_planner_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
   # 添加集成测试
   catkin_add_gtest(explorer_integration_test test/explorer_integration_test.cpp)
   target_link_libraries(explorer_integration_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
   
-  # 添加传感器覆盖规划器测试
-  catkin_add_gtest(sensor_coverage_planner_test test/sensor_coverage_planner_test.cpp)
-  target_link_libraries(sensor_coverage_planner_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  # 添加传感器覆盖规划器简化测试
+  catkin_add_gtest(sensor_coverage_planner_simple_test test/sensor_coverage_planner_simple_test.cpp)
+  target_link_libraries(sensor_coverage_planner_simple_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
   
   # 添加视点管理器测试
   catkin_add_gtest(viewpoint_manager_test test/viewpoint_manager_test.cpp)
@@ -245,6 +268,10 @@ if(CATKIN_ENABLE_TESTING)
   # 添加栅格世界综合测试
   catkin_add_gtest(grid_world_comprehensive_test test/grid_world_comprehensive_test.cpp)
   target_link_libraries(grid_world_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
+  # 添加局部覆盖规划器简化测试
+  catkin_add_gtest(local_coverage_planner_simple_test test/local_coverage_planner_simple_test.cpp)
+  target_link_libraries(local_coverage_planner_simple_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
   
   # 添加视点综合测试
   catkin_add_gtest(viewpoint_comprehensive_test test/viewpoint_comprehensive_test.cpp)

@@ -1,8 +1,8 @@
-                #include <gtest/gtest.h>
+#include <gtest/gtest.h>
 #include <Eigen/Core>
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseStamped.h>
-#include "graph/graph.h".........
+#include "graph/graph.h"
 
 using namespace explorer;
 
