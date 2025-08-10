@@ -141,7 +141,7 @@ namespace viewpoint_manager_ns
                 {
                     Eigen::Vector3i sub(x, y, z);
                     const int ind = grid_->Sub2Ind(sub);
-                    for (auto & i : idx_addon)
+                    for (auto& i : idx_addon)
                     {
                         const Eigen::Vector3i neighbor_sub = sub + i;
                         if (grid_->InRange(neighbor_sub))
@@ -499,10 +499,9 @@ namespace viewpoint_manager_ns
                 SetViewPointCollision(i, true, true);
                 continue;
             }
-            for (auto & j : nogo_boundary_)
+            for (auto& j : nogo_boundary_)
             {
-                if (!j.points.empty() &&
-                    misc_utils_ns::PointInPolygon(viewpoint_position, j))
+                if (!j.points.empty() && misc_utils_ns::PointInPolygon(viewpoint_position, j))
                 {
                     SetViewPointCollision(i, true, true);
 
@@ -758,7 +757,9 @@ namespace viewpoint_manager_ns
     }
 
     bool ViewPointManager::InRobotFOV(const Eigen::Vector3d& position) const
-    { return InFOV(position, robot_position_); }
+    {
+        return InFOV(position, robot_position_);
+    }
 
     void ViewPointManager::CheckViewPointConnectivity()
     {
@@ -867,7 +868,8 @@ namespace viewpoint_manager_ns
         for (int i = 0; i < viewpoints_.size(); i++)
         {
             const geometry_msgs::Point viewpoint_position = GetViewPointPosition(i, true);
-            const int cell_ind = grid_world->GetCellInd(viewpoint_position.x, viewpoint_position.y, viewpoint_position.z);
+            const int cell_ind =
+                grid_world->GetCellInd(viewpoint_position.x, viewpoint_position.y, viewpoint_position.z);
             if (grid_world->IndInBound((cell_ind)))
             {
                 const grid_world_ns::CellStatus cell_status = grid_world->GetCellStatus(cell_ind);
@@ -1043,7 +1045,8 @@ namespace viewpoint_manager_ns
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
         return viewpoints_[array_ind].IsCandidate();
     }
-    void ViewPointManager::SetViewPointCandidate(const int viewpoint_ind, const bool candidate, const bool use_array_ind)
+    void ViewPointManager::SetViewPointCandidate(const int viewpoint_ind, const bool candidate,
+                                                 const bool use_array_ind)
     {
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
         viewpoints_[array_ind].SetCandidate(candidate);
@@ -1054,7 +1057,8 @@ namespace viewpoint_manager_ns
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
         return viewpoints_[array_ind].HasTerrainHeight();
     }
-    void ViewPointManager::SetViewPointHasTerrainHeight(const int viewpoint_ind, const bool has_terrain_height, const bool use_array_ind)
+    void ViewPointManager::SetViewPointHasTerrainHeight(const int viewpoint_ind, const bool has_terrain_height,
+                                                        const bool use_array_ind)
     {
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
         viewpoints_[array_ind].SetHasTerrainHeight(has_terrain_height);
@@ -1065,7 +1069,8 @@ namespace viewpoint_manager_ns
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
         return viewpoints_[array_ind].InExploringCell();
     }
-    void ViewPointManager::SetViewPointInExploringCell(const int viewpoint_ind, const bool in_exploring_cell, const bool use_array_ind)
+    void ViewPointManager::SetViewPointInExploringCell(const int viewpoint_ind, const bool in_exploring_cell,
+                                                       const bool use_array_ind)
     {
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
         viewpoints_[array_ind].SetInExploringCell(in_exploring_cell);
@@ -1087,7 +1092,8 @@ namespace viewpoint_manager_ns
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
         return viewpoints_[array_ind].InCurrentFrameLineOfSight();
     }
-    void ViewPointManager::SetViewPointInCurrentFrameLineOfSight(const int viewpoint_ind, const bool in_current_frame_line_of_sight,
+    void ViewPointManager::SetViewPointInCurrentFrameLineOfSight(const int viewpoint_ind,
+                                                                 const bool in_current_frame_line_of_sight,
                                                                  const bool use_array_ind)
     {
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
@@ -1099,7 +1105,8 @@ namespace viewpoint_manager_ns
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
         return viewpoints_[array_ind].GetPosition();
     }
-    void ViewPointManager::SetViewPointPosition(const int viewpoint_ind, const geometry_msgs::Point& position, const bool use_array_ind)
+    void ViewPointManager::SetViewPointPosition(const int viewpoint_ind, const geometry_msgs::Point& position,
+                                                const bool use_array_ind)
     {
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
         viewpoints_[array_ind].SetPosition(position);
@@ -1143,14 +1150,16 @@ namespace viewpoint_manager_ns
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
         viewpoints_[array_ind].AddCoveredPoint(point_ind);
     }
-    void ViewPointManager::AddUncoveredFrontierPoint(const int viewpoint_ind, const int point_ind, const bool use_array_ind)
+    void ViewPointManager::AddUncoveredFrontierPoint(const int viewpoint_ind, const int point_ind,
+                                                     const bool use_array_ind)
     {
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
         viewpoints_[array_ind].AddCoveredFrontierPoint(point_ind);
     }
 
     // 获取该视点的覆盖点列表
-    const std::vector<int>& ViewPointManager::GetViewPointCoveredPointList(const int viewpoint_ind, const bool use_array_ind) const
+    const std::vector<int>& ViewPointManager::GetViewPointCoveredPointList(const int viewpoint_ind,
+                                                                           const bool use_array_ind) const
     {
         // 获取视点数组索引
         const int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
@@ -1216,7 +1225,8 @@ namespace viewpoint_manager_ns
         }
     }
     void ViewPointManager::UpdateViewPointCoveredFrontierPoint(std::vector<bool>& frontier_point_list,
-                                                               const int viewpoint_index, const bool use_array_ind) const
+                                                               const int viewpoint_index,
+                                                               const bool use_array_ind) const
     {
         for (const auto& point_ind : GetViewPointCoveredFrontierPointList(viewpoint_index, use_array_ind))
         {

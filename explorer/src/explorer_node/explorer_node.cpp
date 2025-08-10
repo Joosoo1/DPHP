@@ -3,12 +3,12 @@
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "explorer_node");
-  ros::NodeHandle node_handle;
-  ros::NodeHandle private_node_handle("~");
+    ros::init(argc, argv, "explorer_node");
+    ros::NodeHandle node_handle;
+    ros::NodeHandle private_node_handle("~");
 
-  sensor_coverage_planner_3d_ns::SensorCoveragePlanner3D explorer(node_handle, private_node_handle);
+    sensor_coverage_planner_3d_ns::SensorCoveragePlanner3D explorer(node_handle, private_node_handle);
 
-  ros::spin();
-  return 0;
+    ros::spin();
+    return 0;
 }

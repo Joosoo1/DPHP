@@ -65,13 +65,13 @@ public:
     }
   }
 
-  void GetPointCloud(PCLCloudType& cloud_out);
-  void ClearNeighborCellOccupancyCloud();
+  void GetPointCloud(PCLCloudType& cloud_out) const;
+  void ClearNeighborCellOccupancyCloud() const;
   pcl::PointCloud<pcl::PointXYZI>::Ptr GetRolledInOccupancyCloud();
-  void GetOccupancyCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr& occupancy_cloud);
-  void StoreOccupancyCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& occupancy_cloud);
-  void GetMarker(visualization_msgs::Marker& marker);
-  void GetVisualizationPointCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr vis_cloud);
+  void GetOccupancyCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& occupancy_cloud) const;
+  void StoreOccupancyCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& occupancy_cloud) const;
+  void GetMarker(visualization_msgs::Marker& marker) const;
+  void GetVisualizationPointCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const;
   Eigen::Vector3d GetNeighborCellsOrigin()
   {
     return neighbor_cells_origin_;
@@ -84,12 +84,12 @@ public:
   {
     return kCloudDwzFilterLeafSize;
   }
-  void GetCloudPointIndex(int index, int& cloud_index, int& cloud_point_index);
-  int GetAllPointNum();
+  void GetCloudPointIndex(int index, int& cloud_index, int& cloud_point_index) const;
+  int GetAllPointNum() const;
 
-  void UpdateOldCloudPoints();
-  void UpdateCoveredCloudPoints();
-  void UpdateCoveredCloudPoints(int cloud_index, int point_index);
+  void UpdateOldCloudPoints() const;
+  void UpdateCoveredCloudPoints() const;
+  void UpdateCoveredCloudPoints(int cloud_index, int point_index) const;
 
 private:
   std::unique_ptr<grid_ns::Grid<PCLCloudTypePtr>> pointcloud_grid_;

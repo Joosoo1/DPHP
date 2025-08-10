@@ -64,11 +64,10 @@ public:
       }
     }
   }
-  void UpdateOccupancyStatus(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud);
-  void RayTrace(const Eigen::Vector3d& origin, const Eigen::Vector3d& range);
+  void UpdateOccupancyStatus(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud) const;
   void RayTrace(const Eigen::Vector3d& origin);
   void RayTraceHelper(const Eigen::Vector3i& start_sub, const Eigen::Vector3i& end_sub,
-                      std::vector<Eigen::Vector3i>& cells);
+                      std::vector<Eigen::Vector3i>& cells) const;
 
   void GetFrontier(pcl::PointCloud<pcl::PointXYZI>::Ptr& frontier_cloud, const Eigen::Vector3d& origin,
                    const Eigen::Vector3d& range);
@@ -76,7 +75,7 @@ public:
   {
     return occupancy_cloud_;
   }
-  void GetVisualizationCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud);
+  void GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const;
 
 private:
   bool initialized_;
@@ -93,7 +92,7 @@ private:
   std::vector<int> updated_grid_indices_;
   pcl::PointCloud<pcl::PointXYZI>::Ptr occupancy_cloud_;
 
-  bool InRange(const Eigen::Vector3i& sub, const Eigen::Vector3i& sub_min, const Eigen::Vector3i& sub_max);
+  static bool InRange(const Eigen::Vector3i& sub, const Eigen::Vector3i& sub_min, const Eigen::Vector3i& sub_max);
 
   // void InitializeOrigin();
 };

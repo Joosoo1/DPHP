@@ -39,10 +39,10 @@ public:
   TSPSolver(DataModel data);
   ~TSPSolver() = default;
   void Solve();
-  void PrintSolution();
-  int getComputationTime();
-  void getSolutionNodeIndex(std::vector<int>& node_index, bool has_dummy);
-  double getPathLength();
+  void PrintSolution() const;
+  int getComputationTime() const;
+  void getSolutionNodeIndex(std::vector<int>& node_index, bool has_dummy) const;
+  double getPathLength() const;
 };
 
 #endif  // VISUAL_COVERAGE_PLANNER_TSP_SOLVER_H

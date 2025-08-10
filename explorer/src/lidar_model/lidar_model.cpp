@@ -13,88 +13,86 @@
 
 namespace lidar_model_ns
 {
-const double LiDARModel::kToDegreeConst = 57.2957;
-const double LiDARModel::kToRadianConst = 0.01745;
-const double LiDARModel::kEpsilon = 1e-4;
-const double LiDARModel::kCloudInflateRatio = 2;
-double LiDARModel::pointcloud_resolution_ = 0.2;
+    const double LiDARModel::kToDegreeConst = 57.2957;
+    const double LiDARModel::kToRadianConst = 0.01745;
+    const double LiDARModel::kEpsilon = 1e-4;
+    const double LiDARModel::kCloudInflateRatio = 2;
+    double LiDARModel::pointcloud_resolution_ = 0.2;
 
-int LiDARModel::sub2ind(int row_index, int column_index) const
-{
-  return row_index * kHorizontalVoxelSize + column_index;
-}
-
-void LiDARModel::ind2sub(int ind, int& row_index, int& column_index) const
-{
-  row_index = ind / kHorizontalVoxelSize;
-  column_index = ind % kHorizontalVoxelSize;
-}
-
-LiDARModel::LiDARModel(double px, double py, double pz, double rw, double rx, double ry, double rz)
-{
-  pose_.position.x = px;
-  pose_.position.y = py;
-  pose_.position.z = pz;
-  pose_.orientation.w = rw;
-  pose_.orientation.x = rx;
-  pose_.orientation.y = ry;
-  pose_.orientation.z = rz;
-  ResetCoverage();
-}
-
-LiDARModel::LiDARModel(const geometry_msgs::Pose& pose)
-  : LiDARModel(pose.position.x, pose.position.y, pose.position.z, pose.orientation.w, pose.orientation.x,
-               pose.orientation.y, pose.orientation.z)
-{
-}
-
-void LiDARModel::ResetCoverage()
-{
-  reset_.fill(true);
-}
-
-void LiDARModel::GetVisualizationCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr& visualization_cloud, double resol,
-                                       double max_range) const
-{
-  visualization_cloud->clear();
-  geometry_msgs::Point start_point = pose_.position;
-  for (int i = 0; i < covered_voxel_.size(); i++)
-  {
-    int row_index, column_index;
-    ind2sub(i, row_index, column_index);
-    double phi = (column_index * kHorizontalResolution - 180) * M_PI / 180;
-    double theta = (row_index * kVerticalResolution - kVerticalAngleOffset) * M_PI / 180;
-
-    double r = covered_voxel_[i];
-    if (isZero(covered_voxel_[i]) || reset_[i])
+    int LiDARModel::sub2ind(const int row_index, const int column_index)
     {
-      r = max_range;
+        return row_index * kHorizontalVoxelSize + column_index;
     }
-    geometry_msgs::Point end_point;
-    end_point.x = r * sin(theta) * cos(phi) + pose_.position.x;
-    end_point.y = r * sin(theta) * sin(phi) + pose_.position.y;
-    end_point.z = r * cos(theta) + pose_.position.z;
-    pcl::PointXYZI point;
-    point.x = end_point.x;
-    point.y = end_point.y;
-    point.z = end_point.z;
-    point.intensity = 0.0;
 
-    visualization_cloud->points.push_back(point);
-    pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_cloud(new pcl::PointCloud<pcl::PointXYZI>());
-    misc_utils_ns::LinInterpPoints<pcl::PointXYZI>(start_point, end_point, resol, tmp_cloud);
-    for (auto& tmp_point : tmp_cloud->points)
+    void LiDARModel::ind2sub(const int ind, int& row_index, int& column_index)
     {
-      if (isZero(covered_voxel_[i]) || reset_[i])
-      {
-        tmp_point.intensity = 0.0;
-      }
-      else
-      {
-        tmp_point.intensity = 10.0;
-      }
+        row_index = ind / kHorizontalVoxelSize;
+        column_index = ind % kHorizontalVoxelSize;
     }
-    *visualization_cloud += *tmp_cloud;
-  }
-}
-}  // namespace lidar_model_ns
+
+    LiDARModel::LiDARModel(const double px, const double py, const double pz, const double rw, const double rx,
+                           const double ry, const double rz)
+    {
+        pose_.position.x = px;
+        pose_.position.y = py;
+        pose_.position.z = pz;
+        pose_.orientation.w = rw;
+        pose_.orientation.x = rx;
+        pose_.orientation.y = ry;
+        pose_.orientation.z = rz;
+        ResetCoverage();
+    }
+
+    LiDARModel::LiDARModel(const geometry_msgs::Pose& pose) :
+        LiDARModel(pose.position.x, pose.position.y, pose.position.z, pose.orientation.w, pose.orientation.x,
+                   pose.orientation.y, pose.orientation.z)
+    {
+    }
+
+    void LiDARModel::ResetCoverage() { reset_.fill(true); }
+
+    void LiDARModel::GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& visualization_cloud,
+                                           const double resol, const double max_range) const
+    {
+        visualization_cloud->clear();
+        const geometry_msgs::Point start_point = pose_.position;
+        for (int i = 0; i < covered_voxel_.size(); i++)
+        {
+            int row_index, column_index;
+            ind2sub(i, row_index, column_index);
+            const double phi = (column_index * kHorizontalResolution - 180) * M_PI / 180;
+            const double theta = (row_index * kVerticalResolution - kVerticalAngleOffset) * M_PI / 180;
+
+            double r = covered_voxel_[i];
+            if (isZero(covered_voxel_[i]) || reset_[i])
+            {
+                r = max_range;
+            }
+            geometry_msgs::Point end_point;
+            end_point.x = r * sin(theta) * cos(phi) + pose_.position.x;
+            end_point.y = r * sin(theta) * sin(phi) + pose_.position.y;
+            end_point.z = r * cos(theta) + pose_.position.z;
+            pcl::PointXYZI point;
+            point.x = end_point.x;
+            point.y = end_point.y;
+            point.z = end_point.z;
+            point.intensity = 0.0;
+
+            visualization_cloud->points.push_back(point);
+            pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_cloud(new pcl::PointCloud<pcl::PointXYZI>());
+            misc_utils_ns::LinInterpPoints<pcl::PointXYZI>(start_point, end_point, resol, tmp_cloud);
+            for (auto& tmp_point : tmp_cloud->points)
+            {
+                if (isZero(covered_voxel_[i]) || reset_[i])
+                {
+                    tmp_point.intensity = 0.0;
+                }
+                else
+                {
+                    tmp_point.intensity = 10.0;
+                }
+            }
+            *visualization_cloud += *tmp_cloud;
+        }
+    }
+} // namespace lidar_model_ns

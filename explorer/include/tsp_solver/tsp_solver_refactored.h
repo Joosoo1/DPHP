@@ -95,14 +95,14 @@ class tsp_solver_ns::TSPSolverRefactored {
   /**
    * @brief Print the solution details to log
    */
-  void PrintSolution();
+  void PrintSolution() const;
 
   /**
    * @brief Get the computation time in milliseconds
    * 
    * @return int Computation time in milliseconds
    */
-  int getComputationTime();
+  int getComputationTime() const;
 
   /**
    * @brief Get the solution node indices
@@ -110,12 +110,12 @@ class tsp_solver_ns::TSPSolverRefactored {
    * @param node_index Output vector of node indices in solution order
    * @param has_dummy Whether the problem includes a dummy node that should be removed
    */
-  void getSolutionNodeIndex(std::vector<int>& node_index, bool has_dummy);
+  void getSolutionNodeIndex(std::vector<int>& node_index, bool has_dummy) const;
 
   /**
    * @brief Get the path length of the solution
    * 
    * @return double Path length in meters (divided by 10.0 from internal units)
    */
-  double getPathLength();
+  double getPathLength() const;
 };

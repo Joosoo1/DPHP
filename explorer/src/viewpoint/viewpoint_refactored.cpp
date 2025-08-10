@@ -142,7 +142,10 @@ namespace viewpoint_ns
 
     bool ViewPointRefactored::IsCandidate() const { return is_candidate_; }
 
-    void ViewPointRefactored::SetHasTerrainHeight(const bool has_terrain_height) { has_terrain_height_ = has_terrain_height; }
+    void ViewPointRefactored::SetHasTerrainHeight(const bool has_terrain_height)
+    {
+        has_terrain_height_ = has_terrain_height;
+    }
 
     bool ViewPointRefactored::HasTerrainHeight() const { return has_terrain_height_; }
 
@@ -166,7 +169,10 @@ namespace viewpoint_ns
 
     bool ViewPointRefactored::HasTerrainNeighbor() const { return has_terrain_neighbor_; }
 
-    void ViewPointRefactored::SetInExploringCell(const bool in_exploring_cell) { in_exploring_cell_ = in_exploring_cell; }
+    void ViewPointRefactored::SetInExploringCell(const bool in_exploring_cell)
+    {
+        in_exploring_cell_ = in_exploring_cell;
+    }
 
     bool ViewPointRefactored::InExploringCell() const { return in_exploring_cell_; }
 

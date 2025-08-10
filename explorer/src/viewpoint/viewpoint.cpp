@@ -15,8 +15,8 @@ namespace viewpoint_ns
 {
     ViewPoint::ViewPoint(const double x, const double y, const double z) :
         lidar_model_(x, y, z), in_collision_(false), in_line_of_sight_(false), connected_(false), visited_(false),
-        selected_(false), is_candidate_(false), has_terrain_height_(false), in_exploring_cell_(false),
-        cell_ind_(-1), collision_frame_count_(0), terrain_height_(0.0), has_terrain_neighbor_(false),
+        selected_(false), is_candidate_(false), has_terrain_height_(false), in_exploring_cell_(false), cell_ind_(-1),
+        collision_frame_count_(0), terrain_height_(0.0), has_terrain_neighbor_(false),
         in_current_frame_line_of_sight_(false)
     {
     }

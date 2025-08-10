@@ -278,7 +278,7 @@ public:
     return stacked_cloud_->cloud_;
   }
 
-  void UpdateTerrainCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud);
+  void UpdateTerrainCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud) const;
   void UpdateCollisionCostGrid();
   bool InCollision(double x, double y, double z) const;
 
@@ -291,19 +291,19 @@ public:
     return planner_cloud_->cloud_;
   }
   void UpdateCoveredArea(const lidar_model_ns::LiDARModel& robot_viewpoint,
-                         const std::shared_ptr<viewpoint_manager_ns::ViewPointManager>& viewpoint_manager);
+                         const std::shared_ptr<viewpoint_manager_ns::ViewPointManager>& viewpoint_manager) const;
 
   void GetUncoveredArea(const std::shared_ptr<viewpoint_manager_ns::ViewPointManager>& viewpoint_manager,
-                        int& uncovered_point_num, int& uncovered_frontier_point_num);
+                        int& uncovered_point_num, int& uncovered_frontier_point_num) const;
 
   Eigen::Vector3d GetPointCloudManagerNeighborCellsOrigin()
   {
     return pointcloud_manager_->GetNeighborCellsOrigin();
   }
-  void GetVisualizationPointCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr vis_cloud);
-  void PublishStackedCloud();
-  void PublishUncoveredCloud();
-  void PublishUncoveredFrontierCloud();
+  void GetVisualizationPointCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr vis_cloud) const;
+  void PublishStackedCloud() const;
+  void PublishUncoveredCloud() const;
+  void PublishUncoveredFrontierCloud() const;
 
 private:
   PlanningEnvParameters parameters_;

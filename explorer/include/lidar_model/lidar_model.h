@@ -139,7 +139,7 @@ public:
    * @param resol
    * @param max_range
    */
-  void GetVisualizationCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr& visualization_cloud, double resol = 0.2,
+  void GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& visualization_cloud, double resol = 0.2,
                              double max_range = 25.0) const;
 
   static void setCloudDWZResol(double cloud_dwz_resol)
@@ -170,21 +170,21 @@ public:
 
 private:
   /**
-   * @brief convert subscripts to linear indices
-   *
-   * @param row_index row index
-   * @param column_index column index
-   * @return int linear index
-   */
-  int sub2ind(int row_index, int column_index) const;
+     * @brief convert subscripts to linear indices
+     *
+     * @param row_index row index
+     * @param column_index column index
+     * @return int linear index
+     */
+    static int sub2ind(int row_index, int column_index);
   /**
-   * @brief convert linear indices to subscripts
-   *
-   * @param ind linear index
-   * @param row_index row index
-   * @param column_index column index
-   */
-  void ind2sub(int ind, int& row_index, int& column_index) const;
+     * @brief convert linear indices to subscripts
+     *
+     * @param ind linear index
+     * @param row_index row index
+     * @param column_index column index
+     */
+    static void ind2sub(int ind, int& row_index, int& column_index);
   /**
    * @brief whether a number is close to zero
    *
