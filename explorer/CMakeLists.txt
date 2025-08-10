@@ -256,6 +256,26 @@ if(CATKIN_ENABLE_TESTING)
   # 添加集成测试
   catkin_add_gtest(explorer_integration_test test/explorer_integration_test.cpp)
   target_link_libraries(explorer_integration_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
+  # 添加传感器覆盖规划器简化测试
+  catkin_add_gtest(sensor_coverage_planner_simple_test test/sensor_coverage_planner_simple_test.cpp)
+  target_link_libraries(sensor_coverage_planner_simple_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
+  # 添加视点管理器测试
+  catkin_add_gtest(viewpoint_manager_test test/viewpoint_manager_test.cpp)
+  target_link_libraries(viewpoint_manager_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
+  # 添加栅格世界综合测试
+  catkin_add_gtest(grid_world_comprehensive_test test/grid_world_comprehensive_test.cpp)
+  target_link_libraries(grid_world_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
+  # 添加局部覆盖规划器简化测试
+  catkin_add_gtest(local_coverage_planner_simple_test test/local_coverage_planner_simple_test.cpp)
+  target_link_libraries(local_coverage_planner_simple_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+  
+  # 添加视点综合测试
+  catkin_add_gtest(viewpoint_comprehensive_test test/viewpoint_comprehensive_test.cpp)
+  target_link_libraries(viewpoint_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
 endif()
 
 ## Add folders to be run by python nosetests
