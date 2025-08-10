@@ -191,7 +191,7 @@ TEST_F(GridWorldComprehensiveTest, NeighborCellTest) {
     Eigen::Vector3i neighbor_range(1, 1, 1);
     std::vector<int> range_neighbor_indices;
     
-    grid_world_->GetNeighborCellIndices(center_sub, neighbor_range, range_neighbor_indices);
+    grid_world_->GetNeighborCellIndices(center_sub, neighbor_range);
     EXPECT_GT(range_neighbor_indices.size(), 0);
 }
 

@@ -79,7 +79,7 @@ Visualization Manager:
           Marker Topic: /sensor_coverage_planner/tare_visualizer/exploring_subspaces
           Name: ExploringSubspaces
           Namespaces:
-            {}
+            { }
           Queue Size: 100
           Value: true
         - Alpha: 1

@@ -23,20 +23,20 @@ add_compile_definitions(PCL_NO_PRECOMPILE)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 set(PROJECT_DEPENDENCIES
-  roscpp
-  std_msgs
-  nav_msgs
-  geometry_msgs
-  sensor_msgs
-  visualization_msgs
-  tf
-  tf_conversions
-  pcl_ros
-  pcl_conversions
-  dynamic_reconfigure
-  message_generation
-  cv_bridge
-  )
+        roscpp
+        std_msgs
+        nav_msgs
+        geometry_msgs
+        sensor_msgs
+        visualization_msgs
+        tf
+        tf_conversions
+        pcl_ros
+        pcl_conversions
+        dynamic_reconfigure
+        message_generation
+        cv_bridge
+)
 
 find_package(catkin REQUIRED COMPONENTS ${PROJECT_DEPENDENCIES})
 find_package(PCL REQUIRED)
@@ -49,12 +49,12 @@ find_package(GTest REQUIRED)
 # Set OR-Tools paths
 set(OR_TOOLS_ROOT ${PROJECT_SOURCE_DIR}/or-tools)
 set(OR_TOOLS_INCLUDE_DIRS ${OR_TOOLS_ROOT}/include)
-set(OR_TOOLS_LIBRARIES 
-    ${OR_TOOLS_ROOT}/lib/libortools.so
-    ${OR_TOOLS_ROOT}/lib/libprotobuf.so
-    ${OR_TOOLS_ROOT}/lib/libglog.so
-    ${OR_TOOLS_ROOT}/lib/libgflags.so
-    )
+set(OR_TOOLS_LIBRARIES
+        ${OR_TOOLS_ROOT}/lib/libortools.so
+        ${OR_TOOLS_ROOT}/lib/libprotobuf.so
+        ${OR_TOOLS_ROOT}/lib/libglog.so
+        ${OR_TOOLS_ROOT}/lib/libgflags.so
+)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${catkin_INCLUDE_DIRS})
@@ -76,88 +76,88 @@ include_directories(or-tools/include)
 
 # Generate messages in the 'msg' folder
 add_message_files(
-  FILES
-  DualState.msg
-  DualStateArray.msg
-  )
+        FILES
+        DualState.msg
+        DualStateArray.msg
+)
 
 # Generate services in the 'srv' folder
 add_service_files(
-  FILES
-  PlannerTrigger.srv
-  )
+        FILES
+        PlannerTrigger.srv
+)
 
 # Generate added messages and services with any dependencies listed here
 generate_messages(
-  DEPENDENCIES
-  std_msgs
-  nav_msgs
-  geometry_msgs
-  )
+        DEPENDENCIES
+        std_msgs
+        nav_msgs
+        geometry_msgs
+)
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS
-    roscpp
-    std_msgs
-    nav_msgs
-    geometry_msgs
-    sensor_msgs
-    visualization_msgs
-    tf
-    tf_conversions
-    pcl_ros
-    pcl_conversions
-    dynamic_reconfigure
-    message_runtime
-    cv_bridge
-  DEPENDS PCL OpenCV GSL EIGEN3
-  )
+        INCLUDE_DIRS include
+        LIBRARIES ${PROJECT_NAME}
+        CATKIN_DEPENDS
+        roscpp
+        std_msgs
+        nav_msgs
+        geometry_msgs
+        sensor_msgs
+        visualization_msgs
+        tf
+        tf_conversions
+        pcl_ros
+        pcl_conversions
+        dynamic_reconfigure
+        message_runtime
+        cv_bridge
+        DEPENDS PCL OpenCV GSL EIGEN3
+)
 
 # Build explorer library
 add_library(${PROJECT_NAME}
-  src/exploration_path/exploration_path.cpp
-  src/explorer_visualizer/explorer_visualizer.cpp
-  src/graph/graph.cpp
-  src/graph/graph_refactored.cpp
-  src/grid_world/grid_world.cpp
-  src/keypose_graph/keypose_graph.cpp
-  src/lidar_model/lidar_model.cpp
-  src/local_coverage_planner/local_coverage_planner.cpp
-  src/navigation_boundary_publisher/navigationBoundary.cpp
-  src/planning_env/planning_env.cpp
-  src/pointcloud_manager/pointcloud_manager.cpp
-  src/rolling_grid/rolling_grid.cpp
-  src/rolling_occupancy_grid/rolling_occupancy_grid.cpp
-  src/sensor_coverage_planner/sensor_coverage_planner_ground.cpp
-  src/tsp_solver/tsp_solver.cpp
-  src/tsp_solver/tsp_solver_refactored.cpp
-  src/utils/misc_utils.cpp
-  src/utils/pointcloud_utils.cpp
-  src/viewpoint/viewpoint.cpp
-  src/viewpoint/viewpoint_refactored.cpp
-  src/viewpoint_manager/viewpoint_manager.cpp
-  )
+        src/exploration_path/exploration_path.cpp
+        src/explorer_visualizer/explorer_visualizer.cpp
+        src/graph/graph.cpp
+        src/graph/graph_refactored.cpp
+        src/grid_world/grid_world.cpp
+        src/keypose_graph/keypose_graph.cpp
+        src/lidar_model/lidar_model.cpp
+        src/local_coverage_planner/local_coverage_planner.cpp
+        src/navigation_boundary_publisher/navigationBoundary.cpp
+        src/planning_env/planning_env.cpp
+        src/pointcloud_manager/pointcloud_manager.cpp
+        src/rolling_grid/rolling_grid.cpp
+        src/rolling_occupancy_grid/rolling_occupancy_grid.cpp
+        src/sensor_coverage_planner/sensor_coverage_planner_ground.cpp
+        src/tsp_solver/tsp_solver.cpp
+        src/tsp_solver/tsp_solver_refactored.cpp
+        src/utils/misc_utils.cpp
+        src/utils/pointcloud_utils.cpp
+        src/viewpoint/viewpoint.cpp
+        src/viewpoint/viewpoint_refactored.cpp
+        src/viewpoint_manager/viewpoint_manager.cpp
+)
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${GSL_LIBRARIES}
-  ${OR_TOOLS_LIBRARIES}
-  )
+        ${catkin_LIBRARIES}
+        ${PCL_LIBRARIES}
+        ${OpenCV_LIBRARIES}
+        ${GSL_LIBRARIES}
+        ${OR_TOOLS_LIBRARIES}
+)
 
 # Explorer node
 add_executable(explorer_node
-  src/explorer_node/explorer_node.cpp)
+        src/explorer_node/explorer_node.cpp)
 target_link_libraries(explorer_node
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-  ${OR_TOOLS_LIBRARIES}
-  )
+        ${PROJECT_NAME}
+        ${catkin_LIBRARIES}
+        ${OR_TOOLS_LIBRARIES}
+)
 
 ## Rename C++ executable without namespace
 ## The above recommended prefix causes long target names, the following renames the
@@ -214,42 +214,39 @@ target_link_libraries(explorer_node
 #############
 
 ## Add gtest based cpp test target and link libraries
-if(CATKIN_ENABLE_TESTING)
-  catkin_add_gtest(graph_test test/graph_test.cpp)
-  target_link_libraries(graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
-  
-  catkin_add_gtest(tsp_solver_test test/tsp_solver_test.cpp)
-  target_link_libraries(tsp_solver_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main ${OR_TOOLS_LIBRARIES})
-  
-  catkin_add_gtest(keypose_graph_test test/keypose_graph_test.cpp)
-  target_link_libraries(keypose_graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
-  
-  catkin_add_gtest(exploration_path_test test/exploration_path_test.cpp)
-  target_link_libraries(exploration_path_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
-  
-  catkin_add_gtest(planning_env_test test/planning_env_test.cpp)
-  target_link_libraries(planning_env_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
-  
-  # 添加集成测试
-  catkin_add_gtest(explorer_integration_test test/explorer_integration_test.cpp)
-  target_link_libraries(explorer_integration_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
-  
-  # 添加传感器覆盖规划器测试
-  catkin_add_gtest(sensor_coverage_planner_test test/sensor_coverage_planner_test.cpp)
-  target_link_libraries(sensor_coverage_planner_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
-  
-  # 添加视点管理器测试
-  catkin_add_gtest(viewpoint_manager_test test/viewpoint_manager_test.cpp)
-  target_link_libraries(viewpoint_manager_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
-  
-  # 添加栅格世界综合测试
-  catkin_add_gtest(grid_world_comprehensive_test test/grid_world_comprehensive_test.cpp)
-  target_link_libraries(grid_world_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
-  
-  # 添加视点综合测试
-  catkin_add_gtest(viewpoint_comprehensive_test test/viewpoint_comprehensive_test.cpp)
-  target_link_libraries(viewpoint_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
-endif()
+if (CATKIN_ENABLE_TESTING)
+    catkin_add_gtest(graph_test test/graph_test.cpp)
+    target_link_libraries(graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+
+    catkin_add_gtest(tsp_solver_test test/tsp_solver_test.cpp)
+    target_link_libraries(tsp_solver_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main ${OR_TOOLS_LIBRARIES})
+
+    catkin_add_gtest(keypose_graph_test test/keypose_graph_test.cpp)
+    target_link_libraries(keypose_graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+
+    catkin_add_gtest(exploration_path_test test/exploration_path_test.cpp)
+    target_link_libraries(exploration_path_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+
+    catkin_add_gtest(planning_env_test test/planning_env_test.cpp)
+    target_link_libraries(planning_env_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+
+    # 添加集成测试
+    catkin_add_gtest(explorer_integration_test test/explorer_integration_test.cpp)
+    target_link_libraries(explorer_integration_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+
+
+    # 添加视点管理器测试
+    catkin_add_gtest(viewpoint_manager_test test/viewpoint_manager_test.cpp)
+    target_link_libraries(viewpoint_manager_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+
+    # 添加栅格世界综合测试
+    catkin_add_gtest(grid_world_comprehensive_test test/grid_world_comprehensive_test.cpp)
+    target_link_libraries(grid_world_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+
+    # 添加视点综合测试
+    catkin_add_gtest(viewpoint_comprehensive_test test/viewpoint_comprehensive_test.cpp)
+    target_link_libraries(viewpoint_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+endif ()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
@@ -259,10 +256,10 @@ endif()
 #############################################
 
 # 添加集成测试到rostest
-if(CATKIN_ENABLE_TESTING)
-  find_package(rostest REQUIRED)
-  add_rostest(test/integration_test.launch)
-endif()
+if (CATKIN_ENABLE_TESTING)
+    find_package(rostest REQUIRED)
+    add_rostest(test/integration_test.launch)
+endif ()
 
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch

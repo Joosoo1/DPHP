@@ -17,14 +17,14 @@
 
 namespace grid_world_ns
 {
-  Cell::Cell(double x, double y, double z)
-      : in_horizon_(false), 
-      robot_position_set_(false), 
-      visit_count_(0), keypose_id_(0), 
-      path_added_to_keypose_graph_(false), 
-      roadmap_connection_point_set_(false), 
-      viewpoint_position_(Eigen::Vector3d(x, y, z)), 
-      roadmap_connection_point_(Eigen::Vector3d(x, y, z))
+  Cell::Cell(const double x, const double y, const double z)
+    : robot_position_set_(false),
+      visit_count_(0),
+      in_horizon_(false), keypose_id_(0),
+      viewpoint_position_(Eigen::Vector3d(x, y, z)),
+      roadmap_connection_point_(Eigen::Vector3d(x, y, z)),
+      path_added_to_keypose_graph_(false),
+      roadmap_connection_point_set_(false)
   {
     center_.x = x;
     center_.y = y;
@@ -36,7 +36,7 @@ namespace grid_world_ns
     status_ = CellStatus::UNSEEN;
   }
 
-  Cell::Cell(const geometry_msgs::Point &center) : Cell(center.x, center.y, center.z)
+  Cell::Cell(const geometry_msgs::Point& center) : Cell(center.x, center.y, center.z)
   {
   }
 
@@ -52,10 +52,10 @@ namespace grid_world_ns
     keypose_graph_node_indices_.clear();
   }
 
-  bool Cell::IsCellConnected(int cell_ind)
+  bool Cell::IsCellConnected(const int cell_ind)
   {
     if (std::find(connected_cell_indices_.begin(), connected_cell_indices_.end(), cell_ind) !=
-        connected_cell_indices_.end())
+      connected_cell_indices_.end())
     {
       return true;
     }
@@ -65,7 +65,7 @@ namespace grid_world_ns
     }
   }
 
-  GridWorld::GridWorld(ros::NodeHandle &nh) : initialized_(false), use_keypose_graph_(false)
+  GridWorld::GridWorld(ros::NodeHandle& nh) : initialized_(false), use_keypose_graph_(false)
   {
     ReadParameters(nh);
     robot_position_.x = 0.0;
@@ -83,7 +83,7 @@ namespace grid_world_ns
     subspaces_ = std::make_unique<grid_ns::Grid<Cell>>(grid_size, cell_tmp, grid_origin, grid_resolution); // 实例化子空间集合
     for (int i = 0; i < subspaces_->GetCellNumber(); ++i)
     {
-      subspaces_->GetCell(i) = grid_world_ns::Cell();
+      subspaces_->GetCell(i) = Cell();
     }
 
     home_position_.x() = 0.0;
@@ -101,29 +101,30 @@ namespace grid_world_ns
     prev_robot_cell_ind_ = -1;
   }
 
-  GridWorld::GridWorld(int row_num, int col_num, int level_num, double cell_size, double cell_height, int nearby_grid_num)
-      : kRowNum(row_num),
-        kColNum(col_num),
-        kLevelNum(level_num),
-        kCellSize(cell_size),
-        kCellHeight(cell_height),
-        KNearbyGridNum(nearby_grid_num),
-        kMinAddPointNumSmall(60),
-        kMinAddPointNumBig(100),
-        kMinAddFrontierPointNum(30),
-        kCellExploringToCoveredThr(1),
-        kCellCoveredToExploringThr(10),
-        kCellExploringToAlmostCoveredThr(10),
-        kCellAlmostCoveredToExploringThr(20),
-        kCellUnknownToExploringThr(1),
-        kCellSemiExploredToExploringThr(0.99),
-        cur_keypose_id_(0),
-        cur_keypose_graph_node_ind_(0),
-        cur_robot_cell_ind_(-1),
-        prev_robot_cell_ind_(-1),
-        cur_keypose_(0, 0, 0),
-        initialized_(false),
-        use_keypose_graph_(false)
+  GridWorld::GridWorld(const int row_num, const int col_num, const int level_num, const double cell_size,
+                       const double cell_height, const int nearby_grid_num)
+    : kRowNum(row_num),
+      kColNum(col_num),
+      kLevelNum(level_num),
+      kCellSize(cell_size),
+      kCellHeight(cell_height),
+      KNearbyGridNum(nearby_grid_num),
+      kMinAddPointNumSmall(60),
+      kMinAddPointNumBig(100),
+      kMinAddFrontierPointNum(30),
+      kCellExploringToCoveredThr(1),
+      kCellCoveredToExploringThr(10),
+      kCellExploringToAlmostCoveredThr(10),
+      kCellAlmostCoveredToExploringThr(20),
+      kCellUnknownToExploringThr(1),
+      kCellSemiExploredToExploringThr(0.99),
+      initialized_(false),
+      use_keypose_graph_(false),
+      cur_keypose_id_(0),
+      cur_keypose_(0, 0, 0),
+      cur_keypose_graph_node_ind_(0),
+      cur_robot_cell_ind_(-1),
+      prev_robot_cell_ind_(-1)
   {
     robot_position_.x = 0.0;
     robot_position_.y = 0.0;
@@ -155,16 +156,18 @@ namespace grid_world_ns
     return_home_ = false;
   }
 
-  void GridWorld::ReadParameters(ros::NodeHandle &nh)
+  void GridWorld::ReadParameters(ros::NodeHandle& nh)
   {
     kRowNum = misc_utils_ns::getParam<int>(nh, "kGridWorldXNum", 121);
     kColNum = misc_utils_ns::getParam<int>(nh, "kGridWorldYNum", 121);
     kLevelNum = misc_utils_ns::getParam<int>(nh, "kGridWorldZNum", 121); // 划分的每个维度元素个数（121^3=1771561），即1771561个子空间
 
-    int viewpoint_number = misc_utils_ns::getParam<int>(nh, "viewpoint_manager/number_x", 40);                // 视点采样数量 number_x * number_y * number_z(40*40*1)
-    double viewpoint_resolution = misc_utils_ns::getParam<double>(nh, "viewpoint_manager/resolution_x", 1.0); // 视点采样间距？
+    const int viewpoint_number = misc_utils_ns::getParam<int>(nh, "viewpoint_manager/number_x", 40);
+    // 视点采样数量 number_x * number_y * number_z(40*40*1)
+    const double viewpoint_resolution = misc_utils_ns::getParam<double>(nh, "viewpoint_manager/resolution_x", 1.0);
+    // 视点采样间距？
 
-    kCellSize = viewpoint_number * viewpoint_resolution / 5;                        // 子空间边长为局部规划范围的1/5
+    kCellSize = viewpoint_number * viewpoint_resolution / 5; // 子空间边长为局部规划范围的1/5
     kCellHeight = misc_utils_ns::getParam<double>(nh, "kGridWorldCellHeight", 8.0); // 每个子空间的高度
 
     KNearbyGridNum = misc_utils_ns::getParam<int>(nh, "kGridWorldNearbyGridNum", 5); // x、y方向上的邻居子空间数量，z轴默认为1
@@ -182,7 +185,7 @@ namespace grid_world_ns
     kCellSemiExploredToExploringThr = misc_utils_ns::getParam<int>(nh, "kCellSemiExploredToExploringThr", 0.99);
   }
 
-  void GridWorld::UpdateNeighborCells(const geometry_msgs::Point &robot_position)
+  void GridWorld::UpdateNeighborCells(const geometry_msgs::Point& robot_position)
   {
     if (!initialized_)
     {
@@ -218,21 +221,21 @@ namespace grid_world_ns
     int N = KNearbyGridNum / 2; // 5/2=2.5，取整为2，xy平面临近的cell范围
     int M = 1;
     // 获取当前robot所在的cell的临近cell的索引列表-->75
-    GetNeighborCellIndices(robot_position, Eigen::Vector3i(N, N, M), neighbor_cell_indices_);
+    GetNeighborCellIndices(robot_position, Eigen::Vector3i(N, N, M));
 
     //
-    for (const auto &cell_ind : neighbor_cell_indices_)
+    for (const auto& cell_ind : neighbor_cell_indices_)
     {
       // 遍历新的邻近cell列表，对于每一个新的临近cell，如果它在之前的临近cell列表中不存在，则增加其访问次数
       if (std::find(prev_neighbor_cell_indices.begin(), prev_neighbor_cell_indices.end(), cell_ind) ==
-          prev_neighbor_cell_indices.end())
+        prev_neighbor_cell_indices.end())
       {
         subspaces_->GetCell(cell_ind).AddVisitCount();
       }
     }
   }
 
-  void GridWorld::UpdateRobotPosition(const geometry_msgs::Point &robot_position)
+  void GridWorld::UpdateRobotPosition(const geometry_msgs::Point& robot_position)
   {
     robot_position_ = robot_position;
     // 根据robot所在的位置更新robot_cell_ind
@@ -245,9 +248,10 @@ namespace grid_world_ns
   }
 
   // 更新类型为EXPLORING的cell的keypose_graph节点
-  void GridWorld::UpdateCellKeyposeGraphNodes(const std::unique_ptr<keypose_graph_ns::KeyposeGraph> &keypose_graph)
+  void GridWorld::UpdateCellKeyposeGraphNodes(const std::unique_ptr<keypose_graph_ns::KeyposeGraph>& keypose_graph) const
   {
-    std::vector<int> keypose_graph_connected_node_indices = keypose_graph->GetConnectedGraphNodeIndices(); // 获取可连接的keypose节点索引
+    std::vector<int> keypose_graph_connected_node_indices = keypose_graph->GetConnectedGraphNodeIndices();
+    // 获取可连接的keypose节点索引
 
     // 遍历每个cell，如果cell的状态为EXPLORING，则清除该cell的keypose节点索引
     for (int i = 0; i < subspaces_->GetCellNumber(); i++)
@@ -259,10 +263,10 @@ namespace grid_world_ns
     }
 
     // 遍历keypose_graph的每个节点，如果该节点对应的cell的状态为EXPLORING/SEMI_EXPLORING，则将该节点添加到该cell的keypose节点索引中
-    for (const auto &node_ind : keypose_graph_connected_node_indices)
+    for (const auto& node_ind : keypose_graph_connected_node_indices)
     {
       geometry_msgs::Point node_position = keypose_graph->GetNodePosition(node_ind); // 获取节点位置
-      int cell_ind = GetCellInd(node_position.x, node_position.y, node_position.z);  // 获取该节点位置所对应的cell索引
+      int cell_ind = GetCellInd(node_position.x, node_position.y, node_position.z); // 获取该节点位置所对应的cell索引
       if (subspaces_->InRange(cell_ind))
       {
         if (subspaces_->GetCell(cell_ind).GetStatus() == CellStatus::EXPLORING)
@@ -274,7 +278,7 @@ namespace grid_world_ns
   }
 
   // 判断cell1与cell2是否为邻居
-  bool GridWorld::AreNeighbors(int cell_ind1, int cell_ind2)
+  bool GridWorld::AreNeighbors(const int cell_ind1, const int cell_ind2) const
   {
     Eigen::Vector3i cell_sub1 = subspaces_->Ind2Sub(cell_ind1);
     Eigen::Vector3i cell_sub2 = subspaces_->Ind2Sub(cell_ind2);
@@ -289,9 +293,9 @@ namespace grid_world_ns
     }
   }
 
-  int GridWorld::GetCellInd(double qx, double qy, double qz)
+  int GridWorld::GetCellInd(const double qx, const double qy, const double qz) const
   {
-    Eigen::Vector3i sub = subspaces_->Pos2Sub(qx, qy, qz);
+    const Eigen::Vector3i sub = subspaces_->Pos2Sub(qx, qy, qz);
     if (subspaces_->InRange(sub))
     {
       return subspaces_->Sub2Ind(sub);
@@ -302,7 +306,8 @@ namespace grid_world_ns
     }
   }
 
-  void GridWorld::GetCellSub(int &row_idx, int &col_idx, int &level_idx, double qx, double qy, double qz)
+  void GridWorld::GetCellSub(int& row_idx, int& col_idx, int& level_idx, const double qx, const double qy,
+                             const double qz) const
   {
     Eigen::Vector3i sub = subspaces_->Pos2Sub(qx, qy, qz);
     row_idx = (sub.x() >= 0 && sub.x() < kRowNum) ? sub.x() : -1;
@@ -310,12 +315,12 @@ namespace grid_world_ns
     level_idx = (sub.z() >= 0 && sub.z() < kLevelNum) ? sub.z() : -1;
   }
 
-  Eigen::Vector3i GridWorld::GetCellSub(const Eigen::Vector3d &point)
+  Eigen::Vector3i GridWorld::GetCellSub(const Eigen::Vector3d& point) const
   {
     return subspaces_->Pos2Sub(point);
   }
 
-  void GridWorld::GetMarker(visualization_msgs::Marker &marker)
+  void GridWorld::GetMarker(visualization_msgs::Marker& marker) const
   {
     marker.points.clear();
     marker.colors.clear();
@@ -392,7 +397,7 @@ namespace grid_world_ns
     // }
   }
 
-  void GridWorld::GetVisualizationCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr &vis_cloud)
+  void GridWorld::GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const
   {
     vis_cloud->points.clear();
     for (int i = 0; i < subspaces_->GetCellNumber(); i++)
@@ -411,33 +416,32 @@ namespace grid_world_ns
     }
   }
 
-  void GridWorld::AddViewPointToCell(int cell_ind, int viewpoint_ind)
+  void GridWorld::AddViewPointToCell(const int cell_ind, const int viewpoint_ind) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     subspaces_->GetCell(cell_ind).AddViewPoint(viewpoint_ind);
   }
 
-  void GridWorld::AddGraphNodeToCell(int cell_ind, int node_ind)
+  void GridWorld::AddGraphNodeToCell(const int cell_ind, const int node_ind) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     subspaces_->GetCell(cell_ind).AddGraphNode(node_ind);
   }
 
-  void GridWorld::ClearCellViewPointIndices(int cell_ind)
+  void GridWorld::ClearCellViewPointIndices(const int cell_ind) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     subspaces_->GetCell(cell_ind).ClearViewPointIndices();
   }
 
-  std::vector<int> GridWorld::GetCellViewPointIndices(int cell_ind)
+  std::vector<int> GridWorld::GetCellViewPointIndices(const int cell_ind) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     return subspaces_->GetCell(cell_ind).GetViewPointIndices();
   }
 
   // 该函数用于获取给定中心网格单元周围邻居网格单元的索引，并将这些索引存储在一个向量中
-  void GridWorld::GetNeighborCellIndices(const Eigen::Vector3i &center_cell_sub, const Eigen::Vector3i &neighbor_range,
-                                         std::vector<int> &neighbor_indices)
+  void GridWorld::GetNeighborCellIndices(const Eigen::Vector3i& center_cell_sub, const Eigen::Vector3i& neighbor_range)
   {
     int row_idx = 0;
     int col_idx = 0;
@@ -467,17 +471,16 @@ namespace grid_world_ns
     // std::cout << "[grid_world]: neighbor cell count: " << count << std::endl;
   }
 
-  void GridWorld::GetNeighborCellIndices(const geometry_msgs::Point &position, const Eigen::Vector3i &neighbor_range,
-                                         std::vector<int> &neighbor_indices)
+  void GridWorld::GetNeighborCellIndices(const geometry_msgs::Point& position, const Eigen::Vector3i& neighbor_range)
   {
-    Eigen::Vector3i center_cell_sub = GetCellSub(Eigen::Vector3d(position.x, position.y, position.z));
+    const Eigen::Vector3i center_cell_sub = GetCellSub(Eigen::Vector3d(position.x, position.y, position.z));
 
-    GetNeighborCellIndices(center_cell_sub, neighbor_range, neighbor_indices);
+    GetNeighborCellIndices(center_cell_sub, neighbor_range);
   }
 
   // 获取GridWorld中所有处于探索状态（CellStatus::EXPLORING）的网格单元的索引，
   // 并将这些索引存储在一个名为exploring_cell_indices的向量中
-  void GridWorld::GetExploringCellIndices(std::vector<int> &exploring_cell_indices)
+  void GridWorld::GetExploringCellIndices(std::vector<int>& exploring_cell_indices) const
   {
     exploring_cell_indices.clear();
     for (int i = 0; i < subspaces_->GetCellNumber(); i++)
@@ -489,55 +492,55 @@ namespace grid_world_ns
     }
   }
 
-  CellStatus GridWorld::GetCellStatus(int cell_ind)
+  CellStatus GridWorld::GetCellStatus(const int cell_ind) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     return subspaces_->GetCell(cell_ind).GetStatus();
   }
 
-  void GridWorld::SetCellStatus(int cell_ind, grid_world_ns::CellStatus status)
+  void GridWorld::SetCellStatus(const int cell_ind, const CellStatus status) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     subspaces_->GetCell(cell_ind).SetStatus(status);
   }
 
-  geometry_msgs::Point GridWorld::GetCellPosition(int cell_ind)
+  geometry_msgs::Point GridWorld::GetCellPosition(const int cell_ind) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     return subspaces_->GetCell(cell_ind).GetPosition();
   }
 
-  void GridWorld::SetCellRobotPosition(int cell_ind, const geometry_msgs::Point &robot_position)
+  void GridWorld::SetCellRobotPosition(const int cell_ind, const geometry_msgs::Point& robot_position) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     subspaces_->GetCell(cell_ind).SetRobotPosition(robot_position);
   }
 
-  geometry_msgs::Point GridWorld::GetCellRobotPosition(int cell_ind)
+  geometry_msgs::Point GridWorld::GetCellRobotPosition(const int cell_ind) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     return subspaces_->GetCell(cell_ind).GetRobotPosition();
   }
 
-  void GridWorld::CellAddVisitCount(int cell_ind)
+  void GridWorld::CellAddVisitCount(const int cell_ind) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     subspaces_->GetCell(cell_ind).AddVisitCount();
   }
 
-  int GridWorld::GetCellVisitCount(int cell_ind)
+  int GridWorld::GetCellVisitCount(const int cell_ind) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     return subspaces_->GetCell(cell_ind).GetVisitCount();
   }
 
-  bool GridWorld::IsRobotPositionSet(int cell_ind)
+  bool GridWorld::IsRobotPositionSet(const int cell_ind) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     return subspaces_->GetCell(cell_ind).IsRobotPositionSet();
   }
 
-  void GridWorld::Reset()
+  void GridWorld::Reset() const
   {
     for (int i = 0; i < subspaces_->GetCellNumber(); i++)
     {
@@ -545,7 +548,7 @@ namespace grid_world_ns
     }
   }
 
-  int GridWorld::GetCellStatusCount(grid_world_ns::CellStatus status)
+  int GridWorld::GetCellStatusCount(const CellStatus status) const
   {
     int count = 0;
     for (int i = 0; i < subspaces_->GetCellNumber(); i++)
@@ -559,10 +562,10 @@ namespace grid_world_ns
   }
 
   // 获取
-  void GridWorld::getSemiExploredCellindices(const std::vector<Eigen::Vector3d> &semi_dynamic_frontier_positions)
+  void GridWorld::getSemiExploredCellindices(const std::vector<Eigen::Vector3d>& semi_dynamic_frontier_positions)
   {
     int index = 0;
-    for (const auto &position : semi_dynamic_frontier_positions)
+    for (const auto& position : semi_dynamic_frontier_positions)
     {
       index = subspaces_->Pos2Ind(position);
       if (subspaces_->InRange(index))
@@ -573,7 +576,7 @@ namespace grid_world_ns
     }
   }
 
-  void GridWorld::UpdateCellStatus(const std::shared_ptr<viewpoint_manager_ns::ViewPointManager> &viewpoint_manager)
+  void GridWorld::UpdateCellStatus(const std::shared_ptr<viewpoint_manager_ns::ViewPointManager>& viewpoint_manager)
   {
     int exploring_count = 0;
     int unseen_count = 0;
@@ -600,24 +603,25 @@ namespace grid_world_ns
       }
     }
 
-    // TODO: add semi-dynamic frontier,用于semi-explored cell改变
+    // TODO: joosoo@ add semi-dynamic frontier,用于semi-explored cell改变
 
-    for (const auto &cell_ind : neighbor_cell_indices_)
+    for (const auto& cell_ind : neighbor_cell_indices_)
     {
       subspaces_->GetCell(cell_ind).ClearViewPointIndices(); // 清空邻近cell中的Viewpoint索引
     }
 
     // 从viewpoint manager中获取Viewpoint添加到对应的cell中
-    for (const auto &viewpoint_ind : viewpoint_manager->candidate_indices_)
+    for (const auto& viewpoint_ind : viewpoint_manager->candidate_indices_)
     {
       // 获取Viewpoint的位置
       geometry_msgs::Point viewpoint_position = viewpoint_manager->GetViewPointPosition(viewpoint_ind);
       Eigen::Vector3i sub =
-          subspaces_->Pos2Sub(Eigen::Vector3d(viewpoint_position.x, viewpoint_position.y, viewpoint_position.z)); // 返回该Viewpoint对应子空间3维索引坐标
-      if (subspaces_->InRange(sub))                                                                               // 判断该子空间是否在规定范围内
+        subspaces_->Pos2Sub(Eigen::Vector3d(viewpoint_position.x, viewpoint_position.y, viewpoint_position.z));
+      // 返回该Viewpoint对应子空间3维索引坐标
+      if (subspaces_->InRange(sub)) // 判断该子空间是否在规定范围内
       {
-        int cell_ind = subspaces_->Sub2Ind(sub);                         // 获取该子空间的全局索引
-        AddViewPointToCell(cell_ind, viewpoint_ind);                     // 将该Viewpoint添加到该cell中
+        int cell_ind = subspaces_->Sub2Ind(sub); // 获取该子空间的全局索引
+        AddViewPointToCell(cell_ind, viewpoint_ind); // 将该Viewpoint添加到该cell中
         viewpoint_manager->SetViewPointCellInd(viewpoint_ind, cell_ind); // 设置该Viewpoint对应的cell索引
       }
       else
@@ -627,7 +631,7 @@ namespace grid_world_ns
     }
 
     // 遍历临近的所有cell
-    for (const auto &cell_ind : neighbor_cell_indices_)
+    for (const auto& cell_ind : neighbor_cell_indices_)
     {
       if (subspaces_->GetCell(cell_ind).GetStatus() == CellStatus::COVERED_BY_OTHERS)
       {
@@ -643,10 +647,10 @@ namespace grid_world_ns
       int highest_score_viewpoint_ind = -1;
       int highest_score = -1;
 
-      for (const auto &viewpoint_ind : subspaces_->GetCell(cell_ind).GetViewPointIndices()) // 遍历邻近cell中的所有Viewpoint
+      for (const auto& viewpoint_ind : subspaces_->GetCell(cell_ind).GetViewPointIndices()) // 遍历邻近cell中的所有Viewpoint
       {
         MY_ASSERT(viewpoint_manager->IsViewPointCandidate(viewpoint_ind));
-        candidate_count++;                                       // 候选视点数量
+        candidate_count++; // 候选视点数量
         if (viewpoint_manager->ViewPointSelected(viewpoint_ind)) // 如果该Viewpoint被选中
         {
           selected_viewpoint_count++; // Viewpoint被选中数量+1
@@ -657,8 +661,9 @@ namespace grid_world_ns
           continue; // 直接跳过
         }
 
-        int score = viewpoint_manager->GetViewPointCoveredPointNum(viewpoint_ind);                  // 获取该Viewpoint覆盖的surface-->reward
-        int frontier_score = viewpoint_manager->GetViewPointCoveredFrontierPointNum(viewpoint_ind); // 获取该Viewpoint覆盖的边界点数量-->边界reward
+        int score = viewpoint_manager->GetViewPointCoveredPointNum(viewpoint_ind); // 获取该Viewpoint覆盖的surface-->reward
+        int frontier_score = viewpoint_manager->GetViewPointCoveredFrontierPointNum(viewpoint_ind);
+        // 获取该Viewpoint覆盖的边界点数量-->边界reward
 
         // 找到当前cell中reward最高的Viewpoint及其reward值
         if (score > highest_score)
@@ -688,20 +693,23 @@ namespace grid_world_ns
 
       /*cell的状态转换条件*/
       // Exploring to Covered
-      if (subspaces_->GetCell(cell_ind).GetStatus() == CellStatus::EXPLORING && above_frontier_threshold_count < kCellExploringToCoveredThr && above_small_threshold_count < kCellExploringToCoveredThr && selected_viewpoint_count == 0 && candidate_count > 0)
+      if (subspaces_->GetCell(cell_ind).GetStatus() == CellStatus::EXPLORING && above_frontier_threshold_count <
+        kCellExploringToCoveredThr && above_small_threshold_count < kCellExploringToCoveredThr &&
+        selected_viewpoint_count == 0 && candidate_count > 0)
       {
         subspaces_->GetCell(cell_ind).SetStatus(CellStatus::COVERED); //
       }
       // Covered to Exploring
       else if (subspaces_->GetCell(cell_ind).GetStatus() == CellStatus::COVERED &&
-               (above_big_threshold_count >= kCellCoveredToExploringThr || above_frontier_threshold_count >= kCellCoveredToExploringThr))
+        (above_big_threshold_count >= kCellCoveredToExploringThr || above_frontier_threshold_count >=
+          kCellCoveredToExploringThr))
       {
         subspaces_->GetCell(cell_ind).SetStatus(CellStatus::EXPLORING);
         almost_covered_cell_indices_.push_back(cell_ind);
       }
-      // Exploring to Almost covered
+      // Exploring to Almost cover
       else if (subspaces_->GetCell(cell_ind).GetStatus() == CellStatus::EXPLORING && selected_viewpoint_count == 0 &&
-               candidate_count > 0)
+        candidate_count > 0)
       {
         almost_covered_cell_indices_.push_back(cell_ind);
       }
@@ -710,12 +718,14 @@ namespace grid_world_ns
       {
         subspaces_->GetCell(cell_ind).SetStatus(CellStatus::EXPLORING);
         almost_covered_cell_indices_.erase(
-            std::remove(almost_covered_cell_indices_.begin(), almost_covered_cell_indices_.end(), cell_ind), almost_covered_cell_indices_.end());
+          std::remove(almost_covered_cell_indices_.begin(), almost_covered_cell_indices_.end(), cell_ind),
+          almost_covered_cell_indices_.end());
       }
       else if (subspaces_->GetCell(cell_ind).GetStatus() == CellStatus::EXPLORING && candidate_count == 0)
       {
         // First visit
-        if (subspaces_->GetCell(cell_ind).GetVisitCount() == 1 && subspaces_->GetCell(cell_ind).GetGraphNodeIndices().empty())
+        if (subspaces_->GetCell(cell_ind).GetVisitCount() == 1 && subspaces_->GetCell(cell_ind).GetGraphNodeIndices().
+                                                                              empty())
         {
           subspaces_->GetCell(cell_ind).SetStatus(CellStatus::COVERED);
         }
@@ -723,8 +733,9 @@ namespace grid_world_ns
         {
           geometry_msgs::Point cell_position = subspaces_->GetCell(cell_ind).GetPosition();
           double xy_dist_to_robot =
-              misc_utils_ns::PointXYDist<geometry_msgs::Point, geometry_msgs::Point>(cell_position, robot_position_); // 水平欧式距离
-          double z_dist_to_robot = std::abs(cell_position.z - robot_position_.z);                                     // 垂直欧式距离
+            misc_utils_ns::PointXYDist<geometry_msgs::Point, geometry_msgs::Point>(cell_position, robot_position_);
+          // 水平欧式距离
+          double z_dist_to_robot = std::abs(cell_position.z - robot_position_.z); // 垂直欧式距离
           if (xy_dist_to_robot < kCellSize && z_dist_to_robot < kCellHeight * 0.8)
           {
             subspaces_->GetCell(cell_ind).SetStatus(CellStatus::COVERED); // 如果该cell在机器人附近，则设置为COVERED
@@ -746,51 +757,52 @@ namespace grid_world_ns
     }
 
     // 维护一个semi-explored状态的cell列表，按照频次回调更新其状态转换概率？如下：semi->exploring, exploring->semi?
-    for (const auto &cell_ind : semi_explored_cell_indices_)
+    for (const auto& cell_ind : semi_explored_cell_indices_)
     {
       // todo,获取状态转换概率
       if (GetSemiCellTransitionProbability(cell_ind) > kCellSemiExploredToExploringThr)
       {
         subspaces_->GetCell(cell_ind).SetStatus(CellStatus::EXPLORING);
         semi_explored_cell_indices_.erase(
-            std::remove(semi_explored_cell_indices_.begin(), semi_explored_cell_indices_.end(), cell_ind),
-            semi_explored_cell_indices_.end());
+          std::remove(semi_explored_cell_indices_.begin(), semi_explored_cell_indices_.end(), cell_ind),
+          semi_explored_cell_indices_.end());
       }
     }
 
     // 对于处于Almost covered状态的cell，如果该cell未在neighbor_cell_indices_中，则设置为Covered
-    for (const auto &cell_ind : almost_covered_cell_indices_)
+    for (const auto& cell_ind : almost_covered_cell_indices_)
     {
-      if (std::find(neighbor_cell_indices_.begin(), neighbor_cell_indices_.end(), cell_ind) == neighbor_cell_indices_.end())
+      if (std::find(neighbor_cell_indices_.begin(), neighbor_cell_indices_.end(), cell_ind) == neighbor_cell_indices_.
+        end())
       {
         subspaces_->GetCell(cell_ind).SetStatus(CellStatus::COVERED);
         // 移除状态已经改变的cell
         almost_covered_cell_indices_.erase(
-            std::remove(almost_covered_cell_indices_.begin(), almost_covered_cell_indices_.end(), cell_ind), // 移到末尾
-            almost_covered_cell_indices_.end());                                                             // 抹除最后的元素
+          std::remove(almost_covered_cell_indices_.begin(), almost_covered_cell_indices_.end(), cell_ind), // 移到末尾
+          almost_covered_cell_indices_.end()); // 抹除最后的元素
       }
     }
   }
 
   // todo：实现转换函数,求取转换概率
-  double GridWorld::GetSemiCellTransitionProbability(const int &cell_ind)
+  double GridWorld::GetSemiCellTransitionProbability(const int& cell_ind)
   {
     return 0.0;
   }
 
   // 求解全局引导路径
   exploration_path_ns::ExplorationPath GridWorld::SolveGlobalTSP(
-      const std::shared_ptr<viewpoint_manager_ns::ViewPointManager> &viewpoint_manager,
-      std::vector<int> &ordered_cell_indices, const std::unique_ptr<keypose_graph_ns::KeyposeGraph> &keypose_graph)
+    const std::shared_ptr<viewpoint_manager_ns::ViewPointManager>& viewpoint_manager,
+    std::vector<int>& ordered_cell_indices, const std::unique_ptr<keypose_graph_ns::KeyposeGraph>& keypose_graph)
   {
     /****** Get the node on keypose graph associated with the robot position *****/
     /*step1: 获取与机器人位置相关联的keypose_graph中的节点*/
-    double min_dist_to_robot = DBL_MAX;
+    auto min_dist_to_robot = DBL_MAX;
     geometry_msgs::Point global_path_robot_position = robot_position_;
     Eigen::Vector3d eigen_robot_position(robot_position_.x, robot_position_.y, robot_position_.z);
     // Get nearest connected node
     int closest_node_ind = 0;
-    double closest_node_dist = DBL_MAX;
+    auto closest_node_dist = DBL_MAX;
     // 获取keypose_graph中与机器人位置最接近的节点索引和距离
     keypose_graph->GetClosestConnectedNodeIndAndDistance(robot_position_, closest_node_ind, closest_node_dist);
     if (closest_node_dist < kCellSize / 2 && closest_node_ind >= 0 && closest_node_ind < keypose_graph->GetNodeNum())
@@ -806,9 +818,8 @@ namespace grid_world_ns
     {
       // ROS_WARN("GridWorld::SolveGlobalTSP: using neighbor cell roadmap connection points for robot position");
       // 遍历临近cell与roadmap的连接点，找到一个最接近机器人位置的连接点，做为全局tsp的机器人位置
-      for (int i = 0; i < neighbor_cell_indices_.size(); i++)
+      for (int cell_ind : neighbor_cell_indices_)
       {
-        int cell_ind = neighbor_cell_indices_[i];
         if (subspaces_->GetCell(cell_ind).IsRoadmapConnectionPointSet())
         {
           Eigen::Vector3d roadmap_connection_point = subspaces_->GetCell(cell_ind).GetRoadmapConnectionPoint();
@@ -839,8 +850,9 @@ namespace grid_world_ns
       if (subspaces_->GetCell(i).GetStatus() == CellStatus::EXPLORING)
       {
         // 如果该cell不在neighbor_cell_indices_中，或者该cell的viewpoint_indices为空且visit_count大于1
-        if (std::find(neighbor_cell_indices_.begin(), neighbor_cell_indices_.end(), i) == neighbor_cell_indices_.end() ||
-            (subspaces_->GetCell(i).GetViewPointIndices().empty() && subspaces_->GetCell(i).GetVisitCount() > 1))
+        if (std::find(neighbor_cell_indices_.begin(), neighbor_cell_indices_.end(), i) == neighbor_cell_indices_.end()
+          ||
+          (subspaces_->GetCell(i).GetViewPointIndices().empty() && subspaces_->GetCell(i).GetVisitCount() > 1))
         {
           if (!use_keypose_graph_ || keypose_graph == nullptr || keypose_graph->GetNodeNum() == 0)
           {
@@ -866,13 +878,13 @@ namespace grid_world_ns
             else // 如果不可达，则遍历该cell的keypose_graph节点，找到最接近连接点的节点
             {
               // Check all the keypose graph nodes within this cell to see if there are any connected nodes
-              double min_dist = DBL_MAX;
+              auto min_dist = DBL_MAX;
               double min_dist_node_ind = -1;
-              for (const auto &node_ind : subspaces_->GetCell(i).GetGraphNodeIndices())
+              for (const auto& node_ind : subspaces_->GetCell(i).GetGraphNodeIndices())
               {
                 geometry_msgs::Point node_position = keypose_graph->GetNodePosition(node_ind);
                 double dist = misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
-                    node_position, connection_point_geo);
+                  node_position, connection_point_geo);
                 if (dist < min_dist)
                 {
                   min_dist = dist;
@@ -927,12 +939,14 @@ namespace grid_world_ns
         //
         if (return_home_path.poses.size() >= 2)
         {
-          global_path.FromPath(return_home_path);                                  // 将return_home_path(nav_msgs::Path)转换为exploration_path_ns::ExplorationPath类型
+          global_path.FromPath(return_home_path);
+          // 将return_home_path(nav_msgs::Path)转换为exploration_path_ns::ExplorationPath类型
           global_path.nodes_.front().type_ = exploration_path_ns::NodeType::ROBOT; // 将第一个路径点设置为ROBOT类型
 
           for (int i = 1; i < global_path.nodes_.size() - 1; i++)
           {
-            global_path.nodes_[i].type_ = exploration_path_ns::NodeType::GLOBAL_VIA_POINT; // 将中间路径点设置为GLOBAL_VIA_POINT类型
+            global_path.nodes_[i].type_ = exploration_path_ns::NodeType::GLOBAL_VIA_POINT;
+            // 将中间路径点设置为GLOBAL_VIA_POINT类型
           }
           global_path.nodes_.back().type_ = exploration_path_ns::NodeType::HOME; // 将最后一个路径点设置为HOME类型
 
@@ -955,12 +969,12 @@ namespace grid_world_ns
 
     // Put the current robot position in the end
     exploring_cell_positions.push_back(global_path_robot_position); // 将当前机器人位置加入exploring_cell_positions的末尾
-    exploring_cell_indices.push_back(-1);                           // -1的索引表示当前机器人
+    exploring_cell_indices.push_back(-1); // -1的索引表示当前机器人
 
     /******* Construct the distance matrix *****/
     std::vector<std::vector<int>> distance_matrix(exploring_cell_positions.size(),
                                                   std::vector<int>(exploring_cell_positions.size(), 0)); // 初始化距离矩阵为0矩阵
-    for (int i = 0; i < exploring_cell_positions.size(); i++)                                            // 遍历exploring_cell_positions的所有位置点
+    for (int i = 0; i < exploring_cell_positions.size(); i++) // 遍历exploring_cell_positions的所有位置点
     {
       for (int j = 0; j < i; j++)
       {
@@ -969,8 +983,8 @@ namespace grid_world_ns
         {
           // Use straight line connection直线连接两点-->欧式距离
           distance_matrix[i][j] =
-              static_cast<int>(10 * misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
-                                        exploring_cell_positions[i], exploring_cell_positions[j]));
+            static_cast<int>(10 * misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
+              exploring_cell_positions[i], exploring_cell_positions[j]));
         }
         else // 若存在keypose_graph，则求取在keypose_graph中两点之间的最短距离
         {
@@ -978,8 +992,9 @@ namespace grid_world_ns
           nav_msgs::Path path_tmp;
           //
           distance_matrix[i][j] =
-              static_cast<int>(10 * keypose_graph->GetShortestPath(exploring_cell_positions[i],
-                                                                   exploring_cell_positions[j], false, path_tmp, false)); // 获取最短路径*10
+            static_cast<int>(10 * keypose_graph->GetShortestPath(exploring_cell_positions[i],
+                                                                 exploring_cell_positions[j], false, path_tmp,
+                                                                 false)); // 获取最短路径*10
         }
       }
     }
@@ -998,7 +1013,7 @@ namespace grid_world_ns
     data_model.depot = exploring_cell_positions.size() - 1; // 填充tsp
 
     tsp_solver_ns::TSPSolver tsp_solver(data_model); // 实例化tsp_solver
-    tsp_solver.Solve();                              // 求解tsp
+    tsp_solver.Solve(); // 求解tsp
     std::vector<int> node_index;
     tsp_solver.getSolutionNodeIndex(node_index, false); // 获取解，存储到node_index中
 
@@ -1013,15 +1028,14 @@ namespace grid_world_ns
     if (!use_keypose_graph_ || keypose_graph == nullptr || keypose_graph->GetNodeNum() == 0)
     {
       // 直接直线连接
-      for (int i = 0; i < node_index.size(); i++)
+      for (int cell_ind : node_index)
       {
-        int cell_ind = node_index[i];
         geometry_msgs::PoseStamped pose;
         pose.pose.position = exploring_cell_positions[cell_ind];
         exploration_path_ns::Node node(exploring_cell_positions[cell_ind],
                                        exploration_path_ns::NodeType::GLOBAL_VIEWPOINT);
         node.global_subspace_index_ = exploring_cell_indices[cell_ind];
-        global_path.Append(node);                                         // 全局路径
+        global_path.Append(node); // 全局路径
         ordered_cell_indices.push_back(exploring_cell_indices[cell_ind]); // 每个cell的访问顺序
       }
     }
@@ -1057,7 +1071,7 @@ namespace grid_world_ns
         }
 
         node.global_subspace_index_ = exploring_cell_indices[cur_ind]; // 该node的子空间索引
-        global_path.Append(node);                                      // 将此个节点加入全局路径
+        global_path.Append(node); // 将此个节点加入全局路径
 
         ordered_cell_indices.push_back(exploring_cell_indices[cur_ind]); // 每个cell的访问顺序
 
@@ -1085,14 +1099,14 @@ namespace grid_world_ns
     return global_path; // 返回全局路径
   }
 
-  int GridWorld::GetCellKeyposeID(int cell_ind)
+  int GridWorld::GetCellKeyposeID(const int cell_ind) const
   {
     MY_ASSERT(subspaces_->InRange(cell_ind));
     return subspaces_->GetCell(cell_ind).GetKeyposeID();
   }
 
   // 获取不在邻近且状态为EXPLORING的cell的的视点位置
-  void GridWorld::GetCellViewPointPositions(std::vector<Eigen::Vector3d> &viewpoint_positions)
+  void GridWorld::GetCellViewPointPositions(std::vector<Eigen::Vector3d>& viewpoint_positions)
   {
     viewpoint_positions.clear();
     for (int i = 0; i < subspaces_->GetCellNumber(); i++)
@@ -1108,19 +1122,20 @@ namespace grid_world_ns
     }
   }
 
-  void GridWorld::AddPathsInBetweenCells(const std::shared_ptr<viewpoint_manager_ns::ViewPointManager> &viewpoint_manager,
-                                         const std::unique_ptr<keypose_graph_ns::KeyposeGraph> &keypose_graph)
+  void GridWorld::AddPathsInBetweenCells(
+    const std::shared_ptr<viewpoint_manager_ns::ViewPointManager>& viewpoint_manager,
+    const std::unique_ptr<keypose_graph_ns::KeyposeGraph>& keypose_graph) const
   {
     // Determine the connection point in each cell确定每个cell的连接点
-    // 遍历每个邻近cell，去除存在碰撞的连接点，并寻找该cell中离其中心最近的viewpoint,将该点作为与全局roadmap的连接点
-    for (int i = 0; i < neighbor_cell_indices_.size(); i++)
+    // 遍历每个邻近cell，去除存在碰撞的连接点，并寻找该cell中离其中心最近的viewpoint, 将该点作为与全局roadmap的连接点
+    for (int cell_ind : neighbor_cell_indices_)
     {
-      int cell_ind = neighbor_cell_indices_[i]; // 获取cell索引
+      // 获取cell索引
       // 如果cell已经设置与roadmap的连接点，且连接点 不在局部规划区域或者该连接点存在碰撞，则清除该cell连接的其它cell索引
       if (subspaces_->GetCell(cell_ind).IsRoadmapConnectionPointSet())
       {
         if (viewpoint_manager->InLocalPlanningHorizon(subspaces_->GetCell(cell_ind).GetRoadmapConnectionPoint()) &&
-            !viewpoint_manager->InCollision(subspaces_->GetCell(cell_ind).GetRoadmapConnectionPoint()))
+          !viewpoint_manager->InCollision(subspaces_->GetCell(cell_ind).GetRoadmapConnectionPoint()))
         {
           continue;
         }
@@ -1134,16 +1149,16 @@ namespace grid_world_ns
       // 如果该cell内的视点不为空
       if (!candidate_viewpoint_indices.empty())
       {
-        double min_dist = DBL_MAX;                                           //
+        auto min_dist = DBL_MAX; //
         double min_dist_viewpoint_ind = candidate_viewpoint_indices.front(); // 初始化离cell中心最短的距离和视点索引
 
         // 遍历该cell内的候选视点，找到距离cell中心最短的视点和距离
-        for (const auto &viewpoint_ind : candidate_viewpoint_indices)
+        for (const auto& viewpoint_ind : candidate_viewpoint_indices)
         {
           geometry_msgs::Point viewpoint_position = viewpoint_manager->GetViewPointPosition(viewpoint_ind); // 获取该视点的位置
           // 计算该视点与cell中心的距离
           double dist_to_cell_center = misc_utils_ns::PointXYDist<geometry_msgs::Point, geometry_msgs::Point>(
-              viewpoint_position, subspaces_->GetCell(cell_ind).GetPosition());
+            viewpoint_position, subspaces_->GetCell(cell_ind).GetPosition());
 
           if (dist_to_cell_center < min_dist)
           {
@@ -1153,35 +1168,37 @@ namespace grid_world_ns
         }
 
         geometry_msgs::Point min_dist_viewpoint_position =
-            viewpoint_manager->GetViewPointPosition(min_dist_viewpoint_ind); // 获取距离该cell中心最近的视点的位置
+          viewpoint_manager->GetViewPointPosition(min_dist_viewpoint_ind); // 获取距离该cell中心最近的视点的位置
 
         subspaces_->GetCell(cell_ind).SetRoadmapConnectionPoint(
-            Eigen::Vector3d(min_dist_viewpoint_position.x, min_dist_viewpoint_position.y, min_dist_viewpoint_position.z)); // 设置该视点位置为该cell与roadmap的连接点
+          Eigen::Vector3d(min_dist_viewpoint_position.x, min_dist_viewpoint_position.y, min_dist_viewpoint_position.z));
+        // 设置该视点位置为该cell与roadmap的连接点
 
         subspaces_->GetCell(cell_ind).SetRoadmapConnectionPointSet(true); // 反馈已将该cell与roadmap的连接
       }
     }
 
     // 再次遍历邻近的每个cell
-    for (int i = 0; i < neighbor_cell_indices_.size(); i++)
+    for (int from_cell_ind : neighbor_cell_indices_)
     {
-      int from_cell_ind = neighbor_cell_indices_[i];
       int viewpoint_num = subspaces_->GetCell(from_cell_ind).GetViewPointIndices().size(); // 获取该cell内的视点数量
-      if (viewpoint_num == 0)                                                              // 如果该cell内的视点为空，则跳过该cell
+      if (viewpoint_num == 0) // 如果该cell内的视点为空，则跳过该cell
       {
         continue;
       }
-      std::vector<int> from_cell_connected_cell_indices = subspaces_->GetCell(from_cell_ind).GetConnectedCellIndices(); // 获取与该cell存在连接的cell索引集合
+      std::vector<int> from_cell_connected_cell_indices = subspaces_->GetCell(from_cell_ind).GetConnectedCellIndices();
+      // 获取与该cell存在连接的cell索引集合
       Eigen::Vector3d from_cell_roadmap_connection_position =
-          subspaces_->GetCell(from_cell_ind).GetRoadmapConnectionPoint(); // 获取该cell与roadmap的连接点位置
+        subspaces_->GetCell(from_cell_ind).GetRoadmapConnectionPoint(); // 获取该cell与roadmap的连接点位置
 
-      if (!viewpoint_manager->InLocalPlanningHorizon(from_cell_roadmap_connection_position)) // 如果该连接点位置在局部规划区域外，则跳过该cell
+      if (!viewpoint_manager->InLocalPlanningHorizon(from_cell_roadmap_connection_position))
+      // 如果该连接点位置在局部规划区域外，则跳过该cell
       {
         continue;
       }
 
       Eigen::Vector3i from_cell_sub = subspaces_->Ind2Sub(from_cell_ind); // ind是cell的一维全局索引，sub为cell的三维索引
-      std::vector<int> nearby_cell_indices;                               //
+      std::vector<int> nearby_cell_indices; //
 
       for (int x = -1; x <= 1; x++)
       {
@@ -1195,7 +1212,7 @@ namespace grid_world_ns
               if (subspaces_->InRange(neighbor_sub)) // 如果该cell在栅格空间内，则添加到nearby_cell_indices中
               {
                 int neighbor_ind = subspaces_->Sub2Ind(neighbor_sub); // 获取该cell的一维全局索引
-                nearby_cell_indices.push_back(neighbor_ind);          // 添加到nearby_cell_indices中
+                nearby_cell_indices.push_back(neighbor_ind); // 添加到nearby_cell_indices中
               }
             }
           }
@@ -1203,10 +1220,10 @@ namespace grid_world_ns
       }
 
       // 遍历该cell的相邻cell
-      for (int j = 0; j < nearby_cell_indices.size(); j++)
+      for (int to_cell_ind : nearby_cell_indices)
       {
-        int to_cell_ind = nearby_cell_indices[j]; //
-        // Just for debug
+        //
+        // For debug
         if (!AreNeighbors(from_cell_ind, to_cell_ind)) // 再判断是否为相邻
         {
           ROS_ERROR_STREAM("Cell " << from_cell_ind << " and " << to_cell_ind << " are not neighbors");
@@ -1217,17 +1234,20 @@ namespace grid_world_ns
           continue;
         }
 
-        std::vector<int> to_cell_connected_cell_indices = subspaces_->GetCell(to_cell_ind).GetConnectedCellIndices(); // 获取与该邻近cell存在连接的cell索引集合
+        std::vector<int> to_cell_connected_cell_indices = subspaces_->GetCell(to_cell_ind).GetConnectedCellIndices();
+        // 获取与该邻近cell存在连接的cell索引集合
         Eigen::Vector3d to_cell_roadmap_connection_position =
-            subspaces_->GetCell(to_cell_ind).GetRoadmapConnectionPoint();                    // 获取该邻近cell与roadmap的连接点位置
-        if (!viewpoint_manager->InLocalPlanningHorizon(to_cell_roadmap_connection_position)) // 如果该连接点位置在局部规划区域外，则跳过该邻近cell
+          subspaces_->GetCell(to_cell_ind).GetRoadmapConnectionPoint(); // 获取该邻近cell与roadmap的连接点位置
+        if (!viewpoint_manager->InLocalPlanningHorizon(to_cell_roadmap_connection_position))
+        // 如果该连接点位置在局部规划区域外，则跳过该邻近cell
         {
           continue;
         }
 
         // TODO: change to: if there is already a direct keypose graph connection then continue
         bool connected_in_keypose_graph = HasDirectKeyposeGraphConnection(
-            keypose_graph, from_cell_roadmap_connection_position, to_cell_roadmap_connection_position); // 判断该cell与该邻近cell之间在keypose_graph中是否已经存在直接连接
+          keypose_graph, from_cell_roadmap_connection_position,
+          to_cell_roadmap_connection_position); // 判断该cell与该邻近cell之间在keypose_graph中是否已经存在直接连接
 
         // bool forward_connected =
         //     std::find(from_cell_connected_cell_indices.begin(), from_cell_connected_cell_indices.end(), to_cell_ind) !=
@@ -1242,13 +1262,13 @@ namespace grid_world_ns
         }
 
         nav_msgs::Path path_in_between = viewpoint_manager->GetViewPointShortestPath(
-            from_cell_roadmap_connection_position, to_cell_roadmap_connection_position); // 获取该cell与该邻近cell之间的最短路径
+          from_cell_roadmap_connection_position, to_cell_roadmap_connection_position); // 获取该cell与该邻近cell之间的最短路径
 
         if (PathValid(path_in_between, from_cell_ind, to_cell_ind)) // 若该路径有效
         {
           path_in_between = misc_utils_ns::SimplifyPath(path_in_between); // 将相连路径简化
 
-          for (auto &pose : path_in_between.poses)
+          for (auto& pose : path_in_between.poses)
           {
             pose.pose.orientation.w = -1; //?
           }
@@ -1278,13 +1298,14 @@ namespace grid_world_ns
   }
 
   // 判断路径是否有效？
-  bool GridWorld::PathValid(const nav_msgs::Path &path, int from_cell_ind, int to_cell_ind)
+  bool GridWorld::PathValid(const nav_msgs::Path& path, int from_cell_ind, const int to_cell_ind) const
   {
     if (path.poses.size() >= 2)
     {
-      for (const auto &pose : path.poses)
+      for (const auto& pose : path.poses)
       {
-        int cell_ind = GetCellInd(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z); // 该路径点应在起点cell或终点cell之中？
+        const int cell_ind = GetCellInd(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
+        // 该路径点应在起点cell或终点cell之中？
         if (cell_ind != from_cell_ind && cell_ind != to_cell_ind)
         {
           return false;
@@ -1299,9 +1320,9 @@ namespace grid_world_ns
   }
 
   // 在keypose_graph中能否搜索到从start_position到goal_position之间的路径，路径长度不超过max_path_length(两倍cell边长)
-  bool GridWorld::HasDirectKeyposeGraphConnection(const std::unique_ptr<keypose_graph_ns::KeyposeGraph> &keypose_graph,
-                                                  const Eigen::Vector3d &start_position,
-                                                  const Eigen::Vector3d &goal_position)
+  bool GridWorld::HasDirectKeyposeGraphConnection(const std::unique_ptr<keypose_graph_ns::KeyposeGraph>& keypose_graph,
+                                                  const Eigen::Vector3d& start_position,
+                                                  const Eigen::Vector3d& goal_position) const
   {
     // 查看起始位置和目标点位置是否有节点在keypose_graph中
     if (!keypose_graph->HasNode(start_position) || !keypose_graph->HasNode(goal_position))
@@ -1324,8 +1345,9 @@ namespace grid_world_ns
     double max_path_length = kCellSize * 2;
     nav_msgs::Path path;
     // 在keypose_graph中能否搜索到从start_position到goal_position之间的路径，路径长度不超过max_path_length即两倍cell边长
-    bool found_path =
-        keypose_graph->GetShortestPathWithMaxLength(geo_start_position, geo_goal_position, max_path_length, false, path); //
+    const bool found_path =
+      keypose_graph->GetShortestPathWithMaxLength(geo_start_position, geo_goal_position, max_path_length, false, path);
+    //
     return found_path;
   }
 } // namespace grid_world_ns
