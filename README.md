@@ -143,15 +143,25 @@ The predictor module implements a pedestrian trajectory prediction system using 
 
 ```mermaid
 graph TD
-    A[Ego Input\nTarget pedestrian velocity] --> B[Ego LSTM\n2->32]
-    C[Social Input\nOther pedestrians ] --> D[APG FC\n72->128]
-    D --> E[APG LSTM\n128->128]
-    F[Map Input\nLocal occupancy grid] --> G[Autoencoder\nPre-trained CNN]
-    G --> H[Map LSTM\n64->256]
-    B --> I[Concat LSTM\n416->512]
+    A[Ego Input
+    Target pedestrian velocity] --> B[Ego LSTM
+    2->32]
+    C[Social Input
+    Other pedestrians ] --> D[APG FC
+    72->128]
+    D --> E[APG LSTM
+    128->128]
+    F[Map Input
+    Local occupancy grid] --> G[Autoencoder
+    Pre-trained CNN]
+    G --> H[Map LSTM
+    64->256]
+    B --> I[Concat LSTM
+    416->512]
     E --> I
     H --> I
-    I --> J[Linear Layers\n512->256->30]
+    I --> J[Linear Layers
+    512->256->30]
     
     subgraph "Input Features"
         A
@@ -172,7 +182,8 @@ graph TD
         J
     end
     
-    J --> K[Predicted Trajectory\n15 timesteps x 2D velocity]
+    J --> K[Predicted Trajectory
+    15 timesteps x 2D velocity]
     
     style A fill:#e1f5fe
     style B fill:#f3e5f5
