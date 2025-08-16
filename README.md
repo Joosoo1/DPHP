@@ -1,4 +1,4 @@
-# DPHP Planner (Dual Path Hybrid Planner)
+# DPHP Planner
 
 DPHP is a robotic exploration planning system that combines global and local path planning strategies for efficient environment exploration. This system is designed for autonomous robots operating in unknown environments, using sensor data to build maps and plan optimal exploration paths.
 
@@ -175,7 +175,6 @@ Key parameters can be configured in the launch files:
 
 ## Contributing
 
-This project is maintained by Joosoo at BUCT (joosoo@buct.edu.cn). Contributions are welcome through standard GitHub workflows.
 
 ## License
 
