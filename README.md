@@ -13,7 +13,7 @@ The DPHP Planner implements a dual-path hybrid approach for robotic exploration:
 The system consists of three main packages:
 
 1. **explorer**: Core exploration planning implementation
-2. **predictor**: (Description needed - appears to be for prediction functionality)
+2. **predictor**: Pedestrian trajectory prediction module using LSTM-based neural networks
 3. **visualization_tools**: Visualization components for debugging and monitoring
 
 ### Explorer Package Structure
@@ -107,6 +107,95 @@ The core innovation of DPHP is its dual-path approach:
 
 These paths are integrated to produce a smooth, executable trajectory.
 
+## Predictor Module
+
+The predictor module implements a pedestrian trajectory prediction system using LSTM-based neural networks. It is designed to predict the future trajectories of pedestrians in the environment, which can be used for safer robot navigation.
+
+### Network Architecture
+
+```mermaid
+graph TD
+    A[Ego Input\nTarget pedestrian velocity] --> B[Ego LSTM\n2->32]
+    C[Social Input\nOther pedestrians ] --> D[APG FC\n72->128]
+    D --> E[APG LSTM\n128->128]
+    F[Map Input\nLocal occupancy grid] --> G[Autoencoder\nPre-trained CNN]
+    G --> H[Map LSTM\n64->256]
+    B --> I[Concat LSTM\n416->512]
+    E --> I
+    H --> I
+    I --> J[Linear Layers\n512->256->30]
+    
+    subgraph "Input Features"
+        A
+        C
+        F
+    end
+    
+    subgraph "Feature Extraction"
+        B
+        D
+        E
+        G
+        H
+    end
+    
+    subgraph "Feature Fusion and Prediction"
+        I
+        J
+    end
+    
+    J --> K[Predicted Trajectory\n15 timesteps x 2D velocity]
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style C fill:#e1f5fe
+    style D fill:#f3e5f5
+    style E fill:#f3e5f5
+    style F fill:#e1f5fe
+    style G fill:#fff3e0
+    style H fill:#f3e5f5
+    style I fill:#f1f8e9
+    style J fill:#f1f8e9
+    style K fill:#ffebee
+```
+
+The predictor network consists of several specialized components:
+
+1. **Ego LSTM**: Processes the target pedestrian's velocity information (2D input -> 32D hidden state)
+
+2. **Social Processing**:
+   - APG FC Layer: Converts Angular Pedestrian Grid representation (72 bins) to dense features (72 -> 128)
+   - APG LSTM: Processes temporal information of other pedestrians (128 -> 128)
+
+3. **Map Processing**:
+   - Pre-trained Autoencoder: Encodes local occupancy grids using a CNN architecture
+   - Map LSTM: Processes temporal map information (64 -> 256)
+
+4. **Feature Fusion**:
+   - Concat LSTM: Combines all features (32+128+256 = 416 -> 512)
+
+5. **Prediction Head**:
+   - Linear Layers: Final prediction layers (512 -> 256 -> 30) to predict 15 future timesteps with 2D velocity each
+
+### Training Strategy
+
+The predictor uses several advanced training techniques:
+
+1. **EWC (Elastic Weight Consolidation)**: Prevents catastrophic forgetting when training on new datasets
+2. **Coreset Maintenance**: Keeps a representative set of examples from previous tasks
+3. **Multi-task Learning**: Can learn from multiple datasets while preserving knowledge from previous ones
+4. **Coordinate Rotation**: Rotates the scene based on pedestrian heading for better generalization
+
+### Input Features
+
+1. **Ego Input**: Target pedestrian's velocity (2D)
+2. **Social Input**: Other pedestrians represented as Angular Pedestrian Grid (72 bins)
+3. **Map Input**: Local occupancy grid processed through a pre-trained autoencoder
+
+### Output
+
+Predicted trajectory for the next 15 timesteps (3 seconds at 5Hz) as 2D velocity vectors.
+
 ## Key Components
 
 ### SensorCoveragePlanner3D
@@ -148,6 +237,7 @@ Global path optimization:
 - OpenCV
 - Google OR-Tools
 - GNU Scientific Library (GSL)
+- PyTorch (for predictor module)
 
 ## Usage
 
