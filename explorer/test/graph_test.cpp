@@ -2,7 +2,7 @@
 #include <Eigen/Core>
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseStamped.h>
-#include "graph/graph.h"
+#include "graph.h"
 
 using namespace explorer;
 

@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <ros/ros.h>
-#include <grid_world/grid_world.h>
+#include "grid_world.h"
 #include <memory>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -374,7 +374,7 @@ TEST_F(GridWorldComprehensiveTest, SemiExploredCellTest) {
     std::vector<Eigen::Vector3d> semi_dynamic_frontier_positions;
     semi_dynamic_frontier_positions.push_back(Eigen::Vector3d(1.0, 1.0, 0.0));
     
-    EXPECT_NO_THROW(grid_world_->getSemiExploredCellindices(semi_dynamic_frontier_positions));
+    EXPECT_NO_THROW(grid_world_->getSemiExploredCellIndices(semi_dynamic_frontier_positions));
 }
 
 // Test path validity checking

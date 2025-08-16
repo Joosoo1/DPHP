@@ -1,6 +1,10 @@
 #include <gtest/gtest.h>
+#include <Eigen/Core>
 #include <geometry_msgs/Point.h>
-#include "planning_env/planning_env.h"
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include "planning_env.h"
+#include "grid_world.h"
 
 using namespace planning_env_ns;
 

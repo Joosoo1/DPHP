@@ -4,10 +4,12 @@
  */
 
 #include <gtest/gtest.h>
-#include <viewpoint/viewpoint.h>
-#include <memory>
+#include <Eigen/Core>
+#include <geometry_msgs/Point.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include "viewpoint.h"
+#include "lidar_model.h"
 
 class ViewPointComprehensiveTest : public ::testing::Test {
 protected:

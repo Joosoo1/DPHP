@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <vector>
-#include "tsp_solver/tsp_solver.h"
+#include "tsp_solver.h"
 
 using namespace tsp_solver_ns;
 

@@ -49,6 +49,10 @@ find_package(GTest REQUIRED)
 # Set OR-Tools paths
 set(OR_TOOLS_ROOT ${PROJECT_SOURCE_DIR}/or-tools)
 set(OR_TOOLS_INCLUDE_DIRS ${OR_TOOLS_ROOT}/include)
+# Include absl headers for OR-Tools
+include_directories(${OR_TOOLS_ROOT}/include)
+link_directories(${OR_TOOLS_ROOT}/lib)
+
 set(OR_TOOLS_LIBRARIES
         ${OR_TOOLS_ROOT}/lib/libortools.so
         ${OR_TOOLS_ROOT}/lib/libprotobuf.so
@@ -68,6 +72,7 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 link_directories(${OR_TOOLS_ROOT}/lib)
 
 # Include project header files
+include_directories(include/explorer)
 include_directories(include)
 include_directories(or-tools/include)
 
@@ -117,27 +122,24 @@ catkin_package(
 
 # Build explorer library
 add_library(${PROJECT_NAME}
-        src/exploration_path/exploration_path.cpp
-        src/explorer_visualizer/explorer_visualizer.cpp
-        src/graph/graph.cpp
-        src/graph/graph_refactored.cpp
-        src/grid_world/grid_world.cpp
-        src/keypose_graph/keypose_graph.cpp
-        src/lidar_model/lidar_model.cpp
-        src/local_coverage_planner/local_coverage_planner.cpp
-        src/navigation_boundary_publisher/navigationBoundary.cpp
-        src/planning_env/planning_env.cpp
-        src/pointcloud_manager/pointcloud_manager.cpp
-        src/rolling_grid/rolling_grid.cpp
-        src/rolling_occupancy_grid/rolling_occupancy_grid.cpp
-        src/sensor_coverage_planner/sensor_coverage_planner_ground.cpp
-        src/tsp_solver/tsp_solver.cpp
-        src/tsp_solver/tsp_solver_refactored.cpp
-        src/utils/misc_utils.cpp
-        src/utils/pointcloud_utils.cpp
-        src/viewpoint/viewpoint.cpp
-        src/viewpoint/viewpoint_refactored.cpp
-        src/viewpoint_manager/viewpoint_manager.cpp
+        src/exploration_path.cpp
+        src/explorer_visualizer.cpp
+        src/graph.cpp
+        src/grid_world.cpp
+        src/keypose_graph.cpp
+        src/lidar_model.cpp
+        src/local_coverage_planner.cpp
+        src/navigationBoundary.cpp
+        src/planning_env.cpp
+        src/pointcloud_manager.cpp
+        src/rolling_grid.cpp
+        src/rolling_occupancy_grid.cpp
+        src/sensor_coverage_planner_ground.cpp
+        src/tsp_solver.cpp
+        src/misc_utils.cpp
+        src/pointcloud_utils.cpp
+        src/viewpoint.cpp
+        src/viewpoint_manager.cpp
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -152,7 +154,7 @@ target_link_libraries(${PROJECT_NAME}
 
 # Explorer node
 add_executable(explorer_node
-        src/explorer_node/explorer_node.cpp)
+        src/explorer_node.cpp)
 target_link_libraries(explorer_node
         ${PROJECT_NAME}
         ${catkin_LIBRARIES}
@@ -216,36 +218,36 @@ target_link_libraries(explorer_node
 ## Add gtest based cpp test target and link libraries
 if (CATKIN_ENABLE_TESTING)
     catkin_add_gtest(graph_test test/graph_test.cpp)
-    target_link_libraries(graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+    target_link_libraries(graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
 
     catkin_add_gtest(tsp_solver_test test/tsp_solver_test.cpp)
-    target_link_libraries(tsp_solver_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main ${OR_TOOLS_LIBRARIES})
+    target_link_libraries(tsp_solver_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main ${OR_TOOLS_LIBRARIES})
 
     catkin_add_gtest(keypose_graph_test test/keypose_graph_test.cpp)
-    target_link_libraries(keypose_graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+    target_link_libraries(keypose_graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
 
     catkin_add_gtest(exploration_path_test test/exploration_path_test.cpp)
-    target_link_libraries(exploration_path_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+    target_link_libraries(exploration_path_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
 
     catkin_add_gtest(planning_env_test test/planning_env_test.cpp)
-    target_link_libraries(planning_env_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+    target_link_libraries(planning_env_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
 
     # 添加集成测试
     catkin_add_gtest(explorer_integration_test test/explorer_integration_test.cpp)
-    target_link_libraries(explorer_integration_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+    target_link_libraries(explorer_integration_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
 
 
     # 添加视点管理器测试
     catkin_add_gtest(viewpoint_manager_test test/viewpoint_manager_test.cpp)
-    target_link_libraries(viewpoint_manager_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+    target_link_libraries(viewpoint_manager_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
 
     # 添加栅格世界综合测试
     catkin_add_gtest(grid_world_comprehensive_test test/grid_world_comprehensive_test.cpp)
-    target_link_libraries(grid_world_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+    target_link_libraries(grid_world_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
 
     # 添加视点综合测试
     catkin_add_gtest(viewpoint_comprehensive_test test/viewpoint_comprehensive_test.cpp)
-    target_link_libraries(viewpoint_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} GTest::GTest GTest::Main)
+    target_link_libraries(viewpoint_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
 endif ()
 
 ## Add folders to be run by python nosetests

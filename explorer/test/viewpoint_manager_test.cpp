@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <ros/ros.h>
-#include <viewpoint_manager/viewpoint_manager.h>
+#include "viewpoint_manager.h"
 #include <memory>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>

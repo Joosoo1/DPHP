@@ -2,7 +2,7 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Odometry.h>
-#include "keypose_graph/keypose_graph.h"
+#include "keypose_graph.h"
 
 using namespace keypose_graph_ns;
 

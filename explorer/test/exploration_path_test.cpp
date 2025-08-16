@@ -2,7 +2,7 @@
 #include <Eigen/Core>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Path.h>
-#include "exploration_path/exploration_path.h"
+#include "exploration_path.h"
 
 using namespace exploration_path_ns;
 

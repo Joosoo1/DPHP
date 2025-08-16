@@ -12,7 +12,7 @@ DPHP is a robotic exploration planning system that combines global and local pat
   - [2. Keypose Graph](#2-keypose-graph)
   - [3. Viewpoint Management](#3-viewpoint-management)
   - [4. TSP Solver](#4-tsp-solver)
-  - [5. Dual Path Planning](#5-dual-path-planning)
+  - [5. Hierarchical Path Planning](#5-Hierarchical-path-planning)
 - [Predictor Module](#predictor-module)
   - [Network Architecture](#network-architecture)
   - [Training Strategy](#training-strategy)
@@ -287,10 +287,10 @@ To run the DPHP planner:
 catkin_make
 
 # Source the workspace
-source devel/setup.bash
+source devel/setup.bash or source devel/setup.zsh
 
 # Launch the explorer node
-rosrun explorer explorer_node
+roslaunch explorer explore.launch
 ```
 
 ## Parameters
