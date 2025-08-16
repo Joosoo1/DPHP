@@ -2,6 +2,34 @@
 
 DPHP is a robotic exploration planning system that combines global and local path planning strategies for efficient environment exploration. This system is designed for autonomous robots operating in unknown environments, using sensor data to build maps and plan optimal exploration paths.
 
+## Table of Contents
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+  - [Explorer Package Structure](#explorer-package-structure)
+- [Program Flow](#program-flow)
+- [Core Algorithms](#core-algorithms)
+  - [1. Grid World Representation](#1-grid-world-representation)
+  - [2. Keypose Graph](#2-keypose-graph)
+  - [3. Viewpoint Management](#3-viewpoint-management)
+  - [4. TSP Solver](#4-tsp-solver)
+  - [5. Dual Path Planning](#5-dual-path-planning)
+- [Predictor Module](#predictor-module)
+  - [Network Architecture](#network-architecture)
+  - [Training Strategy](#training-strategy)
+  - [Input Features](#input-features)
+  - [Output](#output)
+- [Key Components](#key-components)
+  - [SensorCoveragePlanner3D](#sensorcoverageplanner3d)
+  - [GridWorld](#gridworld)
+  - [ViewPointManager](#viewpointmanager)
+  - [KeyposeGraph](#keyposegraph)
+  - [TSPSolver](#tspsolver)
+- [Dependencies](#dependencies)
+- [Usage](#usage)
+- [Parameters](#parameters)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Overview
 
 The DPHP Planner implements a dual-path hybrid approach for robotic exploration:
@@ -98,7 +126,7 @@ For global path optimization, the system uses Google's OR-Tools:
 - Optimizes the order of visiting grid cells for maximum efficiency
 - Considers distance metrics and coverage priorities
 
-### 5. Dual Path Planning
+### 5. Hierarchical Path Planning
 
 The core innovation of DPHP is its dual-path approach:
 
