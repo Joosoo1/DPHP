@@ -68,8 +68,11 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 link_directories(${OR_TOOLS_ROOT}/lib)
 
 # Include project header files
-include_directories(include/explorer)
 include_directories(include)
+include_directories(include/explorer)
+include_directories(include/explorer/implementation)
+include_directories(include/explorer/interface)
+include_directories(include/explorer/utility)
 include_directories(or-tools/include)
 
 catkin_package(
@@ -93,24 +96,25 @@ catkin_package(
 
 # Build explorer library
 add_library(${PROJECT_NAME}
-        src/exploration_path.cpp
-        src/explorer_visualizer.cpp
-        src/graph.cpp
-        src/grid_world.cpp
-        src/keypose_graph.cpp
-        src/lidar_model.cpp
-        src/local_coverage_planner.cpp
+        src/utility/exploration_path.cpp
+        src/utility/explorer_visualizer.cpp
+        src/utility/graph.cpp
+        src/utility/ExplorerFactory.cpp
+        src/implementation/grid_world.cpp
+        src/implementation/keypose_graph.cpp
+        src/implementation/lidar_model.cpp
+        src/implementation/local_coverage_planner.cpp
         src/navigationBoundary.cpp
-        src/planning_env.cpp
-        src/pointcloud_manager.cpp
-        src/rolling_grid.cpp
-        src/rolling_occupancy_grid.cpp
-        src/sensor_coverage_planner_ground.cpp
-        src/tsp_solver.cpp
-        src/misc_utils.cpp
-        src/pointcloud_utils.cpp
-        src/viewpoint.cpp
-        src/viewpoint_manager.cpp
+        src/implementation/planning_env.cpp
+        src/utility/pointcloud_manager.cpp
+        src/utility/rolling_grid.cpp
+        src/utility/rolling_occupancy_grid.cpp
+        src/implementation/sensor_coverage_planner_ground.cpp
+        src/utility/tsp_solver.cpp
+        src/utility/misc_utils.cpp
+        src/utility/pointcloud_utils.cpp
+        src/implementation/viewpoint.cpp
+        src/implementation/viewpoint_manager.cpp
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -125,7 +129,7 @@ target_link_libraries(${PROJECT_NAME}
 
 # Explorer node
 add_executable(explorer_node
-        src/explorer_node.cpp)
+        src/node/explorer_node.cpp)
 target_link_libraries(explorer_node
         ${PROJECT_NAME}
         ${catkin_LIBRARIES}
