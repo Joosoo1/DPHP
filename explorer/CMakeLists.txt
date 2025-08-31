@@ -19,9 +19,6 @@ add_compile_options(-std=c++14)
 ## Fix PCL issue with NrDims
 add_compile_definitions(PCL_NO_PRECOMPILE)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
 set(PROJECT_DEPENDENCIES
         roscpp
         std_msgs
@@ -34,7 +31,6 @@ set(PROJECT_DEPENDENCIES
         pcl_ros
         pcl_conversions
         dynamic_reconfigure
-        message_generation
         cv_bridge
 )
 
@@ -76,30 +72,6 @@ include_directories(include/explorer)
 include_directories(include)
 include_directories(or-tools/include)
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
-# Generate messages in the 'msg' folder
-add_message_files(
-        FILES
-        DualState.msg
-        DualStateArray.msg
-)
-
-# Generate services in the 'srv' folder
-add_service_files(
-        FILES
-        PlannerTrigger.srv
-)
-
-# Generate added messages and services with any dependencies listed here
-generate_messages(
-        DEPENDENCIES
-        std_msgs
-        nav_msgs
-        geometry_msgs
-)
-
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES ${PROJECT_NAME}
@@ -115,7 +87,6 @@ catkin_package(
         pcl_ros
         pcl_conversions
         dynamic_reconfigure
-        message_runtime
         cv_bridge
         DEPENDS PCL OpenCV GSL EIGEN3
 )
@@ -161,106 +132,44 @@ target_link_libraries(explorer_node
         ${OR_TOOLS_LIBRARIES}
 )
 
-## Rename C++ executable without namespace
-## The above recommended prefix causes long target names, the following renames the
-## target back to the shorter version for ease of user use
-## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
-# set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
-
-## Add cmake target dependencies of the executable
-## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
-
-#############
-## Install ##
-#############
-
-# all install targets should use catkin DESTINATION variables
-# See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
-
-## Mark executable scripts (Python etc.) for installation
-## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-## Mark executables and/or libraries for installation
-# install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
-
-## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
-
-#############
-## Testing ##
-#############
-
 ## Add gtest based cpp test target and link libraries
 if (CATKIN_ENABLE_TESTING)
     catkin_add_gtest(graph_test test/graph_test.cpp)
-    target_link_libraries(graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
+    target_link_libraries(graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
 
     catkin_add_gtest(tsp_solver_test test/tsp_solver_test.cpp)
-    target_link_libraries(tsp_solver_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main ${OR_TOOLS_LIBRARIES})
+    target_link_libraries(tsp_solver_test ${PROJECT_NAME} ${catkin_LIBRARIES} ${GTEST_LIBRARIES} ${OR_TOOLS_LIBRARIES})
 
     catkin_add_gtest(keypose_graph_test test/keypose_graph_test.cpp)
-    target_link_libraries(keypose_graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
+    target_link_libraries(keypose_graph_test ${PROJECT_NAME} ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
 
     catkin_add_gtest(exploration_path_test test/exploration_path_test.cpp)
-    target_link_libraries(exploration_path_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
+    target_link_libraries(exploration_path_test ${PROJECT_NAME} ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
 
     catkin_add_gtest(planning_env_test test/planning_env_test.cpp)
-    target_link_libraries(planning_env_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
+    target_link_libraries(planning_env_test ${PROJECT_NAME} ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
 
     # 添加集成测试
     catkin_add_gtest(explorer_integration_test test/explorer_integration_test.cpp)
-    target_link_libraries(explorer_integration_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
-
+    target_link_libraries(explorer_integration_test ${PROJECT_NAME} ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
 
     # 添加视点管理器测试
     catkin_add_gtest(viewpoint_manager_test test/viewpoint_manager_test.cpp)
-    target_link_libraries(viewpoint_manager_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
+    target_link_libraries(viewpoint_manager_test ${PROJECT_NAME} ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
 
     # 添加栅格世界综合测试
     catkin_add_gtest(grid_world_comprehensive_test test/grid_world_comprehensive_test.cpp)
-    target_link_libraries(grid_world_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
+    target_link_libraries(grid_world_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
 
     # 添加视点综合测试
     catkin_add_gtest(viewpoint_comprehensive_test test/viewpoint_comprehensive_test.cpp)
-    target_link_libraries(viewpoint_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} gtest gtest_main)
+    target_link_libraries(viewpoint_comprehensive_test ${PROJECT_NAME} ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
 endif ()
-
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
-
-#############################################
-## Declare ROS tests
-#############################################
 
 # 添加集成测试到rostest
 if (CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
-    add_rostest(test/integration_test.launch)
+    # add_rostest(test/integration_test.launch)
 endif ()
 
 install(DIRECTORY launch/

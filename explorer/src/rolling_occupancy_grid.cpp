@@ -15,9 +15,9 @@ namespace rolling_occupancy_grid_ns
 {
     RollingOccupancyGrid::RollingOccupancyGrid(ros::NodeHandle& nh) : initialized_(false), dimension_(3)
     {
-        auto pointcloud_cell_size = misc_utils_ns::getParam<double>(nh, "kPointCloudCellSize", 18);
-        auto pointcloud_cell_height = misc_utils_ns::getParam<double>(nh, "kPointCloudCellHeight", 1.8);
-        int pointcloud_cell_neighbor_number = misc_utils_ns::getParam<int>(nh, "kPointCloudManagerNeighborCellNum", 5);
+        const auto pointcloud_cell_size = misc_utils_ns::getParam<double>(nh, "kPointCloudCellSize", 18);
+        const auto pointcloud_cell_height = misc_utils_ns::getParam<double>(nh, "kPointCloudCellHeight", 1.8);
+        const int pointcloud_cell_neighbor_number = misc_utils_ns::getParam<int>(nh, "kPointCloudManagerNeighborCellNum", 5);
         range_.x() = pointcloud_cell_size * pointcloud_cell_neighbor_number;
         range_.y() = pointcloud_cell_size * pointcloud_cell_neighbor_number;
         range_.z() = pointcloud_cell_height * pointcloud_cell_neighbor_number;
@@ -230,16 +230,18 @@ namespace rolling_occupancy_grid_ns
             return;
         }
         Eigen::Vector3i diff_sub = end_sub - start_sub;
-        double max_dist = diff_sub.squaredNorm();
-        int step_x = misc_utils_ns::signum(diff_sub.x());
-        int step_y = misc_utils_ns::signum(diff_sub.y());
-        int step_z = misc_utils_ns::signum(diff_sub.z());
+        const double max_dist = diff_sub.squaredNorm();
+        const int step_x = misc_utils_ns::signum(diff_sub.x());
+        const int step_y = misc_utils_ns::signum(diff_sub.y());
+        const int step_z = misc_utils_ns::signum(diff_sub.z());
         double t_max_x = step_x == 0 ? DBL_MAX : misc_utils_ns::intbound(start_sub.x(), diff_sub.x());
         double t_max_y = step_y == 0 ? DBL_MAX : misc_utils_ns::intbound(start_sub.y(), diff_sub.y());
         double t_max_z = step_z == 0 ? DBL_MAX : misc_utils_ns::intbound(start_sub.z(), diff_sub.z());
-        double t_delta_x = step_x == 0 ? DBL_MAX : static_cast<double>(step_x) / static_cast<double>(diff_sub.x());
-        double t_delta_y = step_y == 0 ? DBL_MAX : static_cast<double>(step_y) / static_cast<double>(diff_sub.y());
-        double t_delta_z = step_z == 0 ? DBL_MAX : static_cast<double>(step_z) / static_cast<double>(diff_sub.z());
+        const double t_delta_x =
+            step_x == 0 ? DBL_MAX : static_cast<double>(step_x) / static_cast<double>(diff_sub.x());
+        const double t_delta_y =
+            step_y == 0 ? DBL_MAX : static_cast<double>(step_y) / static_cast<double>(diff_sub.y());
+        const double t_delta_z = step_z == 0 ? DBL_MAX : static_cast<double>(step_z) / static_cast<double>(diff_sub.z());
         double dist = 0;
         Eigen::Vector3i cur_sub = start_sub;
 
@@ -247,7 +249,7 @@ namespace rolling_occupancy_grid_ns
         {
             cells.push_back(cur_sub);
             dist = (cur_sub - start_sub).squaredNorm();
-            int array_ind = rolling_grid_->GetArrayInd(cur_sub);
+            const int array_ind = rolling_grid_->GetArrayInd(cur_sub);
             if (cur_sub == end_sub || dist > max_dist || occupancy_array_->GetCellValue(array_ind) == OCCUPIED)
             {
                 return;
