@@ -205,8 +205,6 @@ namespace sensor_coverage_planner_3d_ns
         ros::Subscriber registered_scan_sub_;
         ros::Subscriber terrain_map_sub_;
         ros::Subscriber terrain_map_ext_sub_;
-        ros::Subscriber coverage_boundary_sub_;
-        ros::Subscriber viewpoint_boundary_sub_;
         ros::Subscriber nogo_boundary_sub_;
 
         // ROS publishers
@@ -228,30 +226,28 @@ namespace sensor_coverage_planner_3d_ns
         void ExplorationStartCallback(const std_msgs::Bool::ConstPtr& start_msg);
         void StateEstimationCallback(const nav_msgs::Odometry::ConstPtr& state_estimation_msg);
         void RegisteredScanCallback(const sensor_msgs::PointCloud2ConstPtr& registered_cloud_msg);
-        void TerrainMapCallback(const sensor_msgs::PointCloud2ConstPtr& terrain_map_msg);
-        void TerrainMapExtCallback(const sensor_msgs::PointCloud2ConstPtr& terrain_cloud_large_msg);
-        void CoverageBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg);
-        void ViewPointBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg);
+        void TerrainMapCallback(const sensor_msgs::PointCloud2ConstPtr& terrain_map_msg) const;
+        void TerrainMapExtCallback(const sensor_msgs::PointCloud2ConstPtr& terrain_cloud_large_msg) const;
         void NogoBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg);
 
-        void SendInitialWaypoint();
-        void UpdateKeyposeGraph();
+        void SendInitialWaypoint() const;
+        void UpdateKeyposeGraph() const;
         int UpdateViewPoints();
         void UpdateViewPointCoverage();
         void UpdateRobotViewPointCoverage();
-        void UpdateCoveredAreas(int& uncovered_point_num, int& uncovered_frontier_point_num);
+        void UpdateCoveredAreas(int& uncovered_point_num, int& uncovered_frontier_point_num) const;
         void UpdateVisitedPositions();
-        void UpdateGlobalRepresentation();
+        void UpdateGlobalRepresentation() const;
         void GlobalPlanning(std::vector<int>& global_cell_tsp_order, exploration_path_ns::ExplorationPath& global_path);
         void PublishGlobalPlanningVisualization(const exploration_path_ns::ExplorationPath& global_path,
-                                                const exploration_path_ns::ExplorationPath& local_path);
+                                                const exploration_path_ns::ExplorationPath& local_path) const;
         void LocalPlanning(int uncovered_point_num, int uncovered_frontier_point_num,
                            const exploration_path_ns::ExplorationPath& global_path,
-                           exploration_path_ns::ExplorationPath& local_path);
-        void PublishLocalPlanningVisualization(const exploration_path_ns::ExplorationPath& local_path);
+                           exploration_path_ns::ExplorationPath& local_path) const;
+        void PublishLocalPlanningVisualization(const exploration_path_ns::ExplorationPath& local_path) const;
         exploration_path_ns::ExplorationPath
         ConcatenateGlobalLocalPath(const exploration_path_ns::ExplorationPath& global_path,
-                                   const exploration_path_ns::ExplorationPath& local_path);
+                                   const exploration_path_ns::ExplorationPath& local_path) const;
 
         void PublishRuntime();
         double GetRobotToHomeDistance() const;
