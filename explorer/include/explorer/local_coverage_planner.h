@@ -17,6 +17,7 @@
 #include "explorer/exploration_path.h"
 #include "explorer/grid_world.h"
 #include "explorer/viewpoint_manager.h"
+#include "explorer/dynamic_environment.h"
 
 namespace local_coverage_planner_ns
 {

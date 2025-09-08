@@ -38,6 +38,7 @@
 #include "explorer/local_coverage_planner.h"
 #include "explorer/planning_env.h" // 占据栅格地图
 #include "explorer/viewpoint_manager.h" // 对Viewpoint进行操作，基于lidar模型和周围环境以及grid_world
+#include "explorer/dynamic_environment.h" // 动态环境处理
 
 #define cursup "\033[A"
 #define cursclean "\033[2K"
@@ -60,6 +61,8 @@ namespace sensor_coverage_planner_3d_ns
         std::string sub_coverage_boundary_topic_;
         std::string sub_viewpoint_boundary_topic_;
         std::string sub_nogo_boundary_topic_;
+        std::string sub_dynamic_objects_topic_; // 动态物体话题
+        std::string sub_semi_dynamic_objects_topic_; // 半动态物体话题
 
         std::string pub_exploration_finish_topic_;
         std::string pub_runtime_breakdown_topic_;
@@ -76,6 +79,8 @@ namespace sensor_coverage_planner_3d_ns
         bool kUseLineOfSightLookAheadPoint; // 是否使用视距航点
         bool kNoExplorationReturnHome; // 无探索时返回home点
         bool kUseMomentum; // 是否使用惯性
+        bool kUseDynamicAvoidance; // 是否使用动态避障
+        bool kConsiderSemiDynamic; // 是否考虑半动态物体
 
         // Double
         double kKeyposeCloudDwzFilterLeafSize; // keypose点云降采样大小
@@ -85,6 +90,9 @@ namespace sensor_coverage_planner_3d_ns
         double kLookAheadDistance; // 视距航点距离
         double kExtendWayPointDistanceBig; // 航点最大扩展距离
         double kExtendWayPointDistanceSmall; // 航点最小扩展距离
+        double kDynamicSafetyMargin; // 动态物体安全边界
+        double kPredictionTimeHorizon; // 预测时间范围
+        double kSemiDynamicChangeProbability; // 半动态物体状态改变概率阈值
 
         // Int
         int kDirectionChangeCounterThr; // 方向改变计数阈值
@@ -146,6 +154,7 @@ namespace sensor_coverage_planner_3d_ns
         std::unique_ptr<local_coverage_planner_ns::LocalCoveragePlanner> local_coverage_planner_; // 局部覆盖规划器
         std::unique_ptr<grid_world_ns::GridWorld> grid_world_; // 网格世界
         std::unique_ptr<explorer_visualizer_ns::TAREVisualizer> visualizer_; // 可视化对象
+        std::unique_ptr<dynamic_env_ns::DynamicEnvironmentManager> dynamic_env_manager_; // 动态环境管理器
 
         std::unique_ptr<misc_utils_ns::Marker> keypose_graph_node_marker_; //
         std::unique_ptr<misc_utils_ns::Marker> keypose_graph_edge_marker_; //
@@ -208,6 +217,8 @@ namespace sensor_coverage_planner_3d_ns
         ros::Subscriber coverage_boundary_sub_;
         ros::Subscriber viewpoint_boundary_sub_;
         ros::Subscriber nogo_boundary_sub_;
+        ros::Subscriber dynamic_objects_sub_; // 动态物体订阅
+        ros::Subscriber semi_dynamic_objects_sub_; // 半动态物体订阅
 
         // ROS publishers
         ros::Publisher global_path_full_publisher_;
@@ -233,6 +244,8 @@ namespace sensor_coverage_planner_3d_ns
         void CoverageBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg);
         void ViewPointBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg);
         void NogoBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg);
+        void DynamicObjectsCallback(const sensor_msgs::PointCloud2ConstPtr& dynamic_msg);
+        void SemiDynamicObjectsCallback(const sensor_msgs::PointCloud2ConstPtr& semi_dynamic_msg);
 
         void SendInitialWaypoint();
         void UpdateKeyposeGraph();

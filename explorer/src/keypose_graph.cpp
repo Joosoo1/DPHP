@@ -351,7 +351,8 @@ namespace keypose_graph_ns
             {
                 in_local_planning_horizon_count++;
                 in_viewpoint_range_count++;
-                if (viewpoint_manager->ViewPointInCollision(viewpoint_ind))
+                if (viewpoint_manager->ViewPointInCollision(viewpoint_ind) || 
+                    viewpoint_manager->GetViewPointCollisionRisk(viewpoint_ind) > 0.7)
                 {
                     node_in_collision = true;
                     collision_node_count++;
@@ -393,7 +394,8 @@ namespace keypose_graph_ns
                             int viewpoint_ind = viewpoint_manager->GetViewPointInd(collision_check_position);
                             if (viewpoint_manager->InRange(viewpoint_ind))
                             {
-                                if (viewpoint_manager->ViewPointInCollision(viewpoint_ind))
+                                if (viewpoint_manager->ViewPointInCollision(viewpoint_ind) || 
+                                viewpoint_manager->GetViewPointCollisionRisk(viewpoint_ind) > 0.7)
                                 {
                                     geometry_msgs::Point viewpoint_position =
                                         viewpoint_manager->GetViewPointPosition(viewpoint_ind);

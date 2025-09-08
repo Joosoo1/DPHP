@@ -132,6 +132,12 @@ namespace local_coverage_planner_ns
             {
                 continue;
             }
+            
+            // 检查视点安全性 - 新增动态风险评估
+            if (!viewpoint_manager_->IsViewPointSafe(viewpoint_index, 0.4)) {
+                continue; // 跳过高风险视点
+            }
+            
             // 获取该视点的数组索引
             int viewpoint_array_index = viewpoint_manager_->GetViewPointArrayInd(viewpoint_index);
             // 如果该视点已经被选中过，则跳过
@@ -140,14 +146,20 @@ namespace local_coverage_planner_ns
             {
                 continue;
             }
+            
             // 获取该视点的覆盖点数
             int covered_point_num =
                 viewpoint_manager_->GetViewPointCoveredPointNum(covered_point_list, viewpoint_array_index, true);
-            // 如果该视点的覆盖点数大于等于最小添加点数，则将其加入到候选队列中
-            if (covered_point_num >= parameters_.kMinAddPointNum)
+            
+            // 考虑动态风险调整覆盖增益
+            double risk_factor = 1.0 - viewpoint_manager_->GetViewPointCollisionRisk(viewpoint_index);
+            int adjusted_covered_point_num = static_cast<int>(covered_point_num * risk_factor);
+            
+            // 如果调整后的覆盖点数大于等于最小添加点数，则将其加入到候选队列中
+            if (adjusted_covered_point_num >= parameters_.kMinAddPointNum)
             {
                 cover_point_queue.emplace_back(
-                    covered_point_num,
+                    adjusted_covered_point_num,  // 使用调整后的覆盖点数
                     viewpoint_index); // 在队列末尾插入一个pair，第一个元素是覆盖点数，第二个元素是对应的视点索引
             }
             else if (use_frontier_) // 如果使用frontier
@@ -155,11 +167,14 @@ namespace local_coverage_planner_ns
                 // 获取该视点的覆盖frontier点数
                 int covered_frontier_point_num = viewpoint_manager_->GetViewPointCoveredFrontierPointNum(
                     covered_frontier_point_list, viewpoint_array_index, true);
+                
+                // 调整frontier覆盖点数
+                int adjusted_frontier_point_num = static_cast<int>(covered_frontier_point_num * risk_factor);
 
-                if (covered_frontier_point_num >= parameters_.kMinAddFrontierPointNum)
+                if (adjusted_frontier_point_num >= parameters_.kMinAddFrontierPointNum)
                 {
                     frontier_queue.emplace_back(
-                        covered_frontier_point_num,
+                        adjusted_frontier_point_num,  // 使用调整后的frontier点数
                         viewpoint_index); // 在队列末尾插入一个pair，第一个元素是覆盖frontier点数，第二个元素是对应的视点索引
                 }
             }

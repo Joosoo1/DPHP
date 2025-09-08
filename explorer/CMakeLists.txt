@@ -107,6 +107,8 @@ add_library(${PROJECT_NAME}
         src/rolling_occupancy_grid.cpp
         src/sensor_coverage_planner_ground.cpp
         src/tsp_solver.cpp
+        src/dynamic_environment.cpp
+        src/semi_dynamic_detector.cpp
         src/misc_utils.cpp
         src/pointcloud_utils.cpp
         src/viewpoint.cpp

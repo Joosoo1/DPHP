@@ -32,6 +32,10 @@ namespace sensor_coverage_planner_3d_ns
             misc_utils_ns::getParam<std::string>(nh, "sub_viewpoint_boundary_topic_", "/navigation_boundary");
         sub_nogo_boundary_topic_ =
             misc_utils_ns::getParam<std::string>(nh, "sub_nogo_boundary_topic_", "/nogo_boundary");
+        sub_dynamic_objects_topic_ =
+            misc_utils_ns::getParam<std::string>(nh, "sub_dynamic_objects_topic_", "/dynamic_objects");
+        sub_semi_dynamic_objects_topic_ =
+            misc_utils_ns::getParam<std::string>(nh, "sub_semi_dynamic_objects_topic_", "/semi_dynamic_objects");
         pub_exploration_finish_topic_ =
             misc_utils_ns::getParam<std::string>(nh, "pub_exploration_finish_topic_", "exploration_finish");
         pub_runtime_breakdown_topic_ =
@@ -52,9 +56,14 @@ namespace sensor_coverage_planner_3d_ns
         kUseLineOfSightLookAheadPoint = misc_utils_ns::getParam<bool>(nh, "kUseLineOfSightLookAheadPoint", true);
         kNoExplorationReturnHome = misc_utils_ns::getParam<bool>(nh, "kNoExplorationReturnHome", true);
         kUseMomentum = misc_utils_ns::getParam<bool>(nh, "kUseMomentum", false);
+        kUseDynamicAvoidance = misc_utils_ns::getParam<bool>(nh, "kUseDynamicAvoidance", true);
+        kConsiderSemiDynamic = misc_utils_ns::getParam<bool>(nh, "kConsiderSemiDynamic", true);
 
         // Double
         kKeyposeCloudDwzFilterLeafSize = misc_utils_ns::getParam<double>(nh, "kKeyposeCloudDwzFilterLeafSize", 0.2);
+        kDynamicSafetyMargin = misc_utils_ns::getParam<double>(nh, "kDynamicSafetyMargin", 1.5);
+        kPredictionTimeHorizon = misc_utils_ns::getParam<double>(nh, "kPredictionTimeHorizon", 5.0);
+        kSemiDynamicChangeProbability = misc_utils_ns::getParam<double>(nh, "kSemiDynamicChangeProbability", 0.3);
         kRushHomeDist = misc_utils_ns::getParam<double>(nh, "kRushHomeDist", 10.0);
         kAtHomeDistThreshold = misc_utils_ns::getParam<double>(nh, "kAtHomeDistThreshold", 0.5);
         kTerrainCollisionThreshold = misc_utils_ns::getParam<double>(nh, "kTerrainCollisionThreshold", 0.5);
@@ -122,6 +131,10 @@ namespace sensor_coverage_planner_3d_ns
 
         /*可视化*/
         visualizer_ = std::make_unique<explorer_visualizer_ns::TAREVisualizer>(nh, nh_p);
+
+        /*动态环境管理*/
+        dynamic_env_manager_ = std::make_unique<dynamic_env_ns::DynamicEnvironmentManager>(nh_p);
+        viewpoint_manager_->SetDynamicEnvironmentManager(dynamic_env_manager_);
 
         // keypose_graph的节点可视化
         keypose_graph_node_marker_ =
@@ -216,6 +229,12 @@ namespace sensor_coverage_planner_3d_ns
         // 订阅探索边界
         viewpoint_boundary_sub_ = nh.subscribe(pp_.sub_viewpoint_boundary_topic_, 1,
                                                &SensorCoveragePlanner3D::ViewPointBoundaryCallback, this);
+        // 订阅动态物体信息
+        dynamic_objects_sub_ = nh.subscribe(pp_.sub_dynamic_objects_topic_, 5,
+                                           &SensorCoveragePlanner3D::DynamicObjectsCallback, this);
+        // 订阅半动态物体信息
+        semi_dynamic_objects_sub_ = nh.subscribe(pp_.sub_semi_dynamic_objects_topic_, 5,
+                                                &SensorCoveragePlanner3D::SemiDynamicObjectsCallback, this);
 
         // 探索过程可视化，用于发布rviz可视化信息和性能评估
         global_path_full_publisher_ = nh.advertise<nav_msgs::Path>("global_path_full", 1);
@@ -1312,6 +1331,42 @@ namespace sensor_coverage_planner_3d_ns
         std_msgs::Int32 momentum_activation_count_msg;
         momentum_activation_count_msg.data = momentum_activation_count_;
         momentum_activation_count_pub_.publish(momentum_activation_count_msg);
+    }
+
+    void SensorCoveragePlanner3D::DynamicObjectsCallback(const sensor_msgs::PointCloud2ConstPtr& dynamic_objects_msg)
+    {
+        if (pp_.kUseDynamicAvoidance && pd_.dynamic_env_manager_)
+        {
+            // 转换点云消息到PCL格式
+            pcl::PointCloud<pcl::PointXYZ>::Ptr dynamic_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+            pcl::fromROSMsg(*dynamic_objects_msg, *dynamic_cloud);
+            
+            // 更新动态环境管理器
+            pd_.dynamic_env_manager_->UpdateDynamicObjects(dynamic_cloud);
+            
+            // 触发视点安全评分更新
+            pd_.viewpoint_manager_->UpdateViewPointSafetyScores();
+            
+            ROS_DEBUG("Updated dynamic objects: %zu objects", dynamic_cloud->size());
+        }
+    }
+
+    void SensorCoveragePlanner3D::SemiDynamicObjectsCallback(const sensor_msgs::PointCloud2ConstPtr& semi_dynamic_objects_msg)
+    {
+        if (pp_.kConsiderSemiDynamic && pd_.dynamic_env_manager_)
+        {
+            // 转换点云消息到PCL格式
+            pcl::PointCloud<pcl::PointXYZI>::Ptr semi_dynamic_cloud(new pcl::PointCloud<pcl::PointXYZI>());
+            pcl::fromROSMsg(*semi_dynamic_objects_msg, *semi_dynamic_cloud);
+            
+            // 更新半动态物体检测
+            pd_.dynamic_env_manager_->UpdateSemiDynamicObjects(semi_dynamic_cloud);
+            
+            // 更新可访问性信息
+            pd_.viewpoint_manager_->UpdateAccessibilityInfo();
+            
+            ROS_DEBUG("Updated semi-dynamic objects");
+        }
     }
 
     // 主函数

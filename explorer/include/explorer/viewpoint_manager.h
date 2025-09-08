@@ -31,6 +31,7 @@
 #include "explorer/misc_utils.h"
 #include "explorer/rolling_grid.h"
 #include "explorer/viewpoint.h"
+#include "explorer/dynamic_environment.h"
 
 namespace viewpoint_manager_ns
 {
@@ -132,6 +133,12 @@ namespace viewpoint_manager_ns
         void UpdateViewPointVisited(std::unique_ptr<grid_world_ns::GridWorld> const& grid_world);
         void SetViewPointHeightWithTerrain(const pcl::PointCloud<pcl::PointXYZI>::Ptr& terrain_cloud,
                                            double terrain_height_threshold = DBL_MAX);
+        
+        // 动态风险评估方法
+        void SetDynamicEnvironmentManager(std::shared_ptr<dynamic_env_ns::DynamicEnvironmentManager> manager);
+        double GetViewPointCollisionRisk(int viewpoint_index) const;
+        bool IsViewPointSafe(int viewpoint_index, double risk_threshold = 0.3) const;
+        void UpdateViewPointSafetyScores();
 
         template <class PCLPointType>
         void UpdateViewPointCoverage(const typename pcl::PointCloud<PCLPointType>::Ptr& cloud)
@@ -325,6 +332,10 @@ namespace viewpoint_manager_ns
         Eigen::Vector3d collision_grid_origin_;
         Eigen::Vector3d local_planning_horizon_size_;
         std::unique_ptr<grid_ns::Grid<std::vector<int>>> collision_grid_;
+        
+        // 动态环境相关
+        std::shared_ptr<dynamic_env_ns::DynamicEnvironmentManager> dynamic_env_manager_;
+        std::vector<double> viewpoint_risk_scores_;  // 每个视点的碰撞风险分数
         std::vector<int> collision_point_count_;
         std::vector<std::vector<int>> candidate_viewpoint_graph_;
         std::vector<std::vector<double>> candidate_viewpoint_dist_;

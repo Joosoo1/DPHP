@@ -1509,4 +1509,62 @@ namespace viewpoint_manager_ns
         }
         return false;
     }
+
+    // 设置动态环境管理器
+    void ViewPointManager::SetDynamicEnvironmentManager(std::shared_ptr<dynamic_env_ns::DynamicEnvironmentManager> manager) {
+        dynamic_env_manager_ = manager;
+        // 初始化风险分数数组
+        if (viewpoint_risk_scores_.size() != viewpoints_.size()) {
+            viewpoint_risk_scores_.resize(viewpoints_.size(), 0.0);
+        }
+    }
+
+    // 获取视点碰撞风险
+    double ViewPointManager::GetViewPointCollisionRisk(int viewpoint_index) const {
+        if (!dynamic_env_manager_ || viewpoint_index < 0 || viewpoint_index >= viewpoints_.size()) {
+            return 0.0;
+        }
+        
+        if (viewpoint_index < viewpoint_risk_scores_.size()) {
+            return viewpoint_risk_scores_[viewpoint_index];
+        }
+        return 0.0;
+    }
+
+    // 检查视点是否安全
+    bool ViewPointManager::IsViewPointSafe(int viewpoint_index, double risk_threshold) const {
+        if (!dynamic_env_manager_) {
+            return true; // 如果没有动态环境管理器，默认安全
+        }
+        
+        double risk = GetViewPointCollisionRisk(viewpoint_index);
+        return risk < risk_threshold;
+    }
+
+    // 更新所有视点的安全评分
+    void ViewPointManager::UpdateViewPointSafetyScores() {
+        if (!dynamic_env_manager_) {
+            return;
+        }
+        
+        if (viewpoint_risk_scores_.size() != viewpoints_.size()) {
+            viewpoint_risk_scores_.resize(viewpoints_.size(), 0.0);
+        }
+        
+        for (int i = 0; i < viewpoints_.size(); ++i) {
+            if (viewpoints_[i].IsCandidate()) {
+                geometry_msgs::Point position = viewpoints_[i].GetPosition();
+                auto risk = dynamic_env_manager_->AssessViewpointRisk(position);
+                viewpoint_risk_scores_[i] = risk.risk_score;
+                
+                // 如果风险过高，标记视点为不安全
+                if (risk.is_critical) {
+                    viewpoints_[i].SetCandidate(false);
+                }
+            } else {
+                viewpoint_risk_scores_[i] = 0.0;
+            }
+        }
+    }
+
 } // namespace viewpoint_manager_ns
