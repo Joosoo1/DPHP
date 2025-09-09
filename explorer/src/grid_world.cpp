@@ -1,13 +1,4 @@
-/**
- * @file grid_world.cpp
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Class that implements a grid world
- * @version 0.1
- * @date 2019-11-06
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 
 #include "explorer/grid_world.h"
 

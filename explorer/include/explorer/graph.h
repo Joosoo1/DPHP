@@ -1,13 +1,4 @@
-/**
- * @file graph.h
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Class that implements a graph
- * @version 0.1
- * @date 2021-07-11
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #pragma once
 
 #include <nav_msgs/Path.h>

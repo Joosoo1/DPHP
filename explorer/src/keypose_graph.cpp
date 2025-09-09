@@ -1,6 +1,4 @@
-//
-// Created by caochao on 12/31/19.
-//
+
 
 #include "explorer/keypose_graph.h"
 

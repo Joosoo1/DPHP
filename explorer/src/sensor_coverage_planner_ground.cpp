@@ -1,13 +1,4 @@
-/**
- * @file sensor_coverage_planner_ground.cpp
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Class that does the job of exploration
- * @version 0.1
- * @date 2020-06-03
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #include "explorer/sensor_coverage_planner_ground.h"
 
 #include <ros/ros.h>

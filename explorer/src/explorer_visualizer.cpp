@@ -1,13 +1,4 @@
-/**
- * @file explorer_visualizer.cpp
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Class that visualizes the planning process
- * @version 0.1
- * @date 2021-06-01
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 
 #include "explorer/explorer_visualizer.h"
 

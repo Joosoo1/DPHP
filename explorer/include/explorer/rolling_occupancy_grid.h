@@ -1,13 +1,4 @@
-/**
- * @file rolling_occupancy_grid.h
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Class that implements a rolling occupancy grid
- * @version 0.1
- * @date 2021-06-16
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #pragma once
 
 #include <pcl/point_cloud.h>

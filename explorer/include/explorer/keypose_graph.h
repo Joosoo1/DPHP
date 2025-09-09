@@ -1,6 +1,4 @@
-//
-// Created by caochao on 12/31/19.
-//
+
 
 #ifndef SENSOR_COVERAGE_PLANNER_KEYPOSE_GRAPH_H
 #define SENSOR_COVERAGE_PLANNER_KEYPOSE_GRAPH_H

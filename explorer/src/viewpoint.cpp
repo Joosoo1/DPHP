@@ -1,13 +1,4 @@
-/**
- * @file viewpoint.cpp
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Class that implements a viewpoint
- * @version 0.1
- * @date 2019-11-04
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 
 #include "explorer/viewpoint.h"
 

@@ -1,6 +1,4 @@
-//
-// Created by caochao on 06/03/20.
-//
+
 
 #include "explorer/pointcloud_utils.h"
 

@@ -1,13 +1,4 @@
-/**
- * @file local_coverage_planner.cpp
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Class that ensures coverage in the surroundings of the robot
- * @version 0.1
- * @date 2021-05-31
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 
 #include "explorer/local_coverage_planner.h"
 

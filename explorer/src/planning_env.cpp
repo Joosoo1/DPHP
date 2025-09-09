@@ -1,13 +1,4 @@
-/**
- * @file planning_env.cpp
- * @author Chao Cao (ccao1@andrew.cmu.edu)
- * @brief Class that manages the world representation using point clouds
- * @version 0.1
- * @date 2020-06-03
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 
 #include "explorer/planning_env.h"
 

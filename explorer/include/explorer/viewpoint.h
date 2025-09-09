@@ -1,13 +1,4 @@
-/**
- * @file viewpoint.h
- * @author Chao Cao (ccao1@andrew.cmu.edu)
- * @brief Class that implements a viewpoint
- * @version 0.1
- * @date 2019-11-04
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #pragma once
 
 #include <geometry_msgs/Point.h>

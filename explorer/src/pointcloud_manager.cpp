@@ -1,13 +1,4 @@
-/**
- * @file pointcloud_manager.cpp
- * @author Chao Cao (ccao1@andrew.cmu.edu)
- * @brief Class that implements a grid of pointclouds
- * @version 0.1
- * @date 2019-12-08
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 
 #include "explorer/pointcloud_manager.h"
 

@@ -1,6 +1,4 @@
-//
-// Created by caochao on 6/5/19.
-//
+
 
 #include "explorer/misc_utils.h"
 

@@ -1,13 +1,4 @@
-/**
- * @file viewpoint_manager.cpp
- * @author Chao Cao (ccao1@andrew.cmu.edu)
- * @brief Class that manages the viewpoints inside the local planning horizon
- * @version 0.1
- * @date 2020-06-10
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #include "explorer/viewpoint_manager.h"
 
 namespace viewpoint_manager_ns {

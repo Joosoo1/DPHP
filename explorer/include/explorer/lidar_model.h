@@ -1,13 +1,4 @@
-/**
- * @file lidar_model.h
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Class that implements the sensor model of a LiDAR
- * @version 0.1
- * @date 2019-09-26
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #pragma once
 
 #include <cmath>

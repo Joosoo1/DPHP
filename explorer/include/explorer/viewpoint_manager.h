@@ -1,13 +1,4 @@
-/**
- * @file viewpoint_manager.h
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Class that manages the viewpoints inside the local planning horizon
- * @version 0.1
- * @date 2020-06-10
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #pragma once
 
 #include <Eigen/Core>

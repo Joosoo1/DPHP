@@ -1,6 +1,4 @@
-//
-// Created by caochao on 7/12/19.
-//
+
 
 #include "explorer/tsp_solver.h"
 

@@ -97,7 +97,7 @@ namespace exploration_path_ns {
     }
 
     void ExplorationPath::GetVisualizationCloud(
-        pcl::PointCloud<pcl::PointXYZI>::Ptr vis_cloud) const {
+        const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const {
         vis_cloud->clear();
         for (const auto& node : nodes_) {
             pcl::PointXYZI point;

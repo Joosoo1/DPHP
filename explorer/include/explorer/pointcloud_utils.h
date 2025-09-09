@@ -1,6 +1,4 @@
-//
-// Created by caochao on 06/03/20.
-//
+
 #pragma once
 
 // PCL
@@ -168,13 +166,11 @@ struct pointcloud_utils_ns::PCLCloud {
 
     PCLCloud(ros::NodeHandle* nh, std::string pub_cloud_topic, std::string frame_id)
         : pub_cloud_topic_(std::move(pub_cloud_topic)), frame_id_(std::move(frame_id)) {
-        cloud_ = typename pcl::PointCloud<PCLPointType>::Ptr(new pcl::PointCloud<PCLPointType>);
         cloud_pub_ = nh->advertise<sensor_msgs::PointCloud2>(pub_cloud_topic_, 2);
     }
 
     PCLCloud(ros::NodeHandle& nh, std::string pub_cloud_topic, std::string frame_id)
         : pub_cloud_topic_(std::move(pub_cloud_topic)), frame_id_(std::move(frame_id)) {
-        cloud_ = typename pcl::PointCloud<PCLPointType>::Ptr(new pcl::PointCloud<PCLPointType>);
         cloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>(pub_cloud_topic_, 2);
     }
 

@@ -1,13 +1,4 @@
-/**
- * @file misc_utils.h
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Miscellaneous utility functions
- * @version 0.1
- * @date 2019-06-05
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #pragma once
 
 #include <geometry_msgs/Point.h>

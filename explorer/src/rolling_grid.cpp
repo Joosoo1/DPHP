@@ -1,13 +1,4 @@
-/**
- * @file rolling_grid.cpp
- * @author Chao Cao (ccao1@andrew.cmu.edu)
- * @brief Class that implements a rolling 3D grid
- * @version 0.1
- * @date 2020-06-10
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 
 #include "explorer/rolling_grid.h"
 

@@ -1,6 +1,4 @@
-//
-// Created by caochao on 7/12/19.
-//
+
 
 #ifndef VISUAL_COVERAGE_PLANNER_TSP_SOLVER_H
 #define VISUAL_COVERAGE_PLANNER_TSP_SOLVER_H

@@ -1,13 +1,4 @@
-/**
- * @file local_coverage_planner.h
- * @author Chao Cao (ccao1@andrew.cmu.edu)
- * @brief Class that ensures coverage in the surroundings of the robot
- * @version 0.1
- * @date 2021-05-30
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #pragma once
 
 #include <ros/ros.h>

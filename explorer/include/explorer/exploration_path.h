@@ -1,13 +1,4 @@
-/**
- * @file exploration_path.h
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Class that implements the exploration path
- * @version 0.1
- * @date 2020-10-22
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #pragma once
 
 #include <nav_msgs/Path.h>
@@ -44,7 +35,6 @@ namespace exploration_path_ns {
         explicit Node(const geometry_msgs::Point& point, NodeType type);
         bool IsLocal() const;
         ~Node() = default;
-        bool IsLocal();
         friend bool operator==(const Node& n1, const Node& n2);
         friend bool operator!=(const Node& n1, const Node& n2);
     };
@@ -62,7 +52,7 @@ namespace exploration_path_ns {
         void Reverse();
         nav_msgs::Path GetPath() const;
         void FromPath(const nav_msgs::Path& path);
-        void GetVisualizationCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr vis_cloud) const;
+        void GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const;
         void GetKeyPointCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const;
         void GetNodePositions(std::vector<Eigen::Vector3d>& positions) const;
         void Reset();

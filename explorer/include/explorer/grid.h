@@ -1,13 +1,4 @@
-/**
- * @file grid.h
- * @author joosoo (joosoo@buct.edu.cn)
- * @brief Class that implements a 3D grid
- * @version 0.1
- * @date 2021-01-26
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #pragma once
 
 #include <Eigen/Core>
@@ -22,10 +13,6 @@ namespace grid_ns {
                       const Eigen::Vector3d& origin = Eigen::Vector3d(0, 0, 0),
                       const Eigen::Vector3d& resolution = Eigen::Vector3d(1, 1, 1),
                       const int dimension = 3) {
-            // MY_ASSERT(size.x() > 0);
-            // MY_ASSERT(size.y() > 0);
-            // MY_ASSERT(size.z() > 0);
-
             origin_ = origin;
             size_ = size;
             resolution_ = resolution;
