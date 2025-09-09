@@ -10,21 +10,21 @@
  */
 
 #include "explorer/graph.h"
-#include <queue>
+
 #include <ros/ros.h>
+
+#include <queue>
+
 #include "explorer/misc_utils.h"
 
-namespace explorer
-{
-    Graph::Graph(const int node_number)
-    {
+namespace explorer {
+    Graph::Graph(const int node_number) {
         connection_.resize(node_number);
         distance_.resize(node_number);
         positions_.resize(node_number);
     }
 
-    void Graph::AddNode(const Eigen::Vector3d& position)
-    {
+    void Graph::AddNode(const Eigen::Vector3d& position) {
         const std::vector<int> connection;
         connection_.push_back(connection);
         const std::vector<double> neighbor_distance;
@@ -32,54 +32,42 @@ namespace explorer
         positions_.push_back(position);
     }
 
-    void Graph::SetNodePosition(const int node_index, const Eigen::Vector3d& position)
-    {
-        if (NodeIndexInRange(node_index))
-        {
+    void Graph::SetNodePosition(const int node_index, const Eigen::Vector3d& position) {
+        if (NodeIndexInRange(node_index)) {
             positions_[node_index] = position;
-        }
-        else if (node_index == positions_.size())
-        {
+        } else if (node_index == positions_.size()) {
             AddNode(position);
-        }
-        else
-        {
-            ROS_ERROR_STREAM("Graph::SetNodePosition: node_index: " << node_index << " not in range [0, "
-                                                                    << positions_.size() - 1 << "]");
+        } else {
+            ROS_ERROR_STREAM("Graph::SetNodePosition: node_index: "
+                             << node_index << " not in range [0, " << positions_.size() - 1 << "]");
         }
     }
 
-    void Graph::AddOneWayEdge(int from_node_index, const int to_node_index, double distance)
-    {
-        if (NodeIndexInRange(from_node_index) && NodeIndexInRange(to_node_index))
-        {
+    void Graph::AddOneWayEdge(int from_node_index, const int to_node_index, double distance) {
+        if (NodeIndexInRange(from_node_index) && NodeIndexInRange(to_node_index)) {
             connection_[from_node_index].push_back(to_node_index);
             distance_[from_node_index].push_back(distance);
-        }
-        else
-        {
-            ROS_ERROR_STREAM("Graph::AddOneWayEdge: from_node_index: " << from_node_index << " to_node_index: "
-                                                                       << to_node_index << " not in range [0, "
-                                                                       << connection_.size() - 1 << "]");
+        } else {
+            ROS_ERROR_STREAM("Graph::AddOneWayEdge: from_node_index: "
+                             << from_node_index << " to_node_index: " << to_node_index
+                             << " not in range [0, " << connection_.size() - 1 << "]");
         }
     }
 
-    void Graph::AddTwoWayEdge(int from_node_index, const int to_node_index, double distance)
-    {
+    void Graph::AddTwoWayEdge(int from_node_index, const int to_node_index, double distance) {
         AddOneWayEdge(from_node_index, to_node_index, distance);
         AddOneWayEdge(to_node_index, from_node_index, distance);
     }
 
-    double Graph::GetShortestPath(const int from_node_index, const int to_node_index, const bool get_path,
-                                  nav_msgs::Path& shortest_path, std::vector<int>& node_indices)
-    {
+    double Graph::GetShortestPath(const int from_node_index, const int to_node_index,
+                                  const bool get_path, nav_msgs::Path& shortest_path,
+                                  std::vector<int>& node_indices) {
         node_indices.clear();
-        const double path_length = AStarSearch(from_node_index, to_node_index, get_path, node_indices);
-        if (get_path)
-        {
+        const double path_length =
+            AStarSearch(from_node_index, to_node_index, get_path, node_indices);
+        if (get_path) {
             shortest_path.poses.clear();
-            for (const auto& node_index : node_indices)
-            {
+            for (const auto& node_index : node_indices) {
                 geometry_msgs::PoseStamped pose;
                 pose.pose.position.x = positions_[node_index].x();
                 pose.pose.position.y = positions_[node_index].y();
@@ -91,8 +79,7 @@ namespace explorer
     }
 
     double Graph::AStarSearch(int from_node_index, const int to_node_index, const bool get_path,
-                              std::vector<int>& node_indices) const
-    {
+                              std::vector<int>& node_indices) const {
         MY_ASSERT(NodeIndexInRange(from_node_index));
         MY_ASSERT(NodeIndexInRange(to_node_index));
 
@@ -111,29 +98,24 @@ namespace explorer
         pq.emplace(f[from_node_index], from_node_index);
         in_pg[from_node_index] = true;
 
-        while (!pq.empty())
-        {
+        while (!pq.empty()) {
             const int u = pq.top().second;
             pq.pop();
             in_pg[u] = false;
-            if (u == to_node_index)
-            {
+            if (u == to_node_index) {
                 shortest_dist = g[u];
                 break;
             }
 
-            for (int i = 0; i < connection_[u].size(); i++)
-            {
+            for (int i = 0; i < connection_[u].size(); i++) {
                 int v = connection_[u][i];
                 MY_ASSERT(misc_utils_ns::InRange<std::vector<int>>(connection_, v));
                 const double d = distance_[u][i];
-                if (g[v] > g[u] + d)
-                {
+                if (g[v] > g[u] + d) {
                     prev[v] = u;
                     g[v] = g[u] + d;
                     f[v] = g[v] + (positions_[v] - positions_[to_node_index]).norm();
-                    if (!in_pg[v])
-                    {
+                    if (!in_pg[v]) {
                         pq.emplace(f[v], v);
                         in_pg[v] = true;
                     }
@@ -141,14 +123,11 @@ namespace explorer
             }
         }
 
-        if (get_path)
-        {
+        if (get_path) {
             node_indices.clear();
             int u = to_node_index;
-            if (prev[u] != -1 || u == from_node_index)
-            {
-                while (u != -1)
-                {
+            if (prev[u] != -1 || u == from_node_index) {
+                while (u != -1) {
                     node_indices.push_back(u);
                     u = prev[u];
                 }
@@ -158,4 +137,4 @@ namespace explorer
 
         return shortest_dist;
     }
-} // namespace explorer
+}  // namespace explorer

@@ -11,94 +11,171 @@
 #pragma once
 
 #include <geometry_msgs/Point.h>
+
 #include "explorer/lidar_model.h"
 
-namespace viewpoint_ns
-{
-    class ViewPoint
-    {
+namespace viewpoint_ns {
+    class ViewPoint {
     public:
         explicit ViewPoint(double x = 0.0, double y = 0.0, double z = 0.0);
         explicit ViewPoint(const geometry_msgs::Point& position);
         ~ViewPoint() = default;
 
-        template <class PCLPointType>
-        void UpdateCoverage(const PCLPointType& point)
-        {
+        template<class PCLPointType>
+        void UpdateCoverage(const PCLPointType& point) {
             lidar_model_.UpdateCoverage<PCLPointType>(point);
         }
-        template <class PCLPointType>
-        bool CheckVisibility(const PCLPointType& point, double occlusion_threshold) const
-        {
+        template<class PCLPointType>
+        bool CheckVisibility(const PCLPointType& point, double occlusion_threshold) const {
             return lidar_model_.CheckVisibility<PCLPointType>(point, occlusion_threshold);
         }
-        void SetPosition(const geometry_msgs::Point& position) { lidar_model_.setPosition(position); }
-        double GetX() const { return lidar_model_.getPosition().x; }
-        double GetY() const { return lidar_model_.getPosition().y; }
-        double GetHeight() const { return lidar_model_.getPosition().z; }
+        void SetPosition(const geometry_msgs::Point& position) {
+            lidar_model_.setPosition(position);
+        }
+        double GetX() const {
+            return lidar_model_.getPosition().x;
+        }
+        double GetY() const {
+            return lidar_model_.getPosition().y;
+        }
+        double GetHeight() const {
+            return lidar_model_.getPosition().z;
+        }
 
-        void SetHeight(double height) { lidar_model_.SetHeight(height); }
+        void SetHeight(double height) {
+            lidar_model_.SetHeight(height);
+        }
 
-        geometry_msgs::Point GetPosition() const { return lidar_model_.getPosition(); }
+        geometry_msgs::Point GetPosition() const {
+            return lidar_model_.getPosition();
+        }
         void ResetCoverage();
         void Reset();
 
-        void SetInCollision(const bool in_collision) { in_collision_ = in_collision; }
-        bool InCollision() const { return in_collision_; }
+        void SetInCollision(const bool in_collision) {
+            in_collision_ = in_collision;
+        }
+        bool InCollision() const {
+            return in_collision_;
+        }
 
-        void SetInLineOfSight(const bool in_line_of_sight) { in_line_of_sight_ = in_line_of_sight; }
-        bool InLineOfSight() const { return in_line_of_sight_; }
+        void SetInLineOfSight(const bool in_line_of_sight) {
+            in_line_of_sight_ = in_line_of_sight;
+        }
+        bool InLineOfSight() const {
+            return in_line_of_sight_;
+        }
 
-        void SetInCurrentFrameLineOfSight(const bool in_current_frame_line_of_sight)
-        {
+        void SetInCurrentFrameLineOfSight(const bool in_current_frame_line_of_sight) {
             in_current_frame_line_of_sight_ = in_current_frame_line_of_sight;
         }
-        bool InCurrentFrameLineOfSight() const { return in_current_frame_line_of_sight_; }
+        bool InCurrentFrameLineOfSight() const {
+            return in_current_frame_line_of_sight_;
+        }
 
-        void SetConnected(const bool connected) { connected_ = connected; }
-        bool Connected() const { return connected_; }
+        void SetConnected(const bool connected) {
+            connected_ = connected;
+        }
+        bool Connected() const {
+            return connected_;
+        }
 
-        void SetVisited(const bool visited) { visited_ = visited; }
-        bool Visited() const { return visited_; }
+        void SetVisited(const bool visited) {
+            visited_ = visited;
+        }
+        bool Visited() const {
+            return visited_;
+        }
 
-        void SetSelected(const bool selected) { selected_ = selected; }
-        bool Selected() const { return selected_; }
+        void SetSelected(const bool selected) {
+            selected_ = selected;
+        }
+        bool Selected() const {
+            return selected_;
+        }
 
-        void SetCandidate(const bool candidate) { is_candidate_ = candidate; }
-        bool IsCandidate() const { return is_candidate_; }
+        void SetCandidate(const bool candidate) {
+            is_candidate_ = candidate;
+        }
+        bool IsCandidate() const {
+            return is_candidate_;
+        }
 
-        void SetHasTerrainHeight(const bool has_terrain_height) { has_terrain_height_ = has_terrain_height; }
-        bool HasTerrainHeight() const { return has_terrain_height_; }
+        void SetHasTerrainHeight(const bool has_terrain_height) {
+            has_terrain_height_ = has_terrain_height;
+        }
+        bool HasTerrainHeight() const {
+            return has_terrain_height_;
+        }
 
-        void SetTerrainHeight(const double terrain_height) { terrain_height_ = terrain_height; }
-        double GetTerrainHeight() const { return terrain_height_; }
+        void SetTerrainHeight(const double terrain_height) {
+            terrain_height_ = terrain_height;
+        }
+        double GetTerrainHeight() const {
+            return terrain_height_;
+        }
 
-        void SetHasTerrainNeighbor(const bool has_terrain_neighbor) { has_terrain_neighbor_ = has_terrain_neighbor; }
-        bool HasTerrainNeighbor() const { return has_terrain_neighbor_; }
+        void SetHasTerrainNeighbor(const bool has_terrain_neighbor) {
+            has_terrain_neighbor_ = has_terrain_neighbor;
+        }
+        bool HasTerrainNeighbor() const {
+            return has_terrain_neighbor_;
+        }
 
-        void SetInExploringCell(const bool in_exploring_cell) { in_exploring_cell_ = in_exploring_cell; }
-        bool InExploringCell() const { return in_exploring_cell_; }
+        void SetInExploringCell(const bool in_exploring_cell) {
+            in_exploring_cell_ = in_exploring_cell;
+        }
+        bool InExploringCell() const {
+            return in_exploring_cell_;
+        }
 
-        void SetCellInd(const int cell_ind) { cell_ind_ = cell_ind; }
-        int GetCellInd() const { return cell_ind_; }
+        void SetCellInd(const int cell_ind) {
+            cell_ind_ = cell_ind;
+        }
+        int GetCellInd() const {
+            return cell_ind_;
+        }
 
-        int GetCellIndex() const { return cell_ind_; }
+        int GetCellIndex() const {
+            return cell_ind_;
+        }
 
-        void GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const
-        {
+        void GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const {
             lidar_model_.GetVisualizationCloud(vis_cloud);
         }
-        void ResetCoveredPointList() { covered_point_list_.clear(); }
-        void ResetCoveredFrontierPointList() { covered_frontier_point_list_.clear(); }
-        const std::vector<int>& GetCoveredPointList() const { return covered_point_list_; }
-        const std::vector<int>& GetCoveredFrontierPointList() const { return covered_frontier_point_list_; }
-        void AddCoveredPoint(const int point_idx) { covered_point_list_.push_back(point_idx); }
-        void AddCoveredFrontierPoint(const int point_idx) { covered_frontier_point_list_.push_back(point_idx); }
-        int GetCoveredPointNum() const { return covered_point_list_.size(); }
-        int GetCoveredFrontierPointNum() const { return covered_frontier_point_list_.size(); }
-        int GetCollisionFrameCount() const { return collision_frame_count_; }
-        void AddCollisionFrame() { collision_frame_count_++; }
-        void ResetCollisionFrameCount() { collision_frame_count_ = 0; }
+        void ResetCoveredPointList() {
+            covered_point_list_.clear();
+        }
+        void ResetCoveredFrontierPointList() {
+            covered_frontier_point_list_.clear();
+        }
+        const std::vector<int>& GetCoveredPointList() const {
+            return covered_point_list_;
+        }
+        const std::vector<int>& GetCoveredFrontierPointList() const {
+            return covered_frontier_point_list_;
+        }
+        void AddCoveredPoint(const int point_idx) {
+            covered_point_list_.push_back(point_idx);
+        }
+        void AddCoveredFrontierPoint(const int point_idx) {
+            covered_frontier_point_list_.push_back(point_idx);
+        }
+        int GetCoveredPointNum() const {
+            return covered_point_list_.size();
+        }
+        int GetCoveredFrontierPointNum() const {
+            return covered_frontier_point_list_.size();
+        }
+        int GetCollisionFrameCount() const {
+            return collision_frame_count_;
+        }
+        void AddCollisionFrame() {
+            collision_frame_count_++;
+        }
+        void ResetCollisionFrameCount() {
+            collision_frame_count_ = 0;
+        }
 
     private:
         lidar_model_ns::LiDARModel lidar_model_;
@@ -128,13 +205,13 @@ namespace viewpoint_ns
         // The index of this viewpoint among all the candidate viewpoints 这个视点在所有候选视点之中的索引
         int collision_frame_count_;
         // For debug
-        double terrain_height_; // 地形高度
-        bool has_terrain_neighbor_; //
+        double terrain_height_;  // 地形高度
+        bool has_terrain_neighbor_;  //
         // Whether the viewpoint is in line of sight in the current frame
-        bool in_current_frame_line_of_sight_; // 该视点是否在当前帧的视线范围内
+        bool in_current_frame_line_of_sight_;  // 该视点是否在当前帧的视线范围内
         // Indices of the covered points
-        std::vector<int> covered_point_list_; // 覆盖的点集合列表
+        std::vector<int> covered_point_list_;  // 覆盖的点集合列表
         // Indices of the covered frontier points
-        std::vector<int> covered_frontier_point_list_; // 覆盖的边界点集合列表
+        std::vector<int> covered_frontier_point_list_;  // 覆盖的边界点集合列表
     };
-} // namespace viewpoint_ns
+}  // namespace viewpoint_ns

@@ -10,9 +10,8 @@
  */
 #pragma once
 
-#include <vector>
-
 #include <Eigen/Core>
+#include <vector>
 
 // PCL
 #include <pcl/filters/voxel_grid.h>
@@ -25,40 +24,34 @@
 
 #include "explorer/grid.h"
 
-namespace pointcloud_manager_ns
-{
-    class PointCloudManager
-    {
+namespace pointcloud_manager_ns {
+    class PointCloudManager {
     public:
         typedef pcl::PointXYZRGBNormal PCLPointType;
         typedef pcl::PointCloud<pcl::PointXYZRGBNormal> PCLCloudType;
         typedef typename pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr PCLCloudTypePtr;
 
         explicit PointCloudManager(int row_num = 20, int col_num = 20, int level_num = 10,
-                                   int max_cell_point_num = 100000, double cell_size = 24, double cell_height = 3,
-                                   int neighbor_cell_num = 5);
+                                   int max_cell_point_num = 100000, double cell_size = 24,
+                                   double cell_height = 3, int neighbor_cell_num = 5);
         ~PointCloudManager() = default;
         bool UpdateRobotPosition(const geometry_msgs::Point& robot_position);
-        template <class InputPCLPointType>
-        void UpdatePointCloud(const pcl::PointCloud<InputPCLPointType>& cloud_in)
-        {
-            for (const auto& cloud_in_point : cloud_in.points)
-            {
+        template<class InputPCLPointType>
+        void UpdatePointCloud(const pcl::PointCloud<InputPCLPointType>& cloud_in) {
+            for (const auto& cloud_in_point : cloud_in.points) {
                 PCLPointType point;
                 point.x = cloud_in_point.x;
                 point.y = cloud_in_point.y;
                 point.z = cloud_in_point.z;
-                Eigen::Vector3i cell_sub = pointcloud_grid_->Pos2Sub(Eigen::Vector3d(point.x, point.y, point.z));
-                if (!pointcloud_grid_->InRange(cell_sub))
-                    continue;
+                Eigen::Vector3i cell_sub =
+                    pointcloud_grid_->Pos2Sub(Eigen::Vector3d(point.x, point.y, point.z));
+                if (!pointcloud_grid_->InRange(cell_sub)) continue;
                 int ind = pointcloud_grid_->Sub2Ind(cell_sub);
                 pointcloud_grid_->GetCell(ind)->points.push_back(point);
             }
 
-            for (int i = 0; i < pointcloud_grid_->GetCellNumber(); ++i)
-            {
-                if (pointcloud_grid_->GetCell(i)->points.empty())
-                    continue;
+            for (int i = 0; i < pointcloud_grid_->GetCellNumber(); ++i) {
+                if (pointcloud_grid_->GetCell(i)->points.empty()) continue;
                 cloud_dwz_filter_.setInputCloud(pointcloud_grid_->GetCell(i));
                 cloud_dwz_filter_.setLeafSize(kCloudDwzFilterLeafSize, kCloudDwzFilterLeafSize,
                                               kCloudDwzFilterLeafSize);
@@ -72,10 +65,17 @@ namespace pointcloud_manager_ns
         void GetOccupancyCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& occupancy_cloud) const;
         void StoreOccupancyCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& occupancy_cloud) const;
         void GetMarker(visualization_msgs::Marker& marker) const;
-        void GetVisualizationPointCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const;
-        Eigen::Vector3d GetNeighborCellsOrigin() { return neighbor_cells_origin_; }
-        geometry_msgs::Point GetOrigin() const { return origin_; }
-        double& SetCloudDwzFilterLeafSize() { return kCloudDwzFilterLeafSize; }
+        void GetVisualizationPointCloud(
+            const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const;
+        Eigen::Vector3d GetNeighborCellsOrigin() {
+            return neighbor_cells_origin_;
+        }
+        geometry_msgs::Point GetOrigin() const {
+            return origin_;
+        }
+        double& SetCloudDwzFilterLeafSize() {
+            return kCloudDwzFilterLeafSize;
+        }
         void GetCloudPointIndex(int index, int& cloud_index, int& cloud_point_index) const;
         int GetAllPointNum() const;
 
@@ -115,4 +115,4 @@ namespace pointcloud_manager_ns
 
         void UpdateOrigin();
     };
-} // namespace pointcloud_manager_ns
+}  // namespace pointcloud_manager_ns

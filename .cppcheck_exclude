@@ -1,0 +1,9 @@
+constStatement:*
+unmatchedSuppression:*
+syntaxError:*/UT*.cpp
+*:*/cmake-build-*/*_autogen/*
+*:/usr/include/*
+*:/usr/local/include/*
+*:/opt/ros/*
+*:*/ninebot_log/*/ninebot_log.cpp
+*:pnc_behavior_tree/include/pnc_behavior_tree/connection_manager/*

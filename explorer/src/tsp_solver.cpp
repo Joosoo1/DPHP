@@ -3,25 +3,23 @@
 //
 
 #include "explorer/tsp_solver.h"
-#include "ortools/constraint_solver/routing_parameters.h"
-#include "explorer/misc_utils.h"
 
-namespace tsp_solver_ns
-{
-    TSPSolver::TSPSolver(DataModel data) : data_(std::move(data)), solution_(nullptr)
-    {
+#include "explorer/misc_utils.h"
+#include "ortools/constraint_solver/routing_parameters.h"
+
+namespace tsp_solver_ns {
+    TSPSolver::TSPSolver(DataModel data) : data_(std::move(data)), solution_(nullptr) {
         // Create Routing Index Manager
-        manager_ = std::make_unique<RoutingIndexManager>(data_.distance_matrix.size(), data_.num_vehicles, data_.depot);
+        manager_ = std::make_unique<RoutingIndexManager>(data_.distance_matrix.size(),
+                                                         data_.num_vehicles, data_.depot);
 
         // Create Routing Model.
         routing_ = std::make_unique<RoutingModel>(*manager_);
     }
 
-    void TSPSolver::Solve()
-    {
+    void TSPSolver::Solve() {
         const int transit_callback_index = routing_->RegisterTransitCallback(
-            [this](const int64 from_index, const int64 to_index) -> int64
-            {
+            [this](const int64 from_index, const int64 to_index) -> int64 {
                 // Convert from routing variable Index to distance matrix NodeIndex.
                 const auto from_node = manager_->IndexToNode(from_index).value();
                 const auto to_node = manager_->IndexToNode(to_index).value();
@@ -39,16 +37,14 @@ namespace tsp_solver_ns
         solution_ = routing_->SolveWithParameters(searchParameters);
     }
 
-    void TSPSolver::PrintSolution() const
-    {
+    void TSPSolver::PrintSolution() const {
         // Inspect solution.
         LOG(INFO) << "Objective: " << (solution_->ObjectiveValue()) / 10.0 << " meters";
         int64 index = routing_->Start(0);
         LOG(INFO) << "Route:";
         int64 distance{0};
         std::stringstream route;
-        while (routing_->IsEnd(index) == false)
-        {
+        while (routing_->IsEnd(index) == false) {
             route << manager_->IndexToNode(index).value() << " -> ";
             int64 previous_index = index;
             index = solution_->Value(routing_->NextVar(index));
@@ -59,25 +55,23 @@ namespace tsp_solver_ns
         LOG(INFO) << "Problem solved in " << routing_->solver()->wall_time() << "ms";
     }
 
-    int TSPSolver::getComputationTime() const { return routing_->solver()->wall_time(); }
+    int TSPSolver::getComputationTime() const {
+        return routing_->solver()->wall_time();
+    }
 
-    void TSPSolver::getSolutionNodeIndex(std::vector<int>& node_index, const bool has_dummy) const
-    {
+    void TSPSolver::getSolutionNodeIndex(std::vector<int>& node_index, const bool has_dummy) const {
         node_index.clear();
         int index = routing_->Start(0);
         int end_index = index;
-        while (routing_->IsEnd(index) == false)
-        {
+        while (routing_->IsEnd(index) == false) {
             node_index.push_back(manager_->IndexToNode(index).value());
             index = solution_->Value(routing_->NextVar(index));
         }
         // push back the end node index
         //       node_index.push_back(end_index);
-        if (has_dummy)
-        {
+        if (has_dummy) {
             const int dummy_node_index = data_.distance_matrix.size() - 1;
-            if (node_index[1] == dummy_node_index)
-            {
+            if (node_index[1] == dummy_node_index) {
                 // delete dummy node
                 node_index.erase(node_index.begin() + 1);
                 // push the start node to the end
@@ -86,14 +80,15 @@ namespace tsp_solver_ns
                 node_index.erase(node_index.begin());
                 // reverse the whole array 翻转整个数组
                 std::reverse(node_index.begin(), node_index.end());
-            }
-            else // the last node is fake node
+            } else  // the last node is fake node
             {
-                node_index.pop_back(); // 弹出最后一个数组
+                node_index.pop_back();  // 弹出最后一个数组
             }
         }
     }
 
-    double TSPSolver::getPathLength() const { return (solution_->ObjectiveValue()) / 10.0; }
+    double TSPSolver::getPathLength() const {
+        return (solution_->ObjectiveValue()) / 10.0;
+    }
 
-} // namespace tsp_solver_ns
+}  // namespace tsp_solver_ns

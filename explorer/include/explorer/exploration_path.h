@@ -10,17 +10,17 @@
  */
 #pragma once
 
-#include <Eigen/Core>
 #include <nav_msgs/Path.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+
+#include <Eigen/Core>
 #include <vector>
+
 #include "explorer/misc_utils.h"
 
-namespace exploration_path_ns
-{
-    enum class NodeType
-    {
+namespace exploration_path_ns {
+    enum class NodeType {
         ROBOT = 0,
         LOOKAHEAD_POINT = 2,
         LOCAL_VIEWPOINT = 4,
@@ -32,8 +32,7 @@ namespace exploration_path_ns
         HOME = 5
     };
 
-    struct Node
-    {
+    struct Node {
         NodeType type_;
         Eigen::Vector3d position_;
         int local_viewpoint_ind_;
@@ -50,12 +49,13 @@ namespace exploration_path_ns
         friend bool operator!=(const Node& n1, const Node& n2);
     };
 
-    struct ExplorationPath
-    {
+    struct ExplorationPath {
         std::vector<Node> nodes_;
         double GetLength() const;
 
-        int GetNodeNum() const { return nodes_.size(); }
+        int GetNodeNum() const {
+            return nodes_.size();
+        }
 
         void Append(const Node& node);
         void Append(const ExplorationPath& path);
@@ -67,4 +67,4 @@ namespace exploration_path_ns
         void GetNodePositions(std::vector<Eigen::Vector3d>& positions) const;
         void Reset();
     };
-} // namespace exploration_path_ns
+}  // namespace exploration_path_ns

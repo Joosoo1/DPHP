@@ -14,21 +14,19 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include "explorer/misc_utils.h"
-
 #include <utility>
 
-namespace pointcloud_utils_ns
-{
-    class VerticalSurfaceExtractor;
-    template <typename PCLPointType>
-    class PointCloudDownsizer;
-    template <typename PCLPointType>
-    struct PCLCloud;
-} // namespace pointcloud_utils_ns
+#include "explorer/misc_utils.h"
 
-class pointcloud_utils_ns::VerticalSurfaceExtractor
-{
+namespace pointcloud_utils_ns {
+    class VerticalSurfaceExtractor;
+    template<typename PCLPointType>
+    class PointCloudDownsizer;
+    template<typename PCLPointType>
+    struct PCLCloud;
+}  // namespace pointcloud_utils_ns
+
+class pointcloud_utils_ns::VerticalSurfaceExtractor {
 private:
     double kRadiusThreshold;
     double kZDiffMax;
@@ -40,21 +38,26 @@ private:
 public:
     explicit VerticalSurfaceExtractor();
     ~VerticalSurfaceExtractor() = default;
-    void SetRadiusThreshold(double radius_threshold) { kRadiusThreshold = radius_threshold; }
-    void SetZDiffMax(double z_diff_max) { kZDiffMax = z_diff_max; }
-    void SetZDiffMin(double z_diff_min) { kZDiffMin = z_diff_min; }
-    void SetNeighborThreshold(int neighbor_threshold) { kNeighborThreshold = neighbor_threshold; }
-    template <class PCLPointType>
-    void ExtractVerticalSurface(typename pcl::PointCloud<PCLPointType>::Ptr& cloud, double z_max = DBL_MAX,
-                                double z_min = -DBL_MAX)
-    {
-        if (cloud->points.empty())
-        {
+    void SetRadiusThreshold(double radius_threshold) {
+        kRadiusThreshold = radius_threshold;
+    }
+    void SetZDiffMax(double z_diff_max) {
+        kZDiffMax = z_diff_max;
+    }
+    void SetZDiffMin(double z_diff_min) {
+        kZDiffMin = z_diff_min;
+    }
+    void SetNeighborThreshold(int neighbor_threshold) {
+        kNeighborThreshold = neighbor_threshold;
+    }
+    template<class PCLPointType>
+    void ExtractVerticalSurface(typename pcl::PointCloud<PCLPointType>::Ptr& cloud,
+                                double z_max = DBL_MAX, double z_min = -DBL_MAX) {
+        if (cloud->points.empty()) {
             return;
         }
         pcl::copyPointCloud(*cloud, *extractor_cloud_);
-        for (auto& point : extractor_cloud_->points)
-        {
+        for (auto& point : extractor_cloud_->points) {
             point.intensity = point.z;
             point.z = 0.0;
         }
@@ -62,29 +65,24 @@ public:
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
         std::vector<int> neighbor_indices;
         std::vector<float> neighbor_sqdist;
-        for (int i = 0; i < extractor_cloud_->points.size(); i++)
-        {
+        for (int i = 0; i < extractor_cloud_->points.size(); i++) {
             pcl::PointXYZI point = extractor_cloud_->points[i];
-            if (point.intensity > z_max || point.intensity < z_min)
-                continue;
-            extractor_kdtree_->radiusSearch(point, kRadiusThreshold, neighbor_indices, neighbor_sqdist);
+            if (point.intensity > z_max || point.intensity < z_min) continue;
+            extractor_kdtree_->radiusSearch(point, kRadiusThreshold, neighbor_indices,
+                                            neighbor_sqdist);
             bool is_vertical = false;
             int neighbor_count = 0;
-            for (const auto& idx : neighbor_indices)
-            {
+            for (const auto& idx : neighbor_indices) {
                 double z_diff = std::abs(point.intensity - extractor_cloud_->points[idx].intensity);
-                if (z_diff > kZDiffMin && z_diff < kZDiffMax)
-                {
+                if (z_diff > kZDiffMin && z_diff < kZDiffMax) {
                     neighbor_count++;
-                    if (neighbor_count >= kNeighborThreshold)
-                    {
+                    if (neighbor_count >= kNeighborThreshold) {
                         is_vertical = true;
                         break;
                     }
                 }
             }
-            if (is_vertical)
-            {
+            if (is_vertical) {
                 inliers->indices.push_back(i);
             }
         }
@@ -95,18 +93,15 @@ public:
         extract.filter(*cloud);
     }
 
-    template <class InputPCLPointType, class OutputPCLPointType>
+    template<class InputPCLPointType, class OutputPCLPointType>
     void ExtractVerticalSurface(typename pcl::PointCloud<InputPCLPointType>::Ptr& cloud_in,
-                                typename pcl::PointCloud<OutputPCLPointType>::Ptr& cloud_out, double z_max = DBL_MAX,
-                                double z_min = -DBL_MAX)
-    {
-        if (cloud_in->points.empty())
-        {
+                                typename pcl::PointCloud<OutputPCLPointType>::Ptr& cloud_out,
+                                double z_max = DBL_MAX, double z_min = -DBL_MAX) {
+        if (cloud_in->points.empty()) {
             return;
         }
         pcl::copyPointCloud(*cloud_in, *extractor_cloud_);
-        for (auto& point : extractor_cloud_->points)
-        {
+        for (auto& point : extractor_cloud_->points) {
             point.intensity = point.z;
             point.z = 0.0;
         }
@@ -114,29 +109,24 @@ public:
         cloud_out->clear();
         std::vector<int> neighbor_indices;
         std::vector<float> neighbor_sqdist;
-        for (int i = 0; i < extractor_cloud_->points.size(); i++)
-        {
+        for (int i = 0; i < extractor_cloud_->points.size(); i++) {
             pcl::PointXYZI point = extractor_cloud_->points[i];
-            if (point.intensity > z_max || point.intensity < z_min)
-                continue;
-            extractor_kdtree_->radiusSearch(point, kRadiusThreshold, neighbor_indices, neighbor_sqdist);
+            if (point.intensity > z_max || point.intensity < z_min) continue;
+            extractor_kdtree_->radiusSearch(point, kRadiusThreshold, neighbor_indices,
+                                            neighbor_sqdist);
             bool is_vertical = false;
             int neighbor_count = 0;
-            for (const auto& idx : neighbor_indices)
-            {
+            for (const auto& idx : neighbor_indices) {
                 double z_diff = std::abs(point.intensity - extractor_cloud_->points[idx].intensity);
-                if (z_diff > kZDiffMin && z_diff < kZDiffMax)
-                {
+                if (z_diff > kZDiffMin && z_diff < kZDiffMax) {
                     neighbor_count++;
-                    if (neighbor_count >= kNeighborThreshold)
-                    {
+                    if (neighbor_count >= kNeighborThreshold) {
                         is_vertical = true;
                         break;
                     }
                 }
             }
-            if (is_vertical)
-            {
+            if (is_vertical) {
                 OutputPCLPointType point_out;
                 point_out.x = cloud_in->points[i].x;
                 point_out.y = cloud_in->points[i].y;
@@ -147,20 +137,17 @@ public:
     }
 };
 
-template <typename PCLPointType>
-class pointcloud_utils_ns::PointCloudDownsizer
-{
+template<typename PCLPointType>
+class pointcloud_utils_ns::PointCloudDownsizer {
 private:
     pcl::VoxelGrid<PCLPointType> pointcloud_downsize_filter_;
 
 public:
     explicit PointCloudDownsizer() = default;
     ~PointCloudDownsizer() = default;
-    void Downsize(typename pcl::PointCloud<PCLPointType>::Ptr& cloud, double leaf_size_x, double leaf_size_y,
-                  double leaf_size_z)
-    {
-        if (cloud->points.empty())
-        {
+    void Downsize(typename pcl::PointCloud<PCLPointType>::Ptr& cloud, double leaf_size_x,
+                  double leaf_size_y, double leaf_size_z) {
+        if (cloud->points.empty()) {
             return;
         }
         pointcloud_downsize_filter_.setLeafSize(leaf_size_x, leaf_size_y, leaf_size_z);
@@ -171,31 +158,30 @@ public:
 
 // 经典范式
 // 模版
-template <typename PCLPointType>
-struct pointcloud_utils_ns::PCLCloud
-{
+template<typename PCLPointType>
+struct pointcloud_utils_ns::PCLCloud {
     static int id_;
     std::string pub_cloud_topic_;
     std::string frame_id_;
-    typename pcl::PointCloud<PCLPointType>::Ptr cloud_; // 别名
+    typename pcl::PointCloud<PCLPointType>::Ptr cloud_;  // 别名
     ros::Publisher cloud_pub_;
 
-    PCLCloud(ros::NodeHandle* nh, std::string pub_cloud_topic, std::string frame_id) :
-        pub_cloud_topic_(std::move(pub_cloud_topic)), frame_id_(std::move(frame_id))
-    {
+    PCLCloud(ros::NodeHandle* nh, std::string pub_cloud_topic, std::string frame_id)
+        : pub_cloud_topic_(std::move(pub_cloud_topic)), frame_id_(std::move(frame_id)) {
         cloud_ = typename pcl::PointCloud<PCLPointType>::Ptr(new pcl::PointCloud<PCLPointType>);
         cloud_pub_ = nh->advertise<sensor_msgs::PointCloud2>(pub_cloud_topic_, 2);
     }
 
-    PCLCloud(ros::NodeHandle& nh, std::string  pub_cloud_topic, std::string  frame_id) :
-        pub_cloud_topic_(std::move(pub_cloud_topic)), frame_id_(std::move(frame_id))
-    {
+    PCLCloud(ros::NodeHandle& nh, std::string pub_cloud_topic, std::string frame_id)
+        : pub_cloud_topic_(std::move(pub_cloud_topic)), frame_id_(std::move(frame_id)) {
         cloud_ = typename pcl::PointCloud<PCLPointType>::Ptr(new pcl::PointCloud<PCLPointType>);
         cloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>(pub_cloud_topic_, 2);
     }
 
     ~PCLCloud() = default;
 
-    void Publish() { misc_utils_ns::PublishCloud<pcl::PointCloud<PCLPointType>>(cloud_pub_, *cloud_, frame_id_); }
+    void Publish() {
+        misc_utils_ns::PublishCloud<pcl::PointCloud<PCLPointType>>(cloud_pub_, *cloud_, frame_id_);
+    }
     typedef std::shared_ptr<PCLCloud> Ptr;
 };

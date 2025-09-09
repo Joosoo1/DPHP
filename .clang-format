@@ -1,0 +1,37 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+AccessModifierOffset: -4
+AlignOperands: DontAlign
+AlignTrailingComments:
+  Kind: Never
+AllowAllArgumentsOnNextLine: true
+AllowShortBlocksOnASingleLine: Empty
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: true  # TODO 强制短if语句换行
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: Yes
+BreakBeforeTernaryOperators: true
+BreakBeforeBinaryOperators: NonAssignment
+BreakStringLiterals: false
+BinPackArguments: true # TODO 压缩/换行 函数调用中的参数。如果为true，可能可读性差。如果为false，可能导致一些特别稀疏的换行
+BinPackParameters: true # TODO 压缩/换行 函数声明中的参数
+BitFieldColonSpacing: None
+ColumnLimit:     100
+#ContinuationIndentWidth: 8 # clion default 8
+DerivePointerAlignment: false # TODO 是否分析并使用当前文件的指针与引用的风格
+FixNamespaceComments: true
+IndentWidth: 4
+IndentWrappedFunctionNames: true
+InsertBraces: false  # TODO 在控制语句缺少括号的地方自动添加括号 不可用，不安全
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: All
+ReflowComments: false
+SpaceAfterTemplateKeyword: false  # same as clion
+SpaceBeforeAssignmentOperators: true
+SpacesInContainerLiterals: false
+Standard:        c++17
+TabWidth:        4
+UseTab:          Never

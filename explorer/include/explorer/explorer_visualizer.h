@@ -12,19 +12,16 @@
 
 #include <geometry_msgs/Point.h>
 #include <nav_msgs/Path.h>
+#include <pcl/point_types.h>
 #include <ros/ros.h>
 #include <std_msgs/ColorRGBA.h>
-
-#include <pcl/point_types.h>
 
 #include "explorer/grid_world.h"
 #include "explorer/misc_utils.h"
 #include "explorer/pointcloud_utils.h"
 
-namespace explorer_visualizer_ns
-{
-    class TAREVisualizer
-    {
+namespace explorer_visualizer_ns {
+    class TAREVisualizer {
     public:
         explicit TAREVisualizer(ros::NodeHandle& nh, ros::NodeHandle& nh_private);
         bool ReadParameters(ros::NodeHandle& nh);
@@ -67,4 +64,4 @@ namespace explorer_visualizer_ns
         geometry_msgs::Point global_subspace_origin_;
         geometry_msgs::Point global_subspace_size_;
     };
-} // namespace explorer_visualizer_ns
+}  // namespace explorer_visualizer_ns

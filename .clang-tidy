@@ -1,0 +1,35 @@
+---
+Checks:
+  - '-clang-diagnostic-nan-infinity-disabled'
+  - 'modernize-*'
+  - '-modernize-use-trailing-return-type'
+  - '-modernize-avoid-bind' # used in ros boost::bind
+  - 'google-build-using-namespace'
+  - 'google-build-namespaces'
+  - 'google-explicit-constructor'
+  - 'google-global-names-in-headers'
+  - 'google-readability-casting'
+  - 'google-readability-constructor'
+  - 'google-readability-function-size'
+  - 'google-readability-identifier-length'
+  - 'google-readability-namespace-comments'
+  - 'cert-*'
+  - 'bugprone-*'
+  - '-bugprone-easily-swappable-parameters'
+  - 'cppcoreguidelines-*'
+  - '-cppcoreguidelines-avoid-magic-numbers' # hardcoded literals
+  - '-cppcoreguidelines-pro-type-vararg' # used in ros log and ninebot log
+  - '-cppcoreguidelines-avoid-do-while' # used in ros log and ninebot log
+  - '-cppcoreguidelines-pro-bounds-pointer-arithmetic' # used in traversing cv::Mat
+  - 'misc-*'
+  - '-misc-include-cleaner' # too much include
+  - 'performance-*'
+  - '-readability-*' # move readability to clang-format
+ExcludeHeaderFilterRegex: '.*/third_party/.*|^/usr/include/.*|^/usr/local/include/.*|^/opt/ros/.*|^.*moc_.*$|^.*ui_.*$|^.*qrc_.*$'
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+ExtraArgsBefore:
+  - '-Wno-missing-template-arg-list-after-template-kw' # see third_party/mower_planner/include/polyline2.h:152 .template
+...
+
+

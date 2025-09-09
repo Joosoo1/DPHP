@@ -10,24 +10,21 @@
  */
 #pragma once
 
-#include <Eigen/Core>
-#include <memory>
-
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <ros/ros.h>
 
-#include "explorer/grid.h"
-#include "explorer/rolling_grid.h"
-#include "explorer/misc_utils.h"
+#include <Eigen/Core>
+#include <memory>
 
-namespace rolling_occupancy_grid_ns
-{
-    class RollingOccupancyGrid
-    {
+#include "explorer/grid.h"
+#include "explorer/misc_utils.h"
+#include "explorer/rolling_grid.h"
+
+namespace rolling_occupancy_grid_ns {
+    class RollingOccupancyGrid {
     public:
-        enum CellState : char
-        {
+        enum CellState : char {
             UNKNOWN = 0,
             OCCUPIED = 1,
             FREE = 2,
@@ -37,23 +34,22 @@ namespace rolling_occupancy_grid_ns
         explicit RollingOccupancyGrid(ros::NodeHandle& nh);
         ~RollingOccupancyGrid() = default;
 
-        Eigen::Vector3d GetResolution() { return resolution_; }
+        Eigen::Vector3d GetResolution() {
+            return resolution_;
+        }
 
         void InitializeOrigin(const Eigen::Vector3d& origin);
         bool UpdateRobotPosition(const Eigen::Vector3d& robot_position);
-        template <class PointType>
-        void UpdateOccupancy(typename pcl::PointCloud<PointType>::Ptr& cloud)
-        {
-            if (!initialized_)
-            {
+        template<class PointType>
+        void UpdateOccupancy(typename pcl::PointCloud<PointType>::Ptr& cloud) {
+            if (!initialized_) {
                 return;
             }
             updated_grid_indices_.clear();
-            for (const auto& point : cloud->points)
-            {
-                Eigen::Vector3i sub = occupancy_array_->Pos2Sub(Eigen::Vector3d(point.x, point.y, point.z));
-                if (occupancy_array_->InRange(sub))
-                {
+            for (const auto& point : cloud->points) {
+                Eigen::Vector3i sub =
+                    occupancy_array_->Pos2Sub(Eigen::Vector3d(point.x, point.y, point.z));
+                if (occupancy_array_->InRange(sub)) {
                     int ind = occupancy_array_->Sub2Ind(sub);
                     int array_ind = rolling_grid_->GetArrayInd(ind);
                     occupancy_array_->SetCellValue(array_ind, OCCUPIED);
@@ -66,9 +62,11 @@ namespace rolling_occupancy_grid_ns
         void RayTraceHelper(const Eigen::Vector3i& start_sub, const Eigen::Vector3i& end_sub,
                             std::vector<Eigen::Vector3i>& cells) const;
 
-        void GetFrontier(const pcl::PointCloud<pcl::PointXYZI>::Ptr& frontier_cloud, const Eigen::Vector3d& origin,
-                         const Eigen::Vector3d& range) const;
-        pcl::PointCloud<pcl::PointXYZI>::Ptr GetRolledOutOccupancyCloud() { return occupancy_cloud_; }
+        void GetFrontier(const pcl::PointCloud<pcl::PointXYZI>::Ptr& frontier_cloud,
+                         const Eigen::Vector3d& origin, const Eigen::Vector3d& range) const;
+        pcl::PointCloud<pcl::PointXYZI>::Ptr GetRolledOutOccupancyCloud() {
+            return occupancy_cloud_;
+        }
         void GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const;
 
     private:
@@ -86,8 +84,9 @@ namespace rolling_occupancy_grid_ns
         std::vector<int> updated_grid_indices_;
         pcl::PointCloud<pcl::PointXYZI>::Ptr occupancy_cloud_;
 
-        static bool InRange(const Eigen::Vector3i& sub, const Eigen::Vector3i& sub_min, const Eigen::Vector3i& sub_max);
+        static bool InRange(const Eigen::Vector3i& sub, const Eigen::Vector3i& sub_min,
+                            const Eigen::Vector3i& sub_max);
 
         // void InitializeOrigin();
     };
-} // namespace rolling_occupancy_grid_ns
+}  // namespace rolling_occupancy_grid_ns

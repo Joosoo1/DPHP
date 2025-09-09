@@ -11,40 +11,44 @@
 
 #include "explorer/explorer_visualizer.h"
 
-namespace explorer_visualizer_ns
-{
-    TAREVisualizer::TAREVisualizer(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
-    {
+namespace explorer_visualizer_ns {
+    TAREVisualizer::TAREVisualizer(ros::NodeHandle& nh, ros::NodeHandle& nh_private) {
         ReadParameters(nh_private);
 
-        marker_publisher_ = nh.advertise<visualization_msgs::Marker>("explorer_visualizer/marker", 1);
+        marker_publisher_ =
+            nh.advertise<visualization_msgs::Marker>("explorer_visualizer/marker", 1);
         local_path_publisher_ = nh.advertise<nav_msgs::Path>("explorer_visualizer/local_path", 1);
 
-        global_subspaces_marker_ =
-            std::make_shared<misc_utils_ns::Marker>(nh, "explorer_visualizer/exploring_subspaces", kWorldFrameID);
-        local_planning_horizon_marker_ =
-            std::make_shared<misc_utils_ns::Marker>(nh, "explorer_visualizer/local_planning_horizon", kWorldFrameID);
+        global_subspaces_marker_ = std::make_shared<misc_utils_ns::Marker>(
+            nh, "explorer_visualizer/exploring_subspaces", kWorldFrameID);
+        local_planning_horizon_marker_ = std::make_shared<misc_utils_ns::Marker>(
+            nh, "explorer_visualizer/local_planning_horizon", kWorldFrameID);
 
-        uncovered_surface_point_cloud_ = std::make_shared<pointcloud_utils_ns::PCLCloud<pcl::PointXYZI>>(
-            nh, "explorer_visualizer/uncovered_surface_points", kWorldFrameID);
-        viewpoint_candidate_cloud_ = std::make_shared<pointcloud_utils_ns::PCLCloud<pcl::PointXYZI>>(
-            nh, "explorer_visualizer/viewpoint_candidates", kWorldFrameID);
+        uncovered_surface_point_cloud_ =
+            std::make_shared<pointcloud_utils_ns::PCLCloud<pcl::PointXYZI>>(
+                nh, "explorer_visualizer/uncovered_surface_points", kWorldFrameID);
+        viewpoint_candidate_cloud_ =
+            std::make_shared<pointcloud_utils_ns::PCLCloud<pcl::PointXYZI>>(
+                nh, "explorer_visualizer/viewpoint_candidates", kWorldFrameID);
         viewpoint_cloud_ = std::make_shared<pointcloud_utils_ns::PCLCloud<pcl::PointXYZI>>(
             nh, "explorer_visualizer/viewpoints", kWorldFrameID);
 
         InitializeMarkers();
     }
 
-    bool TAREVisualizer::ReadParameters(ros::NodeHandle& nh)
-    {
+    bool TAREVisualizer::ReadParameters(ros::NodeHandle& nh) {
         kExploringSubspaceMarkerColorGradientAlpha =
             misc_utils_ns::getParam<bool>(nh, "kExploringSubspaceMarkerColorGradientAlpha", true);
         kExploringSubspaceMarkerColorMaxAlpha =
             misc_utils_ns::getParam<double>(nh, "kExploringSubspaceMarkerColorMaxAlpha", 1.0);
-        kExploringSubspaceMarkerColor.r = misc_utils_ns::getParam<double>(nh, "kExploringSubspaceMarkerColorR", 0.0);
-        kExploringSubspaceMarkerColor.g = misc_utils_ns::getParam<double>(nh, "kExploringSubspaceMarkerColorG", 1.0);
-        kExploringSubspaceMarkerColor.b = misc_utils_ns::getParam<double>(nh, "kExploringSubspaceMarkerColorB", 0.0);
-        kExploringSubspaceMarkerColor.a = misc_utils_ns::getParam<double>(nh, "kExploringSubspaceMarkerColorA", 1.0);
+        kExploringSubspaceMarkerColor.r =
+            misc_utils_ns::getParam<double>(nh, "kExploringSubspaceMarkerColorR", 0.0);
+        kExploringSubspaceMarkerColor.g =
+            misc_utils_ns::getParam<double>(nh, "kExploringSubspaceMarkerColorG", 1.0);
+        kExploringSubspaceMarkerColor.b =
+            misc_utils_ns::getParam<double>(nh, "kExploringSubspaceMarkerColorB", 0.0);
+        kExploringSubspaceMarkerColor.a =
+            misc_utils_ns::getParam<double>(nh, "kExploringSubspaceMarkerColorA", 1.0);
 
         kLocalPlanningHorizonMarkerColor.r =
             misc_utils_ns::getParam<double>(nh, "kLocalPlanningHorizonMarkerColorR", 0.0);
@@ -55,26 +59,33 @@ namespace explorer_visualizer_ns
         kLocalPlanningHorizonMarkerColor.a =
             misc_utils_ns::getParam<double>(nh, "kLocalPlanningHorizonMarkerColorA", 1.0);
 
-        kLocalPlanningHorizonMarkerWidth = misc_utils_ns::getParam<double>(nh, "kLocalPlanningHorizonMarkerWidth", 0.3);
+        kLocalPlanningHorizonMarkerWidth =
+            misc_utils_ns::getParam<double>(nh, "kLocalPlanningHorizonMarkerWidth", 0.3);
         int viewpoint_number = misc_utils_ns::getParam<int>(nh, "viewpoint_manager/number_x", 40);
-        double viewpoint_resolution = misc_utils_ns::getParam<double>(nh, "viewpoint_manager/resolution_x", 1.0);
+        double viewpoint_resolution =
+            misc_utils_ns::getParam<double>(nh, "viewpoint_manager/resolution_x", 1.0);
         kGlobalSubspaceSize = viewpoint_number * viewpoint_resolution / 5;
         kGlobalSubspaceHeight = misc_utils_ns::getParam<double>(nh, "kGridWorldCellHeight", 3.0);
 
-        double viewpoint_num_x = misc_utils_ns::getParam<double>(nh, "viewpoint_manager/number_x", 35);
-        double viewpoint_num_y = misc_utils_ns::getParam<double>(nh, "viewpoint_manager/number_y", 35);
-        double viewpoint_resolution_x = misc_utils_ns::getParam<double>(nh, "viewpoint_manager/resolution_x", 1.1);
-        double viewpoint_resolution_y = misc_utils_ns::getParam<double>(nh, "viewpoint_manager/resolution_y", 1.1);
+        double viewpoint_num_x =
+            misc_utils_ns::getParam<double>(nh, "viewpoint_manager/number_x", 35);
+        double viewpoint_num_y =
+            misc_utils_ns::getParam<double>(nh, "viewpoint_manager/number_y", 35);
+        double viewpoint_resolution_x =
+            misc_utils_ns::getParam<double>(nh, "viewpoint_manager/resolution_x", 1.1);
+        double viewpoint_resolution_y =
+            misc_utils_ns::getParam<double>(nh, "viewpoint_manager/resolution_y", 1.1);
         kLocalPlanningHorizonSizeX = viewpoint_num_x * viewpoint_resolution_x;
         kLocalPlanningHorizonSizeY = viewpoint_num_y * viewpoint_resolution_y;
-        kLocalPlanningHorizonSizeZ = misc_utils_ns::getParam<double>(nh, "kLocalPlanningHorizonHeight", 3.0);
+        kLocalPlanningHorizonSizeZ =
+            misc_utils_ns::getParam<double>(nh, "kLocalPlanningHorizonHeight", 3.0);
         return true;
     }
 
-    void TAREVisualizer::InitializeMarkers() const
-    {
+    void TAREVisualizer::InitializeMarkers() const {
         global_subspaces_marker_->SetType(visualization_msgs::Marker::CUBE_LIST);
-        global_subspaces_marker_->SetScale(kGlobalSubspaceSize, kGlobalSubspaceSize, kGlobalSubspaceHeight);
+        global_subspaces_marker_->SetScale(kGlobalSubspaceSize, kGlobalSubspaceSize,
+                                           kGlobalSubspaceHeight);
         global_subspaces_marker_->SetColorRGBA(kExploringSubspaceMarkerColor);
 
         local_planning_horizon_marker_->SetType(visualization_msgs::Marker::LINE_LIST);
@@ -82,8 +93,8 @@ namespace explorer_visualizer_ns
         local_planning_horizon_marker_->SetColorRGBA(kExploringSubspaceMarkerColor);
     }
 
-    void TAREVisualizer::GetLocalPlanningHorizonMarker(const double x, const double y, const double z)
-    {
+    void TAREVisualizer::GetLocalPlanningHorizonMarker(const double x, const double y,
+                                                       const double z) {
         local_planning_horizon_origin_.x = x;
         local_planning_horizon_origin_.y = y;
         local_planning_horizon_origin_.z = z - kLocalPlanningHorizonSizeZ / 2;
@@ -158,17 +169,15 @@ namespace explorer_visualizer_ns
         local_planning_horizon_marker_->marker_.points.push_back(upper_right2);
     }
 
-    void TAREVisualizer::GetGlobalSubspaceMarker(const std::unique_ptr<grid_world_ns::GridWorld>& grid_world,
-                                                 const std::vector<int>& ordered_cell_indices) const
-    {
+    void TAREVisualizer::GetGlobalSubspaceMarker(
+        const std::unique_ptr<grid_world_ns::GridWorld>& grid_world,
+        const std::vector<int>& ordered_cell_indices) const {
         global_subspaces_marker_->marker_.points.clear();
         global_subspaces_marker_->marker_.colors.clear();
-        const size_t cell_num = ordered_cell_indices.size(); // 子空间tsp排序序列
-        for (int i = 0; i < cell_num; i++)
-        {
+        const size_t cell_num = ordered_cell_indices.size();  // 子空间tsp排序序列
+        for (int i = 0; i < cell_num; i++) {
             int cell_ind = ordered_cell_indices[i];
-            if (!grid_world->IndInBound(cell_ind))
-            {
+            if (!grid_world->IndInBound(cell_ind)) {
                 continue;
             }
             geometry_msgs::Point cell_center = grid_world->GetCellPosition(cell_ind);
@@ -177,12 +186,9 @@ namespace explorer_visualizer_ns
             color.g = 1.0;
             color.b = 0.0;
             // 颜色强度指数
-            if (kExploringSubspaceMarkerColorGradientAlpha)
-            {
+            if (kExploringSubspaceMarkerColorGradientAlpha) {
                 color.a = ((cell_num - i) * 1.0 / cell_num) * kExploringSubspaceMarkerColorMaxAlpha;
-            }
-            else
-            {
+            } else {
                 color.a = 1.0;
             }
             //
@@ -191,18 +197,14 @@ namespace explorer_visualizer_ns
         }
     }
 
-    void TAREVisualizer::PublishMarkers() const
-    {
+    void TAREVisualizer::PublishMarkers() const {
         local_planning_horizon_marker_->Publish();
-        if (!global_subspaces_marker_->marker_.points.empty())
-        {
+        if (!global_subspaces_marker_->marker_.points.empty()) {
             global_subspaces_marker_->SetAction(visualization_msgs::Marker::ADD);
             global_subspaces_marker_->Publish();
-        }
-        else
-        {
+        } else {
             global_subspaces_marker_->SetAction(visualization_msgs::Marker::DELETE);
             global_subspaces_marker_->Publish();
         }
     }
-} // namespace explorer_visualizer_ns
+}  // namespace explorer_visualizer_ns

@@ -20,14 +20,12 @@
 
 #include "explorer/misc_utils.h"
 
-namespace lidar_model_ns
-{
-    class LiDARModel
-    {
+namespace lidar_model_ns {
+    class LiDARModel {
     public:
         static double pointcloud_resolution_;
-        explicit LiDARModel(double px = 0.0, double py = 0.0, double pz = 0.0, double rw = 1.0, double rx = 0.0,
-                            double ry = 0.0, double rz = 0.0);
+        explicit LiDARModel(double px = 0.0, double py = 0.0, double pz = 0.0, double rw = 1.0,
+                            double rx = 0.0, double ry = 0.0, double rz = 0.0);
         explicit LiDARModel(const geometry_msgs::Pose& pose);
         ~LiDARModel() = default;
 
@@ -37,14 +35,12 @@ namespace lidar_model_ns
          * @tparam PointType
          * @param point
          */
-        template <class PointType>
-        void UpdateCoverage(const PointType& point)
-        {
+        template<class PointType>
+        void UpdateCoverage(const PointType& point) {
             const double distance_to_point =
                 misc_utils_ns::PointXYZDist<PointType, geometry_msgs::Point>(point, pose_.position);
 
-            if (isZero(distance_to_point))
-                return;
+            if (isZero(distance_to_point)) return;
 
             const double dx = point.x - pose_.position.x;
             const double dy = point.y - pose_.position.y;
@@ -56,21 +52,16 @@ namespace lidar_model_ns
             const int horizontal_neighbor_num = GetHorizontalNeighborNum(distance_to_point);
             const int vertical_neighbor_num = GetVerticalNeighborNum(distance_to_point);
 
-            for (int n = -horizontal_neighbor_num; n <= horizontal_neighbor_num; ++n)
-            {
+            for (int n = -horizontal_neighbor_num; n <= horizontal_neighbor_num; ++n) {
                 const int column_index = horizontal_angle + n;
-                if (!ColumnIndexInRange(column_index))
-                    continue;
-                for (int m = -vertical_neighbor_num; m <= vertical_neighbor_num; ++m)
-                {
+                if (!ColumnIndexInRange(column_index)) continue;
+                for (int m = -vertical_neighbor_num; m <= vertical_neighbor_num; ++m) {
                     const int row_index = vertical_angle + m;
-                    if (!RowIndexInRange(row_index))
-                        continue;
+                    if (!RowIndexInRange(row_index)) continue;
                     const int ind = sub2ind(row_index, column_index);
                     const double previous_distance_to_point = covered_voxel_[ind];
-                    if (isZero(previous_distance_to_point) || distance_to_point < previous_distance_to_point ||
-                        reset_[ind])
-                    {
+                    if (isZero(previous_distance_to_point)
+                        || distance_to_point < previous_distance_to_point || reset_[ind]) {
                         covered_voxel_[ind] = distance_to_point;
                         reset_[ind] = false;
                     }
@@ -87,14 +78,12 @@ namespace lidar_model_ns
          * @return true
          * @return false
          */
-        template <class PointType>
-        bool CheckVisibility(const PointType& point, const double occlusion_threshold) const
-        {
+        template<class PointType>
+        bool CheckVisibility(const PointType& point, const double occlusion_threshold) const {
             const double distance_to_point =
                 misc_utils_ns::PointXYZDist<PointType, geometry_msgs::Point>(point, pose_.position);
 
-            if (isZero(distance_to_point))
-                return false;
+            if (isZero(distance_to_point)) return false;
 
             const double dx = point.x - pose_.position.x;
             const double dy = point.y - pose_.position.y;
@@ -106,22 +95,18 @@ namespace lidar_model_ns
             const int horizontal_neighbor_num = GetHorizontalNeighborNum(distance_to_point);
             const int vertical_neighbor_num = GetVerticalNeighborNum(distance_to_point);
 
-            for (int n = -horizontal_neighbor_num; n <= horizontal_neighbor_num; ++n)
-            {
+            for (int n = -horizontal_neighbor_num; n <= horizontal_neighbor_num; ++n) {
                 const int column_index = horizontal_angle + n;
-                if (!ColumnIndexInRange(column_index))
-                    continue;
-                for (int m = -vertical_neighbor_num; m <= vertical_neighbor_num; ++m)
-                {
+                if (!ColumnIndexInRange(column_index)) continue;
+                for (int m = -vertical_neighbor_num; m <= vertical_neighbor_num; ++m) {
                     const int row_index = vertical_angle + m;
-                    if (!RowIndexInRange(row_index))
-                        continue;
+                    if (!RowIndexInRange(row_index)) continue;
                     const int ind = sub2ind(row_index, column_index);
                     const float previous_distance_to_point = covered_voxel_[ind];
-                    if ((!isZero(previous_distance_to_point) &&
-                         distance_to_point < previous_distance_to_point + occlusion_threshold && !reset_[ind]) ||
-                        reset_[ind])
-                    {
+                    if ((!isZero(previous_distance_to_point)
+                         && distance_to_point < previous_distance_to_point + occlusion_threshold
+                         && !reset_[ind])
+                        || reset_[ind]) {
                         return true;
                     }
                 }
@@ -140,19 +125,28 @@ namespace lidar_model_ns
          * @param resol
          * @param max_range
          */
-        void GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& visualization_cloud, double resol = 0.2,
-                                   double max_range = 25.0) const;
+        void GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& visualization_cloud,
+                                   double resol = 0.2, double max_range = 25.0) const;
 
-        static void setCloudDWZResol(const double cloud_dwz_resol)
-        {
+        static void setCloudDWZResol(const double cloud_dwz_resol) {
             pointcloud_resolution_ = cloud_dwz_resol * kCloudInflateRatio;
         }
 
-        void setPose(const geometry_msgs::Pose& pose) { pose_ = pose; }
-        geometry_msgs::Pose getPose() const { return pose_; }
-        void setPosition(const geometry_msgs::Point& position) { pose_.position = position; }
-        geometry_msgs::Point getPosition() const { return pose_.position; }
-        void SetHeight(const double height) { pose_.position.z = height; }
+        void setPose(const geometry_msgs::Pose& pose) {
+            pose_ = pose;
+        }
+        geometry_msgs::Pose getPose() const {
+            return pose_;
+        }
+        void setPosition(const geometry_msgs::Point& position) {
+            pose_.position = position;
+        }
+        geometry_msgs::Point getPosition() const {
+            return pose_.position;
+        }
+        void SetHeight(const double height) {
+            pose_.position.z = height;
+        }
 
     private:
         /**
@@ -178,7 +172,9 @@ namespace lidar_model_ns
          * @return true
          * @return false
          */
-        static bool isZero(double x) { return std::abs(x) < kEpsilon; }
+        static bool isZero(double x) {
+            return std::abs(x) < kEpsilon;
+        }
 
         /**
          * @brief Get the Horizontal Angle object
@@ -187,8 +183,7 @@ namespace lidar_model_ns
          * @param dy
          * @return int
          */
-        static int GetHorizontalAngle(double dx, double dy)
-        {
+        static int GetHorizontalAngle(double dx, double dy) {
             const double horizontal_angle =
                 (misc_utils_ns::ApproxAtan2(dy, dx) * kToDegreeConst + 180) / kHorizontalResolution;
             return static_cast<int>(round(horizontal_angle));
@@ -200,10 +195,10 @@ namespace lidar_model_ns
          * @param distance_to_point
          * @return int
          */
-        static int GetVerticalAngle(const double dz, double distance_to_point)
-        {
+        static int GetVerticalAngle(const double dz, double distance_to_point) {
             const double vertical_angle =
-                (acos(dz / distance_to_point) * kToDegreeConst + kVerticalAngleOffset) / kVerticalResolution;
+                (acos(dz / distance_to_point) * kToDegreeConst + kVerticalAngleOffset)
+                / kVerticalResolution;
             return static_cast<int>(round(vertical_angle));
         }
         /**
@@ -212,11 +207,10 @@ namespace lidar_model_ns
          * @param distance_to_point
          * @return int
          */
-        static int GetHorizontalNeighborNum(const double distance_to_point)
-        {
-            return static_cast<int>(
-                       ceil(pointcloud_resolution_ / distance_to_point * kToDegreeConst / kHorizontalResolution)) /
-                2;
+        static int GetHorizontalNeighborNum(const double distance_to_point) {
+            return static_cast<int>(ceil(pointcloud_resolution_ / distance_to_point * kToDegreeConst
+                                         / kHorizontalResolution))
+                / 2;
         }
         /**
          * @brief Get the Vertical Neighbor Num object
@@ -224,15 +218,15 @@ namespace lidar_model_ns
          * @param distance_to_point
          * @return int
          */
-        static int GetVerticalNeighborNum(const double distance_to_point)
-        {
-            return static_cast<int>(
-                       ceil(pointcloud_resolution_ / distance_to_point * kToDegreeConst / kVerticalResolution)) /
-                2;
+        static int GetVerticalNeighborNum(const double distance_to_point) {
+            return static_cast<int>(ceil(pointcloud_resolution_ / distance_to_point * kToDegreeConst
+                                         / kVerticalResolution))
+                / 2;
         }
-        static bool RowIndexInRange(const int row_index) { return row_index >= 0 && row_index < kVerticalVoxelSize; }
-        static bool ColumnIndexInRange(const int column_index)
-        {
+        static bool RowIndexInRange(const int row_index) {
+            return row_index >= 0 && row_index < kVerticalVoxelSize;
+        }
+        static bool ColumnIndexInRange(const int column_index) {
             return column_index >= 0 && column_index < kHorizontalVoxelSize;
         }
 
@@ -265,4 +259,4 @@ namespace lidar_model_ns
         // Pose of the lidar model
         geometry_msgs::Pose pose_;
     };
-} // namespace lidar_model_ns
+}  // namespace lidar_model_ns

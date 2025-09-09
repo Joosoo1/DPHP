@@ -3,21 +3,22 @@
 //
 
 #include "explorer/misc_utils.h"
+
 #include <functional>
 #include <queue>
 
-namespace misc_utils_ns
-{
+namespace misc_utils_ns {
     /// Function for converting a PointType to a geometry_msgs::Point
     /// \param pnt A PointType
     /// \return A geometry_msgs::Point
-    geometry_msgs::Point PCL2GeoMsgPnt(const PCLPointType& pnt) { return GeoMsgPoint(pnt.x, pnt.y, pnt.z); }
+    geometry_msgs::Point PCL2GeoMsgPnt(const PCLPointType& pnt) {
+        return GeoMsgPoint(pnt.x, pnt.y, pnt.z);
+    }
 
     /// Function for converting a geometry_msgs::Point to a PointType
     /// \param pnt A geometry_msgs::Point
     /// \return A PointType
-    PCLPointType GeoMsgPnt2PCL(const geometry_msgs::Point& pnt)
-    {
+    PCLPointType GeoMsgPnt2PCL(const geometry_msgs::Point& pnt) {
         PCLPointType point_o;
         point_o.x = (float)pnt.x;
         point_o.y = (float)pnt.y;
@@ -25,8 +26,7 @@ namespace misc_utils_ns
         return point_o;
     }
 
-    geometry_msgs::Point GeoMsgPoint(double x, double y, double z)
-    {
+    geometry_msgs::Point GeoMsgPoint(double x, double y, double z) {
         geometry_msgs::Point p;
         p.x = x;
         p.y = y;
@@ -34,8 +34,7 @@ namespace misc_utils_ns
         return p;
     }
 
-    PCLPointType PCLPoint(float x, float y, float z)
-    {
+    PCLPointType PCLPoint(float x, float y, float z) {
         PCLPointType p;
         p.x = x;
         p.y = y;
@@ -43,47 +42,43 @@ namespace misc_utils_ns
         return p;
     }
 
-    void LeftRotatePoint(PCLPointType& pnt)
-    {
+    void LeftRotatePoint(PCLPointType& pnt) {
         const float tmp_z = pnt.z;
         pnt.z = pnt.y;
         pnt.y = pnt.x;
         pnt.x = tmp_z;
     }
 
-    void RightRotatePoint(PCLPointType& pnt)
-    {
+    void RightRotatePoint(PCLPointType& pnt) {
         const float tmp_x = pnt.x;
         pnt.x = pnt.y;
         pnt.y = pnt.z;
         pnt.z = tmp_x;
     }
 
-    void LeftRotatePoint(geometry_msgs::Point& pnt)
-    {
+    void LeftRotatePoint(geometry_msgs::Point& pnt) {
         const double tmp_z = pnt.z;
         pnt.z = pnt.y;
         pnt.y = pnt.x;
         pnt.x = tmp_z;
     }
 
-    void RightRotatePoint(geometry_msgs::Point& pnt)
-    {
+    void RightRotatePoint(geometry_msgs::Point& pnt) {
         const double tmp_x = pnt.x;
         pnt.x = pnt.y;
         pnt.y = pnt.z;
         pnt.z = tmp_x;
     }
 
-    template <class CloudType>
-    void KeyposeToMap(CloudType& cloud, const nav_msgs::Odometry::ConstPtr& keypose)
-    {
+    template<class CloudType>
+    void KeyposeToMap(CloudType& cloud, const nav_msgs::Odometry::ConstPtr& keypose) {
         const auto tx = static_cast<float>(keypose->pose.pose.position.x);
         const auto ty = static_cast<float>(keypose->pose.pose.position.y);
         const auto tz = static_cast<float>(keypose->pose.pose.position.z);
 
-        const tf::Quaternion tf_q(keypose->pose.pose.orientation.x, keypose->pose.pose.orientation.y,
-                                  keypose->pose.pose.orientation.z, keypose->pose.pose.orientation.w);
+        const tf::Quaternion tf_q(
+            keypose->pose.pose.orientation.x, keypose->pose.pose.orientation.y,
+            keypose->pose.pose.orientation.z, keypose->pose.pose.orientation.w);
         const tf::Matrix3x3 tf_m(tf_q);
         double roll, pitch, yaw;
         tf_m.getRPY(roll, pitch, yaw);
@@ -95,8 +90,7 @@ namespace misc_utils_ns
         const auto sin_yaw = static_cast<float>(sin(yaw));
         const auto cos_yaw = static_cast<float>(cos(yaw));
 
-        for (auto& point : cloud->points)
-        {
+        for (auto& point : cloud->points) {
             // To map_rot frame
             const float x1 = point.x;
             const float y1 = point.y;
@@ -129,8 +123,7 @@ namespace misc_utils_ns
     /// \param pnt1 The first point
     /// \param pnt2 The second point
     /// \return Distance between the two points
-    double PointXYDist(const geometry_msgs::Point& pnt1, const geometry_msgs::Point& pnt2)
-    {
+    double PointXYDist(const geometry_msgs::Point& pnt1, const geometry_msgs::Point& pnt2) {
         return sqrt(pow(pnt1.x - pnt2.x, 2) + pow(pnt1.y - pnt2.y, 2));
     }
 
@@ -138,8 +131,7 @@ namespace misc_utils_ns
     /// \param pnt1 The first point
     /// \param pnt2 The second point
     /// \return Distance between the two points
-    double PointXYDist(const PCLPointType& pnt1, const PCLPointType& pnt2)
-    {
+    double PointXYDist(const PCLPointType& pnt1, const PCLPointType& pnt2) {
         return sqrt(pow(pnt1.x - pnt2.x, 2) + pow(pnt1.y - pnt2.y, 2));
     }
 
@@ -147,8 +139,7 @@ namespace misc_utils_ns
     /// \param v1 The first (starting) vector
     /// \param v2 The second (end) vector
     /// \return Angle from v1 to v2, positive if counterclockwise, negative if clockwise. The output is within [-pi, pi]
-    double VectorXYAngle(const Eigen::Vector3d& v1, const Eigen::Vector3d& v2)
-    {
+    double VectorXYAngle(const Eigen::Vector3d& v1, const Eigen::Vector3d& v2) {
         // 第一个参数为向量叉乘，第二个参数为向量点乘
         return atan2(v1.x() * v2.y() - v1.y() * v2.x(), v1.x() * v2.x() + v1.y() * v2.y());
     }
@@ -157,8 +148,7 @@ namespace misc_utils_ns
     /// \param pnt Input point
     /// \param robot_pos Robot position
     /// \return Direction (angle)
-    double PointAngle(const geometry_msgs::Point& pnt, const geometry_msgs::Point& robot_pos)
-    {
+    double PointAngle(const geometry_msgs::Point& pnt, const geometry_msgs::Point& robot_pos) {
         return atan2(pnt.y - robot_pos.y, pnt.x - robot_pos.x);
     }
 
@@ -166,8 +156,7 @@ namespace misc_utils_ns
     /// \param pnt Intput point
     /// \param robot_pos Robot position
     /// \return Direction (angle)
-    double PointAngle(const PCLPointType& pnt, const geometry_msgs::Point& robot_pos)
-    {
+    double PointAngle(const PCLPointType& pnt, const geometry_msgs::Point& robot_pos) {
         return atan2(pnt.y - robot_pos.y, pnt.x - robot_pos.x);
     }
 
@@ -176,17 +165,13 @@ namespace misc_utils_ns
     /// \param p2 Second point
     /// \param p3 Third point
     /// \return Collinear
-    bool CollinearXY(const geometry_msgs::Point& p1, const geometry_msgs::Point& p2, const geometry_msgs::Point& p3,
-                     const double threshold)
-    {
+    bool CollinearXY(const geometry_msgs::Point& p1, const geometry_msgs::Point& p2,
+                     const geometry_msgs::Point& p3, const double threshold) {
         // https://math.stackexchange.com/questions/405966/if-i-have-three-points-is-there-an-easy-way-to-tell-if-they-are-collinear
         const double val = (p2.y - p1.y) * (p3.x - p2.x) - (p3.y - p2.y) * (p2.x - p1.x);
-        if (std::abs(val) < threshold)
-        {
+        if (std::abs(val) < threshold) {
             return true;
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
@@ -197,71 +182,46 @@ namespace misc_utils_ns
     //  second interval \param s2 starting angle of the first interval \param e2 end angle of the second interval
     //  \return overlap the overlap of the two intervals. > 0 if overlapped, < 0
     //  otherwise.计算两个角度区间重叠度，s1(2)->e1(2)为逆时针，所有角度在[-pi, pi]
-    double AngleOverlap(const double s1, const double e1, const double s2, const double e2)
-    {
+    double AngleOverlap(const double s1, const double e1, const double s2, const double e2) {
         double overlap = 0.0;
         // TODO: normalize angles to [-pi, pi]
         // The first interval crosses the evil branch
-        if (e1 < s1)
-        {
+        if (e1 < s1) {
             // Recursively compute the overlaps
             double sub_overlap1 = AngleOverlap(s1, M_PI, s2, e2);
             double sub_overlap2 = AngleOverlap(-M_PI, e1, s2, e2);
             // If both sub-overlaps are negative (no overlap) or there is only one positive sub-overlap
-            if ((sub_overlap1 < 0 && sub_overlap2 < 0) || sub_overlap1 * sub_overlap2 < 0)
-            {
+            if ((sub_overlap1 < 0 && sub_overlap2 < 0) || sub_overlap1 * sub_overlap2 < 0) {
                 overlap = std::max(sub_overlap1, sub_overlap2);
-            }
-            else
-            {
+            } else {
                 overlap = sub_overlap1 + sub_overlap2;
             }
-        }
-        else if (e2 < s2)
-        {
+        } else if (e2 < s2) {
             // Similar to the case above
             const double sub_overlap1 = AngleOverlap(s1, e1, s2, M_PI);
             const double sub_overlap2 = AngleOverlap(s1, e1, -M_PI, e2);
-            if ((sub_overlap1 < 0 && sub_overlap2 < 0) || sub_overlap1 * sub_overlap2 < 0)
-            {
+            if ((sub_overlap1 < 0 && sub_overlap2 < 0) || sub_overlap1 * sub_overlap2 < 0) {
                 overlap = std::max(sub_overlap1, sub_overlap2);
-            }
-            else
-            {
+            } else {
                 overlap = sub_overlap1 + sub_overlap2;
             }
-        }
-        else
-        {
-            if (e1 > e2)
-            {
-                if (s1 > e2)
-                {
+        } else {
+            if (e1 > e2) {
+                if (s1 > e2) {
                     // No overlap
                     overlap = e2 - s1;
-                }
-                else if (s1 > s2)
-                {
+                } else if (s1 > s2) {
                     overlap = e2 - s1;
-                }
-                else
-                {
+                } else {
                     overlap = e2 - s2;
                 }
-            }
-            else
-            {
-                if (s2 > e1)
-                {
+            } else {
+                if (s2 > e1) {
                     // No overlap
                     overlap = e1 - s2;
-                }
-                else if (s2 > s1)
-                {
+                } else if (s2 > s1) {
                     overlap = e1 - s2;
-                }
-                else
-                {
+                } else {
                     overlap = e1 - s1;
                 }
             }
@@ -269,15 +229,12 @@ namespace misc_utils_ns
         return overlap;
     }
 
-    double AngleDiff(const double source_angle, const double target_angle)
-    {
+    double AngleDiff(const double source_angle, const double target_angle) {
         double angle_diff = target_angle - source_angle;
-        if (angle_diff > M_PI)
-        {
+        if (angle_diff > M_PI) {
             angle_diff -= 2 * M_PI;
         }
-        if (angle_diff < -M_PI)
-        {
+        if (angle_diff < -M_PI) {
             angle_diff += 2 * M_PI;
         }
         return angle_diff;
@@ -290,11 +247,10 @@ namespace misc_utils_ns
     /// \param r End point of line segment pr
     /// \return If q is on pr
     // 检测点q是否在线段pr上
-    bool PointOnLineSeg(const geometry_msgs::Point& p, const geometry_msgs::Point& q, const geometry_msgs::Point& r)
-    {
-        if (q.x <= std::max(p.x, r.x) && q.x >= std::min(p.x, r.x) && q.y <= std::max(p.y, r.y) &&
-            q.y >= std::min(p.y, r.y))
-        {
+    bool PointOnLineSeg(const geometry_msgs::Point& p, const geometry_msgs::Point& q,
+                        const geometry_msgs::Point& r) {
+        if (q.x <= std::max(p.x, r.x) && q.x >= std::min(p.x, r.x) && q.y <= std::max(p.y, r.y)
+            && q.y >= std::min(p.y, r.y)) {
             return true;
         }
         return false;
@@ -307,16 +263,14 @@ namespace misc_utils_ns
     /// \return 0 --> p, q and r are colinear, 1 --> Clockwise, 2 --> Counterclockwise
     // 判断三个点的是顺时针排序还是逆时针排序还是共线
     int ThreePointOrientation(const geometry_msgs::Point& p, const geometry_msgs::Point& q,
-                              const geometry_msgs::Point& r)
-    {
+                              const geometry_msgs::Point& r) {
         // See https://www.geeksforgeeks.org/orientation-3-ordered-points/
         // for details of below formula.
         const double val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
 
-        if (fabs(val) < 0.1)
-            return 0; // collinear
+        if (fabs(val) < 0.1) return 0;  // collinear
 
-        return val > 0 ? 1 : 2; // clock or counterclockwise wise
+        return val > 0 ? 1 : 2;  // clock or counterclockwise wise
     }
 
     /// Function to check if two line segments intersect, returns
@@ -327,8 +281,7 @@ namespace misc_utils_ns
     /// \return true if line segment 'p1q1' and 'p2q2' intersect, false otherwise
     // 判断两线段是否相交
     bool LineSegIntersect(const geometry_msgs::Point& p1, const geometry_msgs::Point& q1,
-                          const geometry_msgs::Point& p2, const geometry_msgs::Point& q2)
-    {
+                          const geometry_msgs::Point& p2, const geometry_msgs::Point& q2) {
         // Find the four orientations needed for general and special cases
         int o1 = ThreePointOrientation(p1, q1, p2);
         int o2 = ThreePointOrientation(p1, q1, q2);
@@ -336,27 +289,22 @@ namespace misc_utils_ns
         int o4 = ThreePointOrientation(p2, q2, q1);
 
         // General case
-        if (o1 != o2 && o3 != o4)
-            return true;
+        if (o1 != o2 && o3 != o4) return true;
 
         // Special Cases
         // p1, q1 and p2 are collinear and p2 lies on segment p1q1
-        if (o1 == 0 && PointOnLineSeg(p1, p2, q1))
-            return true;
+        if (o1 == 0 && PointOnLineSeg(p1, p2, q1)) return true;
 
         // p1, q1 and q2 are colinear and q2 lies on segment p1q1
-        if (o2 == 0 && PointOnLineSeg(p1, q2, q1))
-            return true;
+        if (o2 == 0 && PointOnLineSeg(p1, q2, q1)) return true;
 
         // p2, q2 and p1 are colinear and p1 lies on segment p2q2
-        if (o3 == 0 && PointOnLineSeg(p2, p1, q2))
-            return true;
+        if (o3 == 0 && PointOnLineSeg(p2, p1, q2)) return true;
 
         // p2, q2 and q1 are colinear and q1 lies on segment p2q2
-        if (o4 == 0 && PointOnLineSeg(p2, q1, q2))
-            return true;
+        if (o4 == 0 && PointOnLineSeg(p2, q1, q2)) return true;
 
-        return false; // Doesn't fall in any of the above cases
+        return false;  // Doesn't fall in any of the above cases
     }
 
     /// Similar to LineSegIntersect(), except adds a "tolerance"
@@ -368,10 +316,10 @@ namespace misc_utils_ns
     /// \param q2 end point of 'p2q2'
     /// \param tolerance distance to be added at both ends of both lines
     /// \return true if line segment 'p1q1' and 'p2q2' intersect, false otherwise
-    bool LineSegIntersectWithTolerance(const geometry_msgs::Point& p1, const geometry_msgs::Point& q1,
-                                       const geometry_msgs::Point& p2, const geometry_msgs::Point& q2,
-                                       const double tolerance)
-    {
+    bool LineSegIntersectWithTolerance(const geometry_msgs::Point& p1,
+                                       const geometry_msgs::Point& q1,
+                                       const geometry_msgs::Point& p2,
+                                       const geometry_msgs::Point& q2, const double tolerance) {
         // Make a copy
         geometry_msgs::Point p1_extend = p1;
         geometry_msgs::Point q1_extend = q1;
@@ -380,8 +328,7 @@ namespace misc_utils_ns
 
         // Extend line segment 1
         const double dist1 = PointXYDist(p1, q1);
-        if (dist1 == 0)
-            return false; // trivial
+        if (dist1 == 0) return false;  // trivial
         const double dir1_x = (q1.x - p1.x) / dist1;
         const double dir1_y = (q1.y - p1.y) / dist1;
         p1_extend.x -= tolerance * dir1_x;
@@ -391,8 +338,7 @@ namespace misc_utils_ns
 
         // Extend line segment 2
         const double dist2 = PointXYDist(p2, q2);
-        if (dist2 == 0)
-            return false; // trivial
+        if (dist2 == 0) return false;  // trivial
         const double dir2_x = (q2.x - p2.x) / dist2;
         const double dir2_y = (q2.y - p2.y) / dist2;
         p2_extend.x -= tolerance * dir2_x;
@@ -409,40 +355,34 @@ namespace misc_utils_ns
     /// \param p point
     /// \param polygon polygon
     /// \return true if the point is inside the polygon
-    bool PointInPolygon(const geometry_msgs::Point& point, const geometry_msgs::Polygon& polygon)
-    {
+    bool PointInPolygon(const geometry_msgs::Point& point, const geometry_msgs::Polygon& polygon) {
         const int polygon_pnt_num = polygon.points.size();
-        if (polygon_pnt_num < 3)
-            return false;
+        if (polygon_pnt_num < 3) return false;
 
         geometry_msgs::Point inf_point;
         inf_point.x = std::numeric_limits<float>::max();
         inf_point.y = point.y;
         int count = 0;
         int cur_idx = 0;
-        do
-        {
+        do {
             int next_idx = (cur_idx + 1) % polygon_pnt_num;
             // Check if the line segment from 'point' to 'inf_point' intersects
             // with the line segment from 'polygon[cur_idx]' to 'polygon[next_idx]'
-            geometry_msgs::Point polygon_cur_pnt =
-                GeoMsgPoint(polygon.points[cur_idx].x, polygon.points[cur_idx].y, polygon.points[cur_idx].z);
-            geometry_msgs::Point polygon_next_pnt =
-                GeoMsgPoint(polygon.points[next_idx].x, polygon.points[next_idx].y, polygon.points[next_idx].z);
-            if (LineSegIntersect(polygon_cur_pnt, polygon_next_pnt, point, inf_point))
-            {
+            geometry_msgs::Point polygon_cur_pnt = GeoMsgPoint(
+                polygon.points[cur_idx].x, polygon.points[cur_idx].y, polygon.points[cur_idx].z);
+            geometry_msgs::Point polygon_next_pnt = GeoMsgPoint(
+                polygon.points[next_idx].x, polygon.points[next_idx].y, polygon.points[next_idx].z);
+            if (LineSegIntersect(polygon_cur_pnt, polygon_next_pnt, point, inf_point)) {
                 // If the point 'point' is colinear with line segment 'cur-next',
                 // then check if it lies on segment. If it lies, return true,
                 // otherwise false
-                if (ThreePointOrientation(polygon_cur_pnt, point, polygon_next_pnt) == 0)
-                {
+                if (ThreePointOrientation(polygon_cur_pnt, point, polygon_next_pnt) == 0) {
                     return PointOnLineSeg(polygon_cur_pnt, point, polygon_next_pnt);
                 }
                 count++;
             }
             cur_idx = next_idx;
-        }
-        while (cur_idx != 0);
+        } while (cur_idx != 0);
 
         // return true if count is odd, false othterwise
         return count % 2 == 1;
@@ -455,9 +395,9 @@ namespace misc_utils_ns
     /// \param line_segment_start
     /// \param line_segment_end
     /// \return distance
-    double LineSegDistance2D(const geometry_msgs::Point& point, const geometry_msgs::Point& line_segment_start,
-                             const geometry_msgs::Point& line_segment_end)
-    {
+    double LineSegDistance2D(const geometry_msgs::Point& point,
+                             const geometry_msgs::Point& line_segment_start,
+                             const geometry_msgs::Point& line_segment_end) {
         // code adapted from http://geomalgorithms.com/a02-_lines.html
 
         // vector end to start
@@ -469,15 +409,13 @@ namespace misc_utils_ns
         const double w_y = point.y - line_segment_start.y;
 
         // if outside one boundary, get point to point distance
-        const double c1 = v_x * w_x + v_y * w_y; // dot product
+        const double c1 = v_x * w_x + v_y * w_y;  // dot product
 
-        if (c1 <= 0)
-            return PointXYDist(point, line_segment_start);
+        if (c1 <= 0) return PointXYDist(point, line_segment_start);
 
         // if outside other boundary, get point to point distance
-        const double c2 = v_x * v_x + v_y * v_y; // dot product
-        if (c2 <= c1)
-            return PointXYDist(point, line_segment_end);
+        const double c2 = v_x * v_x + v_y * v_y;  // dot product
+        if (c2 <= c1) return PointXYDist(point, line_segment_end);
 
         // otherwise, project point and get distance (seems inefficient?)
         const double b = c1 / c2;
@@ -492,9 +430,9 @@ namespace misc_utils_ns
     /// \param line_segment_start
     /// \param line_segment_end
     /// \return distance
-    double LineSegDistance3D(const geometry_msgs::Point& point, const geometry_msgs::Point& line_segment_start,
-                             const geometry_msgs::Point& line_segment_end)
-    {
+    double LineSegDistance3D(const geometry_msgs::Point& point,
+                             const geometry_msgs::Point& line_segment_start,
+                             const geometry_msgs::Point& line_segment_end) {
         // code adapted from http://geomalgorithms.com/a02-_lines.html
 
         // vector end to start
@@ -508,15 +446,13 @@ namespace misc_utils_ns
         const double w_z = point.z - line_segment_start.z;
 
         // if outside one boundary, get point to point distance
-        const double c1 = v_x * w_x + v_y * w_y + v_z * w_z; // dot product
+        const double c1 = v_x * w_x + v_y * w_y + v_z * w_z;  // dot product
 
-        if (c1 <= 0)
-            return PointXYZDist(point, line_segment_start);
+        if (c1 <= 0) return PointXYZDist(point, line_segment_start);
 
         // if outside other boundary, get point to point distance
-        const double c2 = v_x * v_x + v_y * v_y + v_z * v_z; // dot product
-        if (c2 <= c1)
-            return PointXYZDist(point, line_segment_end);
+        const double c2 = v_x * v_x + v_y * v_y + v_z * v_z;  // dot product
+        if (c2 <= c1) return PointXYZDist(point, line_segment_end);
 
         // otherwise project point and get distance (seems inefficient?)
         double b = c1 / c2;
@@ -532,14 +468,13 @@ namespace misc_utils_ns
     /// \param p point
     /// \param polygon polygon
     /// \return distance
-    double DistancePoint2DToPolygon(const geometry_msgs::Point& point, const geometry_msgs::Polygon& polygon)
-    {
+    double DistancePoint2DToPolygon(const geometry_msgs::Point& point,
+                                    const geometry_msgs::Polygon& polygon) {
         const int polygon_pnt_num = polygon.points.size();
-        if (polygon_pnt_num < 1)
-            return 0;
-        if (polygon_pnt_num == 1)
-        {
-            geometry_msgs::Point poly_point = GeoMsgPoint(polygon.points[0].x, polygon.points[0].y, 0);
+        if (polygon_pnt_num < 1) return 0;
+        if (polygon_pnt_num == 1) {
+            geometry_msgs::Point poly_point =
+                GeoMsgPoint(polygon.points[0].x, polygon.points[0].y, 0);
             return PointXYDist(point, poly_point);
         }
 
@@ -547,123 +482,114 @@ namespace misc_utils_ns
         int cur_idx = 0;
 
         // iterate through points in polygon
-        do
-        {
+        do {
             int next_idx = (cur_idx + 1) % polygon_pnt_num;
 
             // get point to line segment distance
-            geometry_msgs::Point polygon_cur_pnt = GeoMsgPoint(polygon.points[cur_idx].x, polygon.points[cur_idx].y, 0);
+            geometry_msgs::Point polygon_cur_pnt =
+                GeoMsgPoint(polygon.points[cur_idx].x, polygon.points[cur_idx].y, 0);
             geometry_msgs::Point polygon_next_pnt =
                 GeoMsgPoint(polygon.points[next_idx].x, polygon.points[next_idx].y, 0);
             double distance = LineSegDistance2D(point, polygon_cur_pnt, polygon_next_pnt);
-            if (distance < distance_return)
-            {
+            if (distance < distance_return) {
                 distance_return = distance;
             }
 
             cur_idx = next_idx;
-        }
-        while (cur_idx != 0);
+        } while (cur_idx != 0);
 
         return distance_return;
     }
 
     void LinInterpPoints(const Eigen::Vector3d& p1, const Eigen::Vector3d& p2, double resolution,
-                         std::vector<Eigen::Vector3d>& interp_points)
-    {
+                         std::vector<Eigen::Vector3d>& interp_points) {
         interp_points.clear();
         const double point_dist = (p1 - p2).norm();
-        if (point_dist < resolution)
-        {
+        if (point_dist < resolution) {
             interp_points.push_back(p1);
             interp_points.push_back(p2);
             return;
         }
         int point_num = ceil(point_dist / resolution);
-        for (int i = 0; i < point_num; i++)
-        {
+        for (int i = 0; i < point_num; i++) {
             Eigen::Vector3d interp_point = (p2 - p1) / point_num * i + p1;
             interp_points.push_back(interp_point);
         }
     }
 
-    double DegreeToRadian(const double degree) { return degree / 180.0 * M_PI; }
+    double DegreeToRadian(const double degree) {
+        return degree / 180.0 * M_PI;
+    }
 
-    double RadianToDegree(const double radian) { return radian * 180.0 / M_PI; }
+    double RadianToDegree(const double radian) {
+        return radian * 180.0 / M_PI;
+    }
 
-    void ConcatenatePath(nav_msgs::Path& path1, const nav_msgs::Path& path2, int from_ind, int to_ind)
-    {
-        if (path2.poses.empty())
-        {
+    void ConcatenatePath(nav_msgs::Path& path1, const nav_msgs::Path& path2, int from_ind,
+                         int to_ind) {
+        if (path2.poses.empty()) {
             return;
         }
-        if (from_ind == -1 && to_ind == -1)
-        {
+        if (from_ind == -1 && to_ind == -1) {
             from_ind = 0;
             to_ind = path2.poses.size() - 1;
         }
         MY_ASSERT(from_ind >= 0 && from_ind < path2.poses.size());
         MY_ASSERT(to_ind >= 0 && to_ind < path2.poses.size());
-        if (from_ind <= to_ind)
-        {
-            for (int i = from_ind; i <= to_ind; i++)
-            {
+        if (from_ind <= to_ind) {
+            for (int i = from_ind; i <= to_ind; i++) {
                 path1.poses.push_back(path2.poses[i]);
             }
-        }
-        else
-        {
-            for (int i = from_ind; i >= to_ind; i--)
-            {
+        } else {
+            for (int i = from_ind; i >= to_ind; i--) {
                 path1.poses.push_back(path2.poses[i]);
             }
         }
     }
 
-    void SetDifference(std::vector<int>& v1, std::vector<int>& v2, std::vector<int>& diff)
-    {
+    void SetDifference(std::vector<int>& v1, std::vector<int>& v2, std::vector<int>& diff) {
         std::sort(v1.begin(), v1.end());
         std::sort(v2.begin(), v2.end());
         diff.clear();
-        std::set_difference(v1.begin(), v1.end(), v2.begin(), v2.end(), std::inserter(diff, diff.begin()));
+        std::set_difference(v1.begin(), v1.end(), v2.begin(), v2.end(),
+                            std::inserter(diff, diff.begin()));
     }
 
     int Marker::id_ = 0;
 
-    int signum(int x) { return x == 0 ? 0 : x < 0 ? -1 : 1; }
+    int signum(int x) {
+        return x == 0 ? 0 : x < 0 ? -1 : 1;
+    }
 
-    double mod(double value, double modulus) { return fmod(fmod(value, modulus) + modulus, modulus); }
+    double mod(double value, double modulus) {
+        return fmod(fmod(value, modulus) + modulus, modulus);
+    }
 
-    double intbound(double s, double ds)
-    {
+    double intbound(double s, double ds) {
         // Find the smallest positive t such that s+t*ds is an integer.
-        if (ds < 0)
-        {
+        if (ds < 0) {
             return intbound(-s, -ds);
-        }
-        else
-        {
+        } else {
             s = mod(s, 1);
             // problem is now s+t*ds = 1
             return (1 - s) / ds;
         }
     }
 
-    bool InRange(const Eigen::Vector3i& sub, const Eigen::Vector3i& max_sub, const Eigen::Vector3i& min_sub)
-    {
-        return sub.x() >= min_sub.x() && sub.x() <= max_sub.x() && sub.y() >= min_sub.y() && sub.y() <= max_sub.y() &&
-            sub.z() >= min_sub.z() && sub.z() <= max_sub.z();
+    bool InRange(const Eigen::Vector3i& sub, const Eigen::Vector3i& max_sub,
+                 const Eigen::Vector3i& min_sub) {
+        return sub.x() >= min_sub.x() && sub.x() <= max_sub.x() && sub.y() >= min_sub.y()
+            && sub.y() <= max_sub.y() && sub.z() >= min_sub.z() && sub.z() <= max_sub.z();
     }
 
-    void RayCast(const Eigen::Vector3i& start_sub, const Eigen::Vector3i& end_sub, const Eigen::Vector3i& max_sub,
-                 const Eigen::Vector3i& min_sub, std::vector<Eigen::Vector3i>& output)
-    {
+    void RayCast(const Eigen::Vector3i& start_sub, const Eigen::Vector3i& end_sub,
+                 const Eigen::Vector3i& max_sub, const Eigen::Vector3i& min_sub,
+                 std::vector<Eigen::Vector3i>& output) {
         output.clear();
         MY_ASSERT(InRange(start_sub, max_sub, min_sub));
         MY_ASSERT(InRange(end_sub, max_sub, min_sub));
 
-        if (start_sub == end_sub)
-        {
+        if (start_sub == end_sub) {
             output.push_back(start_sub);
             return;
         }
@@ -684,37 +610,26 @@ namespace misc_utils_ns
         double dist = 0;
         Eigen::Vector3i cur_sub = start_sub;
 
-        while (true)
-        {
+        while (true) {
             MY_ASSERT(InRange(cur_sub, max_sub, min_sub));
             output.push_back(cur_sub);
             dist = (cur_sub - start_sub).squaredNorm();
-            if (cur_sub == end_sub || dist > max_dist)
-            {
+            if (cur_sub == end_sub || dist > max_dist) {
                 return;
             }
-            if (t_max_x < t_max_y)
-            {
-                if (t_max_x < t_max_z)
-                {
+            if (t_max_x < t_max_y) {
+                if (t_max_x < t_max_z) {
                     cur_sub.x() += step_x;
                     t_max_x += t_delta_x;
-                }
-                else
-                {
+                } else {
                     cur_sub.z() += step_z;
                     t_max_z += t_delta_z;
                 }
-            }
-            else
-            {
-                if (t_max_y < t_max_z)
-                {
+            } else {
+                if (t_max_y < t_max_z) {
                     cur_sub.y() += step_y;
                     t_max_y += t_delta_y;
-                }
-                else
-                {
+                } else {
                     cur_sub.z() += step_z;
                     t_max_z += t_delta_z;
                 }
@@ -723,12 +638,10 @@ namespace misc_utils_ns
     }
 
     bool InFOV(const Eigen::Vector3d& point_position, const Eigen::Vector3d& viewpoint_position,
-               const double vertical_half_fov, const double range)
-    {
+               const double vertical_half_fov, const double range) {
         Eigen::Vector3d diff = point_position - viewpoint_position;
         const double dist = diff.norm();
-        if (dist > range)
-        {
+        if (dist > range) {
             return false;
         }
         double theta = acos(diff.z() / dist);
@@ -737,71 +650,59 @@ namespace misc_utils_ns
         return theta >= vertical_fov_min && theta <= vertical_fov_max;
     }
 
-    bool InFOVSimple(const Eigen::Vector3d& point_position, const Eigen::Vector3d& viewpoint_position,
-                     const double vertical_fov_ratio, const double range, const double xy_dist_threshold,
-                     const double z_diff_threshold, const bool print)
-    {
+    bool InFOVSimple(const Eigen::Vector3d& point_position,
+                     const Eigen::Vector3d& viewpoint_position, const double vertical_fov_ratio,
+                     const double range, const double xy_dist_threshold,
+                     const double z_diff_threshold, const bool print) {
         Eigen::Vector3d diff = point_position - viewpoint_position;
         const double xy_dist = sqrt(diff.x() * diff.x() + diff.y() * diff.y());
-        if (xy_dist < xy_dist_threshold && std::abs(diff.z()) < z_diff_threshold)
-        {
-            if (print)
-            {
+        if (xy_dist < xy_dist_threshold && std::abs(diff.z()) < z_diff_threshold) {
+            if (print) {
                 std::cout << "nearby point approximation" << std::endl;
             }
             return true;
         }
-        if (xy_dist > range)
-        {
-            if (print)
-            {
+        if (xy_dist > range) {
+            if (print) {
                 std::cout << "xy_dist: " << xy_dist << " > range: " << range << std::endl;
             }
             return false;
         }
-        if (std::abs(diff.z()) > vertical_fov_ratio * xy_dist)
-        {
-            if (print)
-            {
-                std::cout << "diff z: " << std::abs(diff.z()) << " > threshold : " << vertical_fov_ratio << " * "
-                          << xy_dist << " = " << vertical_fov_ratio * xy_dist << std::endl;
+        if (std::abs(diff.z()) > vertical_fov_ratio * xy_dist) {
+            if (print) {
+                std::cout << "diff z: " << std::abs(diff.z())
+                          << " > threshold : " << vertical_fov_ratio << " * " << xy_dist << " = "
+                          << vertical_fov_ratio * xy_dist << std::endl;
             }
             return false;
         }
         return true;
     }
 
-    float ApproxAtan(float z)
-    {
+    float ApproxAtan(float z) {
         constexpr float n1 = 0.97239411f;
         constexpr float n2 = -0.19194795f;
         return (n1 + n2 * z * z) * z;
     }
 
-    float ApproxAtan2(float y, float x)
-    {
+    float ApproxAtan2(float y, float x) {
         const float ay = std::abs(y);
         const float ax = std::abs(x);
         const int invert = ay > ax;
-        float z = invert ? ax / ay : ay / ax; // [0,1]
-        float th = ApproxAtan(z); // [0,π/4]
-        if (invert)
-            th = M_PI_2 - th; // [0,π/2]
-        if (x < 0)
-            th = M_PI - th; // [0,π]
-        th = copysign(th, y); // [-π,π]
+        float z = invert ? ax / ay : ay / ax;  // [0,1]
+        float th = ApproxAtan(z);  // [0,π/4]
+        if (invert) th = M_PI_2 - th;  // [0,π/2]
+        if (x < 0) th = M_PI - th;  // [0,π]
+        th = copysign(th, y);  // [-π,π]
         return th;
     }
 
-    double GetPathLength(const nav_msgs::Path& path)
-    {
+    double GetPathLength(const nav_msgs::Path& path) {
         double path_length = 0.0;
-        if (path.poses.size() < 2)
-        {
+        if (path.poses.size() < 2) {
             return path_length;
         }
-        for (int i = 0; i < path.poses.size() - 1; i++)
-        {
+        for (int i = 0; i < path.poses.size() - 1; i++) {
             const int cur_pose_idx = i;
             const int next_pose_idx = i + 1;
             path_length += misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
@@ -810,15 +711,12 @@ namespace misc_utils_ns
         return path_length;
     }
 
-    double GetPathLength(const std::vector<Eigen::Vector3d>& path)
-    {
+    double GetPathLength(const std::vector<Eigen::Vector3d>& path) {
         double path_length = 0.0;
-        if (path.size() < 2)
-        {
+        if (path.size() < 2) {
             return path_length;
         }
-        for (int i = 0; i < path.size() - 1; i++)
-        {
+        for (int i = 0; i < path.size() - 1; i++) {
             const int cur_idx = i;
             const int next_idx = i + 1;
             path_length += (path[cur_idx] - path[next_idx]).norm();
@@ -826,10 +724,10 @@ namespace misc_utils_ns
         return path_length;
     }
 
-    double AStarSearch(const std::vector<std::vector<int>>& graph, const std::vector<std::vector<double>>& node_dist,
-                       const std::vector<geometry_msgs::Point>& node_positions, int from_idx, const int to_idx,
-                       const bool get_path, std::vector<int>& path_indices)
-    {
+    double AStarSearch(const std::vector<std::vector<int>>& graph,
+                       const std::vector<std::vector<double>>& node_dist,
+                       const std::vector<geometry_msgs::Point>& node_positions, int from_idx,
+                       const int to_idx, const bool get_path, std::vector<int>& path_indices) {
         MY_ASSERT(graph.size() == node_dist.size());
         MY_ASSERT(graph.size() == node_positions.size());
         MY_ASSERT(misc_utils_ns::InRange<std::vector<int>>(graph, from_idx));
@@ -844,36 +742,31 @@ namespace misc_utils_ns
         std::vector<bool> in_pg(graph.size(), false);
 
         g[from_idx] = 0;
-        f[from_idx] = misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(node_positions[from_idx],
-                                                                                              node_positions[to_idx]);
+        f[from_idx] = misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
+            node_positions[from_idx], node_positions[to_idx]);
         pq.emplace(f[from_idx], from_idx);
         in_pg[from_idx] = true;
 
-        while (!pq.empty())
-        {
+        while (!pq.empty()) {
             int u = pq.top().second;
             pq.pop();
             in_pg[u] = false;
-            if (u == to_idx)
-            {
+            if (u == to_idx) {
                 shortest_dist = g[u];
                 break;
             }
 
-            for (int i = 0; i < graph[u].size(); i++)
-            {
+            for (int i = 0; i < graph[u].size(); i++) {
                 int v = graph[u][i];
                 MY_ASSERT(misc_utils_ns::InRange<std::vector<int>>(graph, v));
                 const double d = node_dist[u][i];
-                if (g[v] > g[u] + d)
-                {
+                if (g[v] > g[u] + d) {
                     prev[v] = u;
                     g[v] = g[u] + d;
-                    f[v] = g[v] +
-                        misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(node_positions[v],
-                                                                                                node_positions[to_idx]);
-                    if (!in_pg[v])
-                    {
+                    f[v] = g[v]
+                        + misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
+                               node_positions[v], node_positions[to_idx]);
+                    if (!in_pg[v]) {
                         pq.emplace(f[v], v);
                         in_pg[v] = true;
                     }
@@ -881,14 +774,11 @@ namespace misc_utils_ns
             }
         }
 
-        if (get_path)
-        {
+        if (get_path) {
             path_indices.clear();
             int u = to_idx;
-            if (prev[u] != -1 || u == from_idx)
-            {
-                while (u != -1)
-                {
+            if (prev[u] != -1 || u == from_idx) {
+                while (u != -1) {
                     path_indices.push_back(u);
                     u = prev[u];
                 }
@@ -901,10 +791,10 @@ namespace misc_utils_ns
 
     bool AStarSearchWithMaxPathLength(const std::vector<std::vector<int>>& graph,
                                       const std::vector<std::vector<double>>& node_dist,
-                                      const std::vector<geometry_msgs::Point>& node_positions, int from_idx, int to_idx,
-                                      const bool get_path, std::vector<int>& path_indices, double& shortest_dist,
-                                      const double max_path_length)
-    {
+                                      const std::vector<geometry_msgs::Point>& node_positions,
+                                      int from_idx, int to_idx, const bool get_path,
+                                      std::vector<int>& path_indices, double& shortest_dist,
+                                      const double max_path_length) {
         MY_ASSERT(graph.size() == node_dist.size());
         MY_ASSERT(graph.size() == node_positions.size());
         MY_ASSERT(misc_utils_ns::InRange<std::vector<int>>(graph, from_idx));
@@ -918,45 +808,39 @@ namespace misc_utils_ns
         std::vector<bool> in_pg(graph.size(), false);
 
         g[from_idx] = 0;
-        f[from_idx] = misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(node_positions[from_idx],
-                                                                                              node_positions[to_idx]);
+        f[from_idx] = misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
+            node_positions[from_idx], node_positions[to_idx]);
         pq.emplace(f[from_idx], from_idx);
         in_pg[from_idx] = true;
 
         bool found_path = false;
 
-        while (!pq.empty())
-        {
+        while (!pq.empty()) {
             int u = pq.top().second;
             pq.pop();
             in_pg[u] = false;
-            if (u == to_idx)
-            {
+            if (u == to_idx) {
                 shortest_dist = g[u];
                 found_path = true;
                 break;
             }
-            if (g[u] > max_path_length)
-            {
+            if (g[u] > max_path_length) {
                 shortest_dist = g[u];
                 found_path = false;
                 break;
             }
 
-            for (int i = 0; i < graph[u].size(); i++)
-            {
+            for (int i = 0; i < graph[u].size(); i++) {
                 int v = graph[u][i];
                 MY_ASSERT(misc_utils_ns::InRange<std::vector<int>>(graph, v));
                 double d = node_dist[u][i];
-                if (g[v] > g[u] + d)
-                {
+                if (g[v] > g[u] + d) {
                     prev[v] = u;
                     g[v] = g[u] + d;
-                    f[v] = g[v] +
-                        misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(node_positions[v],
-                                                                                                node_positions[to_idx]);
-                    if (!in_pg[v])
-                    {
+                    f[v] = g[v]
+                        + misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
+                               node_positions[v], node_positions[to_idx]);
+                    if (!in_pg[v]) {
                         pq.emplace(f[v], v);
                         in_pg[v] = true;
                     }
@@ -964,14 +848,11 @@ namespace misc_utils_ns
             }
         }
 
-        if (get_path && found_path)
-        {
+        if (get_path && found_path) {
             path_indices.clear();
             int u = to_idx;
-            if (prev[u] != -1 || u == from_idx)
-            {
-                while (u != -1)
-                {
+            if (prev[u] != -1 || u == from_idx) {
+                while (u != -1) {
                     path_indices.push_back(u);
                     u = prev[u];
                 }
@@ -983,24 +864,22 @@ namespace misc_utils_ns
     }
 
     // 简化路径，去除多余的共线点，保留关键的转折点
-    nav_msgs::Path SimplifyPath(const nav_msgs::Path& path)
-    {
+    nav_msgs::Path SimplifyPath(const nav_msgs::Path& path) {
         nav_msgs::Path simplified_path;
-        if (path.poses.size() <= 2)
-        {
+        if (path.poses.size() <= 2) {
             simplified_path = path;
             return simplified_path;
-        } // ？应该不需要这步检查
+        }  // ？应该不需要这步检查
 
-        simplified_path.poses.push_back(path.poses.front()); //
-        for (int i = 1; i < path.poses.size() - 1; i++)
-        {
+        simplified_path.poses.push_back(path.poses.front());  //
+        for (int i = 1; i < path.poses.size() - 1; i++) {
             geometry_msgs::Point prev_point = path.poses[i - 1].pose.position;
             geometry_msgs::Point cur_point = path.poses[i].pose.position;
             geometry_msgs::Point next_point = path.poses[i + 1].pose.position;
-            if (!CollinearXY(prev_point, cur_point, next_point)) // The three points are not colinear in the xy plane
+            if (!CollinearXY(prev_point, cur_point,
+                             next_point))  // The three points are not colinear in the xy plane
             {
-                simplified_path.poses.push_back(path.poses[i]); // 只加入转折点
+                simplified_path.poses.push_back(path.poses[i]);  // 只加入转折点
             }
         }
 
@@ -1009,32 +888,30 @@ namespace misc_utils_ns
         return simplified_path;
     }
 
-    nav_msgs::Path DeduplicatePath(const nav_msgs::Path& path, const double min_dist)
-    {
+    nav_msgs::Path DeduplicatePath(const nav_msgs::Path& path, const double min_dist) {
         nav_msgs::Path deduplicated_path;
-        if (path.poses.size() <= 2)
-        {
+        if (path.poses.size() <= 2) {
             deduplicated_path = path;
             return deduplicated_path;
         }
         deduplicated_path.poses.push_back(path.poses.front());
         geometry_msgs::Point prev_point = path.poses[0].pose.position;
-        for (int i = 1; i < path.poses.size() - 1; i++)
-        {
-            double dist_to_prev = misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
-                prev_point, path.poses[i].pose.position);
-            if (dist_to_prev > min_dist)
-            {
+        for (int i = 1; i < path.poses.size() - 1; i++) {
+            double dist_to_prev =
+                misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
+                    prev_point, path.poses[i].pose.position);
+            if (dist_to_prev > min_dist) {
                 deduplicated_path.poses.push_back(path.poses[i]);
                 prev_point = path.poses[i].pose.position;
             }
         }
-        double dist_to_prev = misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
-            prev_point, path.poses.back().pose.position);
-        double dist_to_start = misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
-            path.poses.front().pose.position, path.poses.back().pose.position);
-        if (dist_to_prev > min_dist && dist_to_start > min_dist)
-        {
+        double dist_to_prev =
+            misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
+                prev_point, path.poses.back().pose.position);
+        double dist_to_start =
+            misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
+                path.poses.front().pose.position, path.poses.back().pose.position);
+        if (dist_to_prev > min_dist && dist_to_start > min_dist) {
             deduplicated_path.poses.push_back(path.poses.back());
         }
         return deduplicated_path;
@@ -1044,8 +921,7 @@ namespace misc_utils_ns
                             std::vector<Eigen::Vector3d>& sample_points)
 
     {
-        if (initial_points.size() < 2)
-        {
+        if (initial_points.size() < 2) {
             sample_points = initial_points;
             return;
         }
@@ -1056,19 +932,16 @@ namespace misc_utils_ns
         Eigen::Vector3d next_point = initial_points[next_idx];
         sample_points.push_back(cur_point);
         double sample_dist = sample_resol;
-        while (next_idx < initial_points.size())
-        {
+        while (next_idx < initial_points.size()) {
             next_point = initial_points[next_idx];
             double dist_to_next = (cur_point - next_point).norm();
-            if (dist_to_next > sample_dist)
-            {
-                Eigen::Vector3d sample_point = (next_point - cur_point).normalized() * sample_dist + cur_point;
+            if (dist_to_next > sample_dist) {
+                Eigen::Vector3d sample_point =
+                    (next_point - cur_point).normalized() * sample_dist + cur_point;
                 sample_points.push_back(sample_point);
                 cur_point = sample_point;
                 sample_dist = sample_resol;
-            }
-            else
-            {
+            } else {
                 next_idx++;
                 cur_point = next_point;
                 sample_dist = sample_dist - dist_to_next;
@@ -1077,22 +950,21 @@ namespace misc_utils_ns
         sample_points.push_back(next_point);
     }
 
-    void UniquifyIntVector(std::vector<int>& list)
-    {
-        std::sort(list.begin(), list.end()); // 排序
-        const auto it =
-            std::unique(list.begin(), list.end()); // std::unique 只是将重复元素移动到序列的末尾，并不会改变容器的大小
-        list.resize(std::distance(list.begin(), it)); // 调整列表大小，移除多余元素
+    void UniquifyIntVector(std::vector<int>& list) {
+        std::sort(list.begin(), list.end());  // 排序
+        const auto it = std::unique(
+            list.begin(),
+            list.end());  // std::unique 只是将重复元素移动到序列的末尾，并不会改变容器的大小
+        list.resize(std::distance(list.begin(), it));  // 调整列表大小，移除多余元素
     }
-} // namespace misc_utils_ns
+}  // namespace misc_utils_ns
 
-template void
-misc_utils_ns::KeyposeToMap<pcl::PointCloud<pcl::PointXYZ>::Ptr>(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
-                                                                 const nav_msgs::Odometry::ConstPtr& keypose);
-template void
-misc_utils_ns::KeyposeToMap<pcl::PointCloud<pcl::PointXYZI>::Ptr>(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud,
-                                                                  const nav_msgs::Odometry::ConstPtr& keypose);
+template void misc_utils_ns::KeyposeToMap<pcl::PointCloud<pcl::PointXYZ>::Ptr>(
+    pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, const nav_msgs::Odometry::ConstPtr& keypose);
+template void misc_utils_ns::KeyposeToMap<pcl::PointCloud<pcl::PointXYZI>::Ptr>(
+    pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud, const nav_msgs::Odometry::ConstPtr& keypose);
 template void misc_utils_ns::KeyposeToMap<pcl::PointCloud<pcl::PointXYZINormal>::Ptr>(
     pcl::PointCloud<pcl::PointXYZINormal>::Ptr& cloud, const nav_msgs::Odometry::ConstPtr& keypose);
 template void misc_utils_ns::KeyposeToMap<pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr>(
-    pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr& cloud, const nav_msgs::Odometry::ConstPtr& keypose);
+    pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr& cloud,
+    const nav_msgs::Odometry::ConstPtr& keypose);

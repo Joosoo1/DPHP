@@ -11,28 +11,24 @@
 
 #include "explorer/lidar_model.h"
 
-namespace lidar_model_ns
-{
+namespace lidar_model_ns {
     const double LiDARModel::kToDegreeConst = 57.2957;
     const double LiDARModel::kToRadianConst = 0.01745;
     const double LiDARModel::kEpsilon = 1e-4;
     const double LiDARModel::kCloudInflateRatio = 2;
     double LiDARModel::pointcloud_resolution_ = 0.2;
 
-    int LiDARModel::sub2ind(const int row_index, const int column_index)
-    {
+    int LiDARModel::sub2ind(const int row_index, const int column_index) {
         return row_index * kHorizontalVoxelSize + column_index;
     }
 
-    void LiDARModel::ind2sub(const int ind, int& row_index, int& column_index)
-    {
+    void LiDARModel::ind2sub(const int ind, int& row_index, int& column_index) {
         row_index = ind / kHorizontalVoxelSize;
         column_index = ind % kHorizontalVoxelSize;
     }
 
-    LiDARModel::LiDARModel(const double px, const double py, const double pz, const double rw, const double rx,
-                           const double ry, const double rz)
-    {
+    LiDARModel::LiDARModel(const double px, const double py, const double pz, const double rw,
+                           const double rx, const double ry, const double rz) {
         pose_.position.x = px;
         pose_.position.y = py;
         pose_.position.z = pz;
@@ -43,29 +39,28 @@ namespace lidar_model_ns
         ResetCoverage();
     }
 
-    LiDARModel::LiDARModel(const geometry_msgs::Pose& pose) :
-        LiDARModel(pose.position.x, pose.position.y, pose.position.z, pose.orientation.w, pose.orientation.x,
-                   pose.orientation.y, pose.orientation.z)
-    {
+    LiDARModel::LiDARModel(const geometry_msgs::Pose& pose)
+        : LiDARModel(pose.position.x, pose.position.y, pose.position.z, pose.orientation.w,
+                     pose.orientation.x, pose.orientation.y, pose.orientation.z) {}
+
+    void LiDARModel::ResetCoverage() {
+        reset_.fill(true);
     }
 
-    void LiDARModel::ResetCoverage() { reset_.fill(true); }
-
-    void LiDARModel::GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& visualization_cloud,
-                                           const double resol, const double max_range) const
-    {
+    void LiDARModel::GetVisualizationCloud(
+        const pcl::PointCloud<pcl::PointXYZI>::Ptr& visualization_cloud, const double resol,
+        const double max_range) const {
         visualization_cloud->clear();
         const geometry_msgs::Point start_point = pose_.position;
-        for (int i = 0; i < covered_voxel_.size(); i++)
-        {
+        for (int i = 0; i < covered_voxel_.size(); i++) {
             int row_index, column_index;
             ind2sub(i, row_index, column_index);
             const double phi = (column_index * kHorizontalResolution - 180) * M_PI / 180;
-            const double theta = (row_index * kVerticalResolution - kVerticalAngleOffset) * M_PI / 180;
+            const double theta =
+                (row_index * kVerticalResolution - kVerticalAngleOffset) * M_PI / 180;
 
             double r = covered_voxel_[i];
-            if (isZero(covered_voxel_[i]) || reset_[i])
-            {
+            if (isZero(covered_voxel_[i]) || reset_[i]) {
                 r = max_range;
             }
             geometry_msgs::Point end_point;
@@ -80,19 +75,16 @@ namespace lidar_model_ns
 
             visualization_cloud->points.push_back(point);
             pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_cloud(new pcl::PointCloud<pcl::PointXYZI>());
-            misc_utils_ns::LinInterpPoints<pcl::PointXYZI>(start_point, end_point, resol, tmp_cloud);
-            for (auto& tmp_point : tmp_cloud->points)
-            {
-                if (isZero(covered_voxel_[i]) || reset_[i])
-                {
+            misc_utils_ns::LinInterpPoints<pcl::PointXYZI>(start_point, end_point, resol,
+                                                           tmp_cloud);
+            for (auto& tmp_point : tmp_cloud->points) {
+                if (isZero(covered_voxel_[i]) || reset_[i]) {
                     tmp_point.intensity = 0.0;
-                }
-                else
-                {
+                } else {
                     tmp_point.intensity = 10.0;
                 }
             }
             *visualization_cloud += *tmp_cloud;
         }
     }
-} // namespace lidar_model_ns
+}  // namespace lidar_model_ns

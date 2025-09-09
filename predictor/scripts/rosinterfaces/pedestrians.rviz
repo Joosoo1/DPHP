@@ -112,7 +112,7 @@ Visualization Manager:
       Marker Topic: /predictor_node/predictions
       Name: MarkerArray
       Namespaces:
-        {}
+        { }
       Queue Size: 100
       Value: true
     - Alpha: 1
