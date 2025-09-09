@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- 启动检测器 -->
+  <node name="door_detector" pkg="yolov11_d435i_detection" type="ros_door_detection_optimized.py" output="screen">
+    <remap from="/camera/color/image_raw" to="/camera/color/image_raw"/>
+    <remap from="/camera/depth/image_rect_raw" to="/camera/depth/image_rect_raw"/>
+    <remap from="/camera/aligned_depth_to_color/image_raw" to="/camera/aligned_depth_to_color/image_raw"/>
+    <remap from="/camera/color/camera_info" to="/camera/color/camera_info"/>
+    <remap from="/camera/depth/camera_info" to="/camera/depth/camera_info"/>
+  </node>
+
+  <!-- 启动位置转换器 -->
+  <node name="door_position_transformer" pkg="trans_system" type="door_position_transformer_optimized.py" output="screen"/>
+
+</launch>

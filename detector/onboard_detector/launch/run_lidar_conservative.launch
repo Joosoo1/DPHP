@@ -1,0 +1,24 @@
+<launch>
+    <!-- 加载的配置参数 -->
+    <rosparam file="$(find onboard_detector)/cfg/detector_param_conservative.yaml" ns="/onboard_detector" />
+    
+    <!-- Load predictor parameters -->
+	<rosparam file="$(find dynamic_predictor)/cfg/predictor_param.yaml" ns="/dynamic_predictor" />
+	<rosparam file="$(find dynamic_predictor)/cfg/dynamic_map_param.yaml" ns="/dynamic_map" />
+
+    <!-- 启动检测器节点 -->
+    <node pkg="onboard_detector" type="detector_node" name="detector_node" output="screen" >
+        <!-- 增加调试输出 -->
+        <param name="debug_mode" value="true" />
+    </node>
+    
+    <!-- 启动动态预测器节点 -->
+    <node pkg="dynamic_predictor" type="dynamic_predictor_node" name="dynamic_predictor_node" output="screen" />
+    
+    <!-- 启动YOLO检测器，因为使用相机 -->
+    <node pkg="onboard_detector" type="yolov11_detector_node.py" name="yolov11_detector_node" output="log" />
+    
+    <!-- 启动RViz可视化 -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find onboard_detector)/rviz/detector_lv.rviz"/>
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find dynamic_predictor)/rviz/predictor.rviz"/> -->
+</launch> 

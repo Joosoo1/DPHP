@@ -1,0 +1,10 @@
+<launch>
+	<rosparam file="$(find dynamic_predictor)/cfg/predictor_param.yaml" ns="/dynamic_predictor"  />
+	<rosparam file="$(find dynamic_predictor)/cfg/detector_param.yaml" ns="/onboard_detector" />
+	<rosparam file="$(find dynamic_predictor)/cfg/dynamic_map_param.yaml" ns="/dynamic_map"  />
+	<rosparam file="$(find dynamic_predictor)/cfg/fake_detector_param.yaml" />
+    <node pkg="onboard_detector" type="yolo_detector_node.py" name="yolo_detector_node" output="screen" />
+	<!-- <node pkg="map_manager" type="dynamic_map_node" name="dynamic_map_node" output="screen" /> -->
+	<node pkg="dynamic_predictor" type="dynamic_predictor_node" name="dynamic_predictor_node" output="screen" />
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find dynamic_predictor)/rviz/predictor.rviz"/>
+</launch>

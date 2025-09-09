@@ -1,0 +1,19 @@
+<launch>
+    <!-- 加载优化的配置参数 -->
+    <rosparam file="$(find onboard_detector)/cfg/detector_param_optimized.yaml" ns="/onboard_detector" />
+    
+    <!-- 启动检测器节点 -->
+    <node pkg="onboard_detector" type="detector_node" name="detector_node" output="screen" >
+        <!-- 增加调试输出 -->
+        <param name="debug_mode" value="true" />
+    </node>
+    
+    <!-- 不启动YOLO检测器，因为只使用LiDAR -->
+    <!-- <node pkg="onboard_detector" type="yolov11_detector_node.py" name="yolov11_detector_node" output="log" /> -->
+    
+    <!-- 启动RViz可视化 -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find onboard_detector)/rviz/detector_lv.rviz"/>
+    
+    <!-- 可选：启动动态监控节点 -->
+    <node name="dynamic_monitor" pkg="onboard_detector" type="dynamic_monitor.py" output="screen" />
+</launch> 
