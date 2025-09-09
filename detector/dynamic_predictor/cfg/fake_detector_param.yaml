@@ -1,0 +1,7 @@
+# this is only used in simulation
+use_mocap: true
+color_distance: 6.0
+target_obstacle: ["person", "dynamic_box", "dynamic_cylinder"]
+odom_topic: "mavros/local_position/odom"
+# odom_topic: "/CERLAB/quadcopter/odom"
+history_size: 100

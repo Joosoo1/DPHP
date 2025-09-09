@@ -1,0 +1,49 @@
+{
+  "camera": {
+    "camera_model": "plumb_bob",
+    "distortion_coeffs": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "intrinsics": [
+      607.0154418945313,
+      606.8546752929688,
+      317.436767578125,
+      249.44366455078125
+    ]
+  },
+  "meta": {
+    "bag_names": [
+      "2025-09-04-16-17-33_pc2.bag",
+      "2025-09-04-16-18-44_pc2.bag"
+    ],
+    "camera_info_topic": "/camera/color/camera_info",
+    "data_path": "/home/nuc/catkin_ws/src/direct_visual_lidar_calibration/bag",
+    "image_topic": "/camera/color/image_raw",
+    "intensity_channel": "intensity",
+    "points_topic": "/livox/lidar"
+  },
+  "results": {
+    "T_lidar_camera": [
+      0.059434530181592664,
+      0.03926847646088485,
+      -0.03736728137026219,
+      -0.49876901049711464,
+      0.5008548905343586,
+      -0.49992938522735686,
+      0.5004442652101654
+    ],
+    "init_T_lidar_camera": [
+      0.11665856093168259,
+      0.09126558154821396,
+      -0.053773701190948486,
+      0.4960143446885293,
+      -0.4991915423379088,
+      0.5078667240353134,
+      -0.4968389547550274
+    ]
+  }
+}

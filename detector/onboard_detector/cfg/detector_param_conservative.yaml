@@ -1,0 +1,77 @@
+localization_mode: 1 # 0: pose (default) 1: odom - 使用odom模式
+
+# ROS Topics
+depth_image_topic: /camera/depth/image_rect_raw
+color_image_topic: /camera/color/image_raw
+lidar_pointcloud_topic: /robot/dlio/odom_node/pointcloud/deskewed   # 您的点云话题
+pose_topic: /mavros/local_position/pose
+odom_topic: /robot/dlio/odom_node/odom  # 您的里程计话题
+
+# Camera Parameters
+depth_intrinsics: [385.3096008300781, 385.3096008300781, 324.7971496582031, 237.722900390625]
+color_intrinsics: [606.3120727539062, 605.92626953125, 314.6913146972656, 252.1909942626953]
+depth_scale_factor: 1000
+depth_min_value: 0.5
+depth_max_value: 5.0
+depth_filter_margin: 10
+depth_skip_pixel: 2
+image_cols: 640
+image_rows: 480
+
+# Sensor Transforms
+body_to_camera_depth: [0.0,  0.0,  1.0,  0.09,
+                      -1.0,  0.0,  0.0,  0.0 ,   
+                      0.0, -1.0,  0.0,  0.095,
+                      0.0,  0.0,  0.0,  1.0]
+body_to_camera_color: [0.0,  0.0,  1.0,  0.09,
+                      -1.0,  0.0,  0.0,  0.0 ,   
+                      0.0, -1.0,  0.0,  0.095,
+                      0.0,  0.0,  0.0,  1.0]
+body_to_lidar:  [1.0,  0.0,  0.0,  0.0,
+                 0.0,  1.0,  0.0,  0.0 ,   
+                 0.0,  0.0,  1.0,  0.0,
+                 0.0,  0.0,  0.0,  1.0]
+
+# System
+time_step: 0.033
+
+# DBSCAN Common - 保守的聚类要求
+ground_height: 0.18  # 稍微提高地面高度阈值
+roof_height: 2.0     # 标准屋顶高度阈值
+
+# DBSCAN visual param
+voxel_occupied_thresh: 5  # 提高体素占用阈值
+dbscan_min_points_cluster: 20  # 标准最小聚类点数
+dbscan_search_range_epsilon: 0.05  # 标准搜索半径
+
+# DBSCAN LiDAR param - 保守设置
+lidar_DBSCAN_min_points: 10     # 保持原始值，确保聚类质量
+lidar_DBSCAN_epsilon: 0.07      # 轻微增加搜索半径
+downsample_threshold: 3500      # 标准下采样阈值
+gaussian_downsample_rate: 6     # 标准高斯下采样率
+
+# LiDAR Visual Filtering
+filtering_BBox_IOU_threshold: 0.2  # 标准IOU阈值
+
+# Tracking and data association - 标准匹配条件
+max_match_range: 0.5  # 标准最大匹配范围
+max_size_diff_range: 0.5  # 标准尺寸差异范围
+feature_weight: [3.0, 3.0, 0.1, 0.5, 0.5, 0.05, 0, 0, 0]  # 原始特征权重
+history_size: 100  # 标准历史长度
+fix_size_history_threshold: 10  # 标准固定尺寸阈值
+fix_size_dimension_threshold: 0.4  # 标准尺寸维度阈值
+kalman_filter_param: [0.28, 0.01, 0.05, 0.05, 0.04, 0.35, 0.6]  # 标准卡尔曼滤波参数
+kalman_filter_averaging_frames: 10  # 标准平均帧数
+
+# Classification - 保守设置：提高动态检测阈值以减少误检
+frame_skip: 5  # 标准跳帧数
+dynamic_velocity_threshold: 0.1   # 降低速度要求
+dynamic_voting_threshold: 0.7     # 降低投票要求
+frames_force_dynamic: 12          # 增加强制动态帧数要求
+frames_force_dynamic_check_range: 35  # 增加检查范围
+dynamic_consistency_threshold: 15  # 提高一致性阈值要求
+
+# Constrain size - 启用严格的尺寸约束
+target_constrain_size: true  # 启用尺寸约束以减少误检
+target_object_size: [0.5, 0.5, 1.6]  # 严格的目标尺寸要求
+max_object_size: [3.0, 3.0, 2.0]  # 标准最大目标尺寸 
