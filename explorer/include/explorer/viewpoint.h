@@ -10,6 +10,13 @@ namespace viewpoint_ns {
     public:
         explicit ViewPoint(double x = 0.0, double y = 0.0, double z = 0.0);
         explicit ViewPoint(const geometry_msgs::Point& position);
+
+        void SetCollisionRisk(double risk) {
+            collision_risk_ = risk;
+        }
+        double GetCollisionRisk() const {
+            return collision_risk_;
+        }
         ~ViewPoint() = default;
 
         template<class PCLPointType>
@@ -196,7 +203,7 @@ namespace viewpoint_ns {
         // The index of this viewpoint among all the candidate viewpoints 这个视点在所有候选视点之中的索引
         int collision_frame_count_;
         // For debug
-        double terrain_height_;  // 地形高度
+        double terrain_height_;      // 地形高度
         bool has_terrain_neighbor_;  //
         // Whether the viewpoint is in line of sight in the current frame
         bool in_current_frame_line_of_sight_;  // 该视点是否在当前帧的视线范围内
@@ -204,5 +211,8 @@ namespace viewpoint_ns {
         std::vector<int> covered_point_list_;  // 覆盖的点集合列表
         // Indices of the covered frontier points
         std::vector<int> covered_frontier_point_list_;  // 覆盖的边界点集合列表
+
+        // 碰撞风险值（用于动态物体避障）
+        double collision_risk_;
     };
 }  // namespace viewpoint_ns

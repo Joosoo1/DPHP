@@ -17,7 +17,8 @@ namespace viewpoint_ns {
           collision_frame_count_(0),
           terrain_height_(0.0),
           has_terrain_neighbor_(false),
-          in_current_frame_line_of_sight_(false) {}
+          in_current_frame_line_of_sight_(false),
+          collision_risk_(0.0) {}
 
     ViewPoint::ViewPoint(const geometry_msgs::Point& position)
         : ViewPoint(position.x, position.y, position.z) {}
@@ -38,6 +39,7 @@ namespace viewpoint_ns {
         covered_frontier_point_list_.clear();
         collision_frame_count_ = 0;
         terrain_height_ = 0.0;
+        collision_risk_ = 0.0;
     }
 
     void ViewPoint::ResetCoverage() {

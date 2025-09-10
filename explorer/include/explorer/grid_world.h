@@ -314,7 +314,9 @@ namespace grid_world_ns {
         // ？？
         std::vector<int> GetNeighborCellIndices() {
             return neighbor_cell_indices_;
-        };
+        }
+
+        void UpdateSemiExploredCellStatus();
         // 获取该cell的临近cell列表
         void GetNeighborCellIndices(const Eigen::Vector3i& center_cell_sub,
                                     const Eigen::Vector3i& neighbor_range);
@@ -405,10 +407,25 @@ namespace grid_world_ns {
             const std::unique_ptr<keypose_graph_ns::KeyposeGraph>& keypose_graph,
             const Eigen::Vector3d& start_position, const Eigen::Vector3d& goal_position) const;
 
-        // 获取semi-explored的cell状态转换概率
         static double GetSemiCellTransitionProbability(const int& cell_ind);
         void getSemiExploredCellIndices(
             const std::vector<Eigen::Vector3d>& semi_dynamic_frontier_positions);
+
+        void UpdateSemiExploredCellsFromYOLODetection(
+            const std::vector<geometry_msgs::PoseStamped>& detected_doors,
+            const geometry_msgs::Point& robot_position);
+
+        void MarkNeighborCellsAsSemiExplored(int center_cell_ind, int neighbor_range);
+
+        void UpdateSemiDynamicFrontiers(const geometry_msgs::Point& robot_position);
+
+        double CalculateDoorDetectionFrequency(int cell_ind);
+
+        double CalculateTimeBasedFactor();
+
+        double CalculateDistanceFactor(int cell_ind);
+
+        void PrintSemiExploredCellsInfo();
 
     private:
         // 3维栅格空间行列层数
@@ -457,6 +474,8 @@ namespace grid_world_ns {
         std::vector<int> almost_covered_cell_indices_;
         // semi-explored的cell列表
         std::vector<int> semi_explored_cell_indices_;
+        // 半动态前沿点位置
+        std::vector<Eigen::Vector3d> semi_dynamic_frontier_positions_;
         std::vector<std::pair<int, int>> to_connect_cell_indices_;
         std::vector<nav_msgs::Path> to_connect_cell_paths_;
         // home点

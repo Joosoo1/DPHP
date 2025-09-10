@@ -5,6 +5,7 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Int32MultiArray.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include "explorer/graph.h"
 #include "explorer/misc_utils.h"
@@ -257,26 +258,38 @@ namespace sensor_coverage_planner_3d_ns {
         // Debug
         pointcloud_manager_neighbor_cells_origin_pub_ = nh.advertise<geometry_msgs::PointStamped>(
             "pointcloud_manager_neighbor_cells_origin", 1);
+
+        // 订阅禁止进入区域边界
+        nogo_boundary_sub_ = nh.subscribe(pp_.sub_nogo_boundary_topic_, 5,
+                                          &SensorCoveragePlanner3D::NogoBoundaryCallback, this);
+
+        semi_dynamic_objects_sub_ =
+            nh.subscribe("/trans_system/door_positions", 10,
+                         &SensorCoveragePlanner3D::SemiDynamicObjectsCallback, this);
+
+        dynamic_obstacles_sub_ =
+            nh.subscribe("/onboard_detector/dynamic_bboxes", 10,
+                         &SensorCoveragePlanner3D::DynamicObstaclesCallback, this);
         return true;
     }
 
     void SensorCoveragePlanner3D::ExplorationStartCallback(
         const std_msgs::Bool::ConstPtr& start_msg) {
         // 接收到启动探索的消息
-        if (start_msg->data) {
-            start_exploration_ = true;
-        }
+        if (start_msg->data) { start_exploration_ = true; }
     }
 
     void SensorCoveragePlanner3D::StateEstimationCallback(
         const nav_msgs::Odometry::ConstPtr& state_estimation_msg) {
         pd_.robot_position_ = state_estimation_msg->pose.pose.position;  // 更新机器人的位置
-        // Todo: use a boolean
-        if (std::abs(pd_.initial_position_.x()) < 0.01 && std::abs(pd_.initial_position_.y()) < 0.01
-            && std::abs(pd_.initial_position_.z()) < 0.01) {
+
+        // 使用布尔变量标记是否已设置初始位置
+        static bool initial_position_set = false;
+        if (!initial_position_set) {
             pd_.initial_position_.x() = pd_.robot_position_.x;
             pd_.initial_position_.y() = pd_.robot_position_.y;
             pd_.initial_position_.z() = pd_.robot_position_.z;
+            initial_position_set = true;
         }  // 初始化机器人的位置
 
         double roll, pitch, yaw;
@@ -300,16 +313,12 @@ namespace sensor_coverage_planner_3d_ns {
     void SensorCoveragePlanner3D::RegisteredScanCallback(
         const sensor_msgs::PointCloud2ConstPtr& registered_scan_msg) {
         // 等待接受里程计信息，完成初始化
-        if (!initialized_) {
-            return;
-        }
+        if (!initialized_) { return; }
         pcl::PointCloud<pcl::PointXYZ>::Ptr registered_scan_tmp(
             new pcl::PointCloud<pcl::PointXYZ>());
         pcl::fromROSMsg(*registered_scan_msg, *registered_scan_tmp);
         // 如果接收到点云为空，则直接返回
-        if (registered_scan_tmp->points.empty()) {
-            return;
-        }
+        if (registered_scan_tmp->points.empty()) { return; }
 
         *(pd_.registered_scan_stack_->cloud_) += *(registered_scan_tmp);  // 将点云加入点云堆栈中
         // 对点云进行下采样
@@ -369,18 +378,16 @@ namespace sensor_coverage_planner_3d_ns {
 
     void SensorCoveragePlanner3D::TerrainMapExtCallback(
         const sensor_msgs::PointCloud2ConstPtr& terrain_map_ext_msg) const {
-        //
-        if (pp_.kUseTerrainHeight) {
+        // 只有在需要使用地形高度或检查地形碰撞时才转换点云
+        if (pp_.kUseTerrainHeight || pp_.kCheckTerrainCollision) {
             pcl::fromROSMsg<pcl::PointXYZI>(*terrain_map_ext_msg,
                                             *(pd_.large_terrain_cloud_->cloud_));
         }
 
         if (pp_.kCheckTerrainCollision) {
-            pcl::fromROSMsg<pcl::PointXYZI>(*terrain_map_ext_msg,
-                                            *(pd_.large_terrain_cloud_->cloud_));  // 获取扩展地形图
             pd_.terrain_ext_collision_cloud_->cloud_->clear();
 
-            for (auto& point : pd_.large_terrain_cloud_->cloud_->points) {
+            for (const auto& point : pd_.large_terrain_cloud_->cloud_->points) {
                 if (point.intensity > pp_.kTerrainCollisionThreshold) {
                     pd_.terrain_ext_collision_cloud_->cloud_->points.push_back(
                         point);  // 提取扩展地形图的障碍物点云
@@ -478,7 +485,7 @@ namespace sensor_coverage_planner_3d_ns {
         // pd_.collision_grid_cloud_->Publish();
         pd_.viewpoint_manager_->GetCollisionViewPointVisCloud(
             pd_.viewpoint_in_collision_cloud_->cloud_);  // 获取存在碰撞的视点点云
-        pd_.viewpoint_in_collision_cloud_->Publish();  // 发布存在碰撞的视点点云
+        pd_.viewpoint_in_collision_cloud_->Publish();    // 发布存在碰撞的视点点云
 
         viewpoint_manager_update_timer.Stop(false);
         return viewpoint_candidate_count;  // 返回当前候选视点的数量
@@ -542,16 +549,16 @@ namespace sensor_coverage_planner_3d_ns {
         const Eigen::Vector3d robot_current_position(pd_.robot_position_.x, pd_.robot_position_.y,
                                                      pd_.robot_position_.z);
         bool existing = false;
+        // 使用参数化的距离阈值来判断是否为新访问位置
+        const double kVisitedPositionThreshold = 1.0;  // meters
         for (int i = 0; i < pd_.visited_positions_.size(); i++) {
-            // TODO: parameterize this
-            if ((robot_current_position - pd_.visited_positions_[i]).norm() < 1) {
+            if ((robot_current_position - pd_.visited_positions_[i]).norm()
+                < kVisitedPositionThreshold) {
                 existing = true;
                 break;
             }
         }
-        if (!existing) {
-            pd_.visited_positions_.push_back(robot_current_position);
-        }
+        if (!existing) { pd_.visited_positions_.push_back(robot_current_position); }
     }
 
     // 更新全局地图
@@ -618,7 +625,7 @@ namespace sensor_coverage_planner_3d_ns {
         misc_utils_ns::Timer global_tsp_timer("Global planning");
         global_tsp_timer.Start();
 
-        pd_.grid_world_->UpdateCellStatus(pd_.viewpoint_manager_);  // 更新cell状态
+        pd_.grid_world_->UpdateCellStatus(pd_.viewpoint_manager_);         // 更新cell状态
         pd_.grid_world_->UpdateCellKeyposeGraphNodes(pd_.keypose_graph_);  // 更新keypose_graph
         pd_.grid_world_->AddPathsInBetweenCells(pd_.viewpoint_manager_,
                                                 pd_.keypose_graph_);  // 搜寻两两cell之间的路径
@@ -733,7 +740,7 @@ namespace sensor_coverage_planner_3d_ns {
     void SensorCoveragePlanner3D::PublishLocalPlanningVisualization(
         const exploration_path_ns::ExplorationPath& local_path) const {
         pd_.viewpoint_manager_->GetVisualizationCloud(pd_.viewpoint_vis_cloud_->cloud_);
-        pd_.viewpoint_vis_cloud_->Publish();  // 视点可视化点云
+        pd_.viewpoint_vis_cloud_->Publish();    // 视点可视化点云
         pd_.lookahead_point_cloud_->Publish();  // 前向点
         nav_msgs::Path local_tsp_path = local_path.GetPath();
         local_tsp_path.header.frame_id = "map";
@@ -861,20 +868,18 @@ namespace sensor_coverage_planner_3d_ns {
 
         bool has_lookahead = false;
         bool dir = true;
-        int robot_i = 0;  // 机器人在局部路径中的索引
+        int robot_i = 0;      // 机器人在局部路径中的索引
         int lookahead_i = 0;  // lookahead_point在局部路径中的索引
 
         for (int i = 0; i < local_path.nodes_.size(); i++) {
-            if (local_path.nodes_[i].type_ == exploration_path_ns::NodeType::ROBOT) {
-                robot_i = i;
-            }
+            if (local_path.nodes_[i].type_ == exploration_path_ns::NodeType::ROBOT) { robot_i = i; }
             if (local_path.nodes_[i].type_ == exploration_path_ns::NodeType::LOOKAHEAD_POINT) {
                 has_lookahead = true;
                 lookahead_i = i;
             }
         }
 
-        int forward_viewpoint_count = 0;  // 前向Viewpoint计数
+        int forward_viewpoint_count = 0;   // 前向Viewpoint计数
         int backward_viewpoint_count = 0;  // 后向Viewpoint计数
 
         bool local_loop = false;
@@ -883,9 +888,7 @@ namespace sensor_coverage_planner_3d_ns {
             && local_path.nodes_.front().type_ == exploration_path_ns::NodeType::ROBOT) {
             local_loop = true;
         }  // 如果局部路径为循环路径，则robot_i置为0
-        if (local_loop) {
-            robot_i = 0;
-        }
+        if (local_loop) { robot_i = 0; }
 
         // 以机器人在局部路径中的索引，向前遍历，计算前向Viewpoint的数量
         for (int i = robot_i + 1; i < local_path.GetNodeNum(); i++) {
@@ -895,9 +898,7 @@ namespace sensor_coverage_planner_3d_ns {
         }
 
         // 如果为回环路径，则robot_i置为局部路径最后一个节点的索引
-        if (local_loop) {
-            robot_i = local_path.nodes_.size() - 1;
-        }
+        if (local_loop) { robot_i = local_path.nodes_.size() - 1; }
         // 以机器人在局部路径中的索引，向后遍历，计算后向Viewpoint的数量
         for (int i = robot_i - 1; i >= 0; i--) {
             if (local_path.nodes_[i].type_ == exploration_path_ns::NodeType::LOCAL_VIEWPOINT) {
@@ -912,9 +913,7 @@ namespace sensor_coverage_planner_3d_ns {
         bool has_forward = false;
         bool has_backward = false;
 
-        if (local_loop) {
-            robot_i = 0;
-        }
+        if (local_loop) { robot_i = 0; }
         bool forward_lookahead_point_in_los = true;
         bool backward_lookahead_point_in_los = true;
         double length_from_robot = 0.0;
@@ -948,9 +947,7 @@ namespace sensor_coverage_planner_3d_ns {
             }
         }
         // 如果为回环路径，则robot_i置为局部路径最后一个节点的索引
-        if (local_loop) {
-            robot_i = local_path.nodes_.size() - 1;
-        }
+        if (local_loop) { robot_i = local_path.nodes_.size() - 1; }
         // 同上，计算后向引导点
         length_from_robot = 0.0;
         for (int i = robot_i - 1; i >= 0; i--) {
@@ -1061,7 +1058,7 @@ namespace sensor_coverage_planner_3d_ns {
                  && pd_.viewpoint_manager_->InLocalPlanningHorizon(
                      local_path.nodes_[lookahead_i].position_)) {
             lookahead_point = local_path.nodes_[lookahead_i].position_;  // 按照规划的lookahead点
-        } else  // 其它
+        } else                                                           // 其它
         {
             if (forward_angle_score > backward_angle_score) {
                 if (forward_viewpoint_count > 0) {
@@ -1235,7 +1232,7 @@ namespace sensor_coverage_planner_3d_ns {
             if (pd_.moving_direction_.dot(current_moving_direction_)
                 < 0)  // 如果当前移动方向发生较大变化
             {
-                direction_change_count_++;  // 转向次数+1
+                direction_change_count_++;       // 转向次数+1
                 direction_no_change_count_ = 0;  // 重置连续不转向次数为零
                 if (direction_change_count_
                     > pp_.kDirectionChangeCounterThr)  // 如果连续转向次数超过阈值
@@ -1253,7 +1250,7 @@ namespace sensor_coverage_planner_3d_ns {
                     > pp_.kDirectionNoChangeCounterThr)  // 如果连续不转向次数超过阈值
                 {
                     direction_change_count_ = 0;  // 重置连续转向次数为零
-                    use_momentum_ = false;  // 不使用动量
+                    use_momentum_ = false;        // 不使用动量
                 }
             }
             pd_.moving_direction_ = current_moving_direction_;  // 更新当前移动方向
@@ -1265,7 +1262,43 @@ namespace sensor_coverage_planner_3d_ns {
         momentum_activation_count_pub_.publish(momentum_activation_count_msg);
     }
 
-    // 主函数
+    void SensorCoveragePlanner3D::NogoBoundaryCallback(
+        const geometry_msgs::PolygonStampedConstPtr& polygon_msg) const {
+        pd_.nogo_boundary_marker_->marker_.points.clear();
+
+        if (polygon_msg->polygon.points.size() < 2) {
+            pd_.nogo_boundary_marker_->Publish();
+            return;
+        }
+
+        for (size_t i = 0; i < polygon_msg->polygon.points.size(); ++i) {
+            geometry_msgs::Point point1, point2;
+            point1.x = polygon_msg->polygon.points[i].x;
+            point1.y = polygon_msg->polygon.points[i].y;
+            point1.z = polygon_msg->polygon.points[i].z;
+
+            const size_t next_index = (i + 1) % polygon_msg->polygon.points.size();
+            point2.x = polygon_msg->polygon.points[next_index].x;
+            point2.y = polygon_msg->polygon.points[next_index].y;
+            point2.z = polygon_msg->polygon.points[next_index].z;
+
+            pd_.nogo_boundary_marker_->marker_.points.push_back(point1);
+            pd_.nogo_boundary_marker_->marker_.points.push_back(point2);
+        }
+        pd_.nogo_boundary_marker_->Publish();
+    }
+
+    void SensorCoveragePlanner3D::SemiDynamicObjectsCallback(
+        const geometry_msgs::PoseStampedConstPtr& msg) {
+        detected_doors_.push_back(*msg);
+
+        if (detected_doors_.size() > 100) { detected_doors_.erase(detected_doors_.begin()); }
+    }
+
+    void SensorCoveragePlanner3D::DynamicObstaclesCallback(const onboardDetector::box3D& msg) {
+        current_dynamic_obstacles_.clear();
+    }
+
     void SensorCoveragePlanner3D::execute(const ros::TimerEvent&) {
         if (!pp_.kAutoStart && !start_exploration_) {
             ROS_INFO("Waiting for start signal");
@@ -1296,6 +1329,16 @@ namespace sensor_coverage_planner_3d_ns {
             misc_utils_ns::Timer update_representation_timer("update representation");
             update_representation_timer.Start();
 
+            // 更新基于YOLO检测的半动态cell状态
+            pd_.grid_world_->UpdateSemiExploredCellsFromYOLODetection(detected_doors_,
+                                                                      pd_.robot_position_);
+
+            // 更新半动态cell状态转换
+            pd_.grid_world_->UpdateSemiExploredCellStatus();
+
+            // 输出调试信息
+            pd_.grid_world_->PrintSemiExploredCellsInfo();
+
             // Update grid world
             UpdateGlobalRepresentation();  // for global planning
 
@@ -1305,6 +1348,8 @@ namespace sensor_coverage_planner_3d_ns {
                 ROS_WARN("Cannot get candidate viewpoints, skipping this round");
                 return;
             }
+
+            pd_.viewpoint_manager_->UpdateDynamicObstacleCollisionRisk(current_dynamic_obstacles_);
 
             UpdateKeyposeGraph();  // 更新roadmap
 

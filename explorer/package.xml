@@ -28,6 +28,8 @@
     <depend>pcl_conversions</depend>
     <depend>dynamic_reconfigure</depend>
     <depend>cv_bridge</depend>
+    <depend>onboard_detector</depend>
+
 
     <test_depend>rosunit</test_depend>
     <test_depend>rostest</test_depend>

@@ -1,6 +1,6 @@
 # DPHP Planner
 
-DPHP is a robotic exploration planning system that combines global and local path planning strategies for efficient environment exploration. This system is designed for autonomous robots operating in unknown environments, using sensor data to build maps and plan optimal exploration paths.
+DPHP is a comprehensive robotic exploration and perception planning system that combines global and local path planning strategies for efficient environment exploration. This system is designed for autonomous robots operating in unknown environments, using multi-modal sensor data to build maps, detect and track dynamic obstacles, predict pedestrian trajectories, and plan optimal exploration paths.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -38,11 +38,12 @@ The DPHP Planner implements a dual-path hybrid approach for robotic exploration:
 
 ## System Architecture
 
-The system consists of three main packages:
+The system consists of four main packages:
 
 1. **explorer**: Core exploration planning implementation
 2. **predictor**: Pedestrian trajectory prediction module using LSTM-based neural networks
-3. **visualization_tools**: Visualization components for debugging and monitoring
+3. **detector**: Dynamic obstacle detection and tracking module
+4. **visualization_tools**: Visualization components for debugging and monitoring
 
 ### Explorer Package Structure
 
@@ -65,6 +66,18 @@ explorer/
 │   ├── tsp_solver/
 │   └── ... (other components)
 └── ...
+
+### Detector Package Structure
+
+```
+detector/
+├── dynamic_predictor/
+├── map_manager/
+├── onboard_detector/
+├── trans_system/
+├── yolov11_d435i_detection/
+└── ...
+```
 ```
 
 ## Program Flow
@@ -134,6 +147,25 @@ The core innovation of DPHP is its dual-path approach:
 2. **Local Path**: Short-term coverage-based plan using viewpoint sampling
 
 These paths are integrated to produce a smooth, executable trajectory.
+
+### 6. Dynamic Obstacle Detection and Tracking
+
+The system employs a multi-sensor approach for dynamic obstacle detection:
+
+- **UV Detector**: Processes depth images to identify potential obstacles
+- **LiDAR Detector**: Uses DBSCAN clustering on point clouds for obstacle detection
+- **YOLO Integration**: Improves classification accuracy with deep learning
+- **Data Association**: Tracks obstacles across frames using Kalman filtering
+- **Dynamic Classification**: Identifies moving obstacles based on velocity and consistency checks
+
+### 7. Pedestrian Trajectory Prediction
+
+A LSTM-based neural network predicts pedestrian trajectories:
+
+- **Ego LSTM**: Processes the target pedestrian's velocity information
+- **Social Processing**: Models interactions with other pedestrians using Angular Pedestrian Grid
+- **Map Processing**: Encodes local occupancy grids through a pre-trained autoencoder
+- **Feature Fusion**: Combines all features in a final LSTM layer for prediction
 
 ## Predictor Module
 
@@ -268,6 +300,19 @@ Global path optimization:
 - Optimizes cell visiting sequence
 - Considers multiple objectives
 
+### DynamicDetector
+Dynamic obstacle detection and tracking:
+- Fuses data from multiple sensors (RGB-D camera, LiDAR)
+- Implements UV detection and DBSCAN clustering
+- Tracks obstacles using Kalman filtering
+- Classifies dynamic obstacles based on motion patterns
+
+### EthPredictor
+Pedestrian trajectory prediction:
+- LSTM-based neural network architecture
+- Processes ego, social, and map information
+- Predicts future pedestrian trajectories for safer navigation
+
 ## Dependencies
 
 - ROS (Robot Operating System)
@@ -277,6 +322,7 @@ Global path optimization:
 - Google OR-Tools
 - GNU Scientific Library (GSL)
 - PyTorch (for predictor module)
+- YOLOv11 (for object detection in dynamic obstacle detection)
 
 ## Usage
 
@@ -291,6 +337,12 @@ source devel/setup.bash or source devel/setup.zsh
 
 # Launch the explorer node
 roslaunch explorer explore.launch
+
+# Launch the dynamic obstacle detection node
+roslaunch onboard_detector dynamic_detect.launch
+
+# Launch the pedestrian trajectory prediction node
+roslaunch predictor predict.launch
 ```
 
 ## Parameters

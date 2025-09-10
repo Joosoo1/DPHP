@@ -48,7 +48,7 @@ repos:
             verbose: true
             description: Run Cppcheck static analysis tool and show detailed output.
 
-  - repo: git@10.10.42.100:pnc/third_party/gitlint.git
+  - repo: https://github.com/jorisroovers/gitlint.git
     rev: v0.19.1
     hooks:
       - id: gitlint

@@ -274,9 +274,7 @@ namespace viewpoint_manager_ns {
             sub_diff(i) = vp_.kNumber(i) / vp_.kRolloverStepsize(i) / 2 - robot_grid_sub(i);
         }
 
-        if (sub_diff.x() == 0 && sub_diff.y() == 0 && sub_diff.z() == 0) {
-            return false;
-        }
+        if (sub_diff.x() == 0 && sub_diff.y() == 0 && sub_diff.z() == 0) { return false; }
 
         Eigen::Vector3i rollover_step;
         rollover_step.x() = std::abs(sub_diff.x()) > 0
@@ -383,9 +381,7 @@ namespace viewpoint_manager_ns {
     void ViewPointManager::CheckViewPointCollisionWithCollisionGrid(
         const pcl::PointCloud<pcl::PointXYZI>::Ptr& collision_cloud) {
         for (int i = 0; i < viewpoints_.size(); i++) {
-            if (ViewPointInCollision(i, true)) {
-                AddViewPointCollisionFrameCount(i, true);
-            }
+            if (ViewPointInCollision(i, true)) { AddViewPointCollisionFrameCount(i, true); }
         }
         std::fill(collision_point_count_.begin(), collision_point_count_.end(), 0);
         collision_grid_origin_ = origin_ - Eigen::Vector3d::Ones() * vp_.kViewPointCollisionMargin;
@@ -419,9 +415,7 @@ namespace viewpoint_manager_ns {
         if (InRange(viewpoint_ind)
             && std::abs(GetViewPointHeight(viewpoint_ind) - position.z())
                 < std::max(vp_.kResolution.x(), vp_.kResolution.y()) * 2) {
-            if (ViewPointInCollision(viewpoint_ind)) {
-                return true;
-            }
+            if (ViewPointInCollision(viewpoint_ind)) { return true; }
         }
         return false;
     }
@@ -430,9 +424,7 @@ namespace viewpoint_manager_ns {
         const int viewpoint_ind = GetViewPointInd(position);
         bool in_line_of_sight = false;
         if (InRange(viewpoint_ind)) {
-            if (ViewPointInCurrentFrameLineOfSight(viewpoint_ind)) {
-                return true;
-            }
+            if (ViewPointInCurrentFrameLineOfSight(viewpoint_ind)) { return true; }
         }
         return false;
     }
@@ -466,9 +458,7 @@ namespace viewpoint_manager_ns {
         const pcl::PointCloud<pcl::PointXYZI>::Ptr& terrain_cloud, double collision_threshold) {
         pcl::PointCloud<pcl::PointXYZI>::Ptr collision_cloud(new pcl::PointCloud<pcl::PointXYZI>());
         for (const auto& point : terrain_cloud->points) {
-            if (point.intensity > collision_threshold) {
-                collision_cloud->points.push_back(point);
-            }
+            if (point.intensity > collision_threshold) { collision_cloud->points.push_back(point); }
         }
         CheckViewPointCollisionWithCollisionGrid(collision_cloud);
     }
@@ -509,9 +499,7 @@ namespace viewpoint_manager_ns {
                     if (ViewPointInCollision(ind) && GetViewPointCollisionFrameCount(ind) == 0) {
                         hit_obstacle = true;
                     }
-                    if (hit_obstacle && !ViewPointInCollision(ind)) {
-                        in_line_of_sight = true;
-                    }
+                    if (hit_obstacle && !ViewPointInCollision(ind)) { in_line_of_sight = true; }
                     if (hit_obstacle && ViewPointInCollision(ind)
                         && GetViewPointCollisionFrameCount(ind) > vp_.kCollisionFrameCountMax)
 
@@ -521,9 +509,7 @@ namespace viewpoint_manager_ns {
                             SetViewPointCollision(ind, false);
                         }
                     }
-                    if (in_line_of_sight) {
-                        SetViewPointInLineOfSight(ind, true);
-                    }
+                    if (in_line_of_sight) { SetViewPointInLineOfSight(ind, true); }
                 }
                 if (!hit_obstacle) {
                     for (int i = ray_cast_cells.size() - 1; i >= 0; i--) {
@@ -541,9 +527,7 @@ namespace viewpoint_manager_ns {
                     occlude = true;
                     break;
                 }
-                if (!occlude) {
-                    SetViewPointInCurrentFrameLineOfSight(ind, true);
-                }
+                if (!occlude) { SetViewPointInCurrentFrameLineOfSight(ind, true); }
             }
         }
     }
@@ -631,9 +615,7 @@ namespace viewpoint_manager_ns {
         Eigen::Vector3d diff = point_position - viewpoint_position;
         const double xy_diff = sqrt(diff.x() * diff.x() + diff.y() * diff.y());
         const double z_diff = std::abs(diff.z());
-        if (z_diff < vp_.kVerticalFOVRatio * xy_diff) {
-            return true;
-        }
+        if (z_diff < vp_.kVerticalFOVRatio * xy_diff) { return true; }
         return false;
     }
 
@@ -641,13 +623,9 @@ namespace viewpoint_manager_ns {
                                          const Eigen::Vector3d& viewpoint_position) const {
         Eigen::Vector3d diff = point_position - viewpoint_position;
         double z_diff = std::abs(diff.z());
-        if (z_diff > vp_.kDiffZMax) {
-            return false;
-        }
+        if (z_diff > vp_.kDiffZMax) { return false; }
         double xy_diff = sqrt(diff.x() * diff.x() + diff.y() * diff.y());
-        if (xy_diff > vp_.kSensorRange) {
-            return false;
-        }
+        if (xy_diff > vp_.kSensorRange) { return false; }
         if (z_diff < vp_.kVerticalFOVRatio * xy_diff) {
             return true;
         } else {
@@ -728,9 +706,7 @@ namespace viewpoint_manager_ns {
         if (!initialized_) return;
 
         for (const auto& position : positions) {
-            if (!InLocalPlanningHorizon(position)) {
-                continue;
-            }
+            if (!InLocalPlanningHorizon(position)) { continue; }
             const Eigen::Vector3i viewpoint_sub = GetViewPointSub(position);
             if (grid_->InRange(viewpoint_sub)) {
                 const int viewpoint_ind = grid_->Sub2Ind(viewpoint_sub);
@@ -787,9 +763,7 @@ namespace viewpoint_manager_ns {
 
         // Set the height of other viewpoints
         for (const auto& terrain_point : terrain_cloud->points) {
-            if (terrain_point.intensity > terrain_height_threshold) {
-                continue;
-            }
+            if (terrain_point.intensity > terrain_height_threshold) { continue; }
             const Eigen::Vector3i viewpoint_sub =
                 GetViewPointSub(Eigen::Vector3d(terrain_point.x, terrain_point.y, terrain_point.z));
             if (grid_->InRange(viewpoint_sub)) {
@@ -1047,9 +1021,7 @@ namespace viewpoint_manager_ns {
             // 判断点索引是否在列表范围内
             MY_ASSERT(misc_utils_ns::InRange<bool>(point_list, point_ind));
             // 如果该点属性为false
-            if (!point_list[point_ind]) {
-                covered_point_num++;
-            }
+            if (!point_list[point_ind]) { covered_point_num++; }
         }
         return covered_point_num;
     }
@@ -1060,9 +1032,7 @@ namespace viewpoint_manager_ns {
         for (const auto& point_ind :
              GetViewPointCoveredFrontierPointList(viewpoint_index, use_array_ind)) {
             MY_ASSERT(misc_utils_ns::InRange<bool>(frontier_point_list, point_ind));
-            if (!frontier_point_list[point_ind]) {
-                covered_frontier_point_num++;
-            }
+            if (!frontier_point_list[point_ind]) { covered_frontier_point_num++; }
         }
         return covered_frontier_point_num;
     }
@@ -1241,9 +1211,7 @@ namespace viewpoint_manager_ns {
         graph.clear();
         dist.clear();
         positions.clear();
-        if (candidate_indices_.empty()) {
-            return;
-        }
+        if (candidate_indices_.empty()) { return; }
         graph.resize(candidate_indices_.size());
         dist.resize(graph.size());
 
@@ -1271,9 +1239,7 @@ namespace viewpoint_manager_ns {
     int ViewPointManager::GetNearestCandidateViewPointInd(const Eigen::Vector3d& position) {
         const int viewpoint_ind = GetViewPointInd(position);
         if (InRange(viewpoint_ind)) {
-            if (IsViewPointCandidate(viewpoint_ind)) {
-                return viewpoint_ind;
-            }
+            if (IsViewPointCandidate(viewpoint_ind)) { return viewpoint_ind; }
         }
         if (!candidate_indices_.empty()) {
             // Find the closest viewpoint that is a candidate viewpoint
@@ -1323,5 +1289,91 @@ namespace viewpoint_manager_ns {
             }
         }
         return false;
+    }
+
+    Eigen::Vector3d ViewPointManager::PredictObstaclePosition(const Eigen::Vector3d& position,
+                                                              const Eigen::Vector3d& velocity,
+                                                              double time_horizon) {
+        Eigen::Vector3d predicted_pos;
+        predicted_pos.x() = position.x() + velocity.x() * time_horizon;
+        predicted_pos.y() = position.y() + velocity.y() * time_horizon;
+        predicted_pos.z() = position.z() + velocity.z() * time_horizon;
+
+        return predicted_pos;
+    }
+
+    double ViewPointManager::CalculateCollisionRisk(const geometry_msgs::Point& viewpoint_pos,
+                                                    const Eigen::Vector3d& obstacle_pos,
+                                                    const Eigen::Vector3d& obstacle_vel) {
+        double kPredictionHorizon = 1.0;  // 预测时间窗口（秒）
+        Eigen::Vector3d predicted_position =
+            PredictObstaclePosition(obstacle_pos, obstacle_vel, kPredictionHorizon);
+
+        double distance = sqrt(pow(viewpoint_pos.x - predicted_position.x(), 2)
+                               + pow(viewpoint_pos.y - predicted_position.y(), 2)
+                               + pow(viewpoint_pos.z - predicted_position.z(), 2));
+
+        double speed =
+            sqrt(obstacle_vel.x() * obstacle_vel.x() + obstacle_vel.y() * obstacle_vel.y());
+
+        double min_safe_distance = 2.0;
+
+        if (distance < min_safe_distance) {
+            // 距离越近，风险越高；速度越快，风险越高
+            double risk = (min_safe_distance - distance) / min_safe_distance * (1.0 + speed * 0.1);
+            return std::min(1.0, risk);
+        }
+
+        return 0.0;
+    }
+
+    void ViewPointManager::UpdateDynamicObstacleCollisionRisk(
+        const std::vector<onboardDetector::box3D>& dynamic_obstacles) {
+        for (auto& viewpoint : viewpoints_) {
+            double total_collision_risk = 0.0;
+
+            for (const auto& obstacle : dynamic_obstacles) {
+                geometry_msgs::Point viewpoint_pos = viewpoint.GetPosition();
+                Eigen::Vector3d obstacle_pos(obstacle.x, obstacle.y, obstacle.z);
+                Eigen::Vector3d obstacle_vel(obstacle.Vx, obstacle.Vy, obstacle.Vz);
+
+                double risk = CalculateCollisionRisk(viewpoint_pos, obstacle_pos, obstacle_vel);
+                total_collision_risk += risk;
+            }
+
+            // 归一化风险值
+            viewpoint.SetCollisionRisk(std::min(1.0, total_collision_risk));
+        }
+    }
+
+    int ViewPointManager::GetOptimalViewPointCandidate() {
+        double best_score = -INFINITY;
+        int best_viewpoint_ind = -1;
+
+        // 碰撞风险权重
+        double kCollisionRiskWeight = 0.5;
+
+        for (int viewpoint_ind : candidate_indices_) {
+            int array_ind = GetViewPointArrayInd(viewpoint_ind);
+            viewpoint_ns::ViewPoint& viewpoint = viewpoints_[array_ind];
+
+            // 获取视点的基础得分（覆盖率等）
+            // 这里简化处理，实际应该使用视点的覆盖率得分
+            double base_score =
+                viewpoint.GetCoveredPointNum() + viewpoint.GetCoveredFrontierPointNum();
+
+            // 获取碰撞风险
+            double collision_risk = viewpoint.GetCollisionRisk();
+
+            // 综合得分 = 基础得分 - 碰撞风险惩罚
+            double final_score = base_score - collision_risk * kCollisionRiskWeight;
+
+            if (final_score > best_score) {
+                best_score = final_score;
+                best_viewpoint_ind = viewpoint_ind;
+            }
+        }
+
+        return best_viewpoint_ind;
     }
 }  // namespace viewpoint_manager_ns

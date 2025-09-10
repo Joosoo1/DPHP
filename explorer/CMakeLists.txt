@@ -32,6 +32,7 @@ set(PROJECT_DEPENDENCIES
         pcl_conversions
         dynamic_reconfigure
         cv_bridge
+        onboard_detector
 )
 
 find_package(catkin REQUIRED COMPONENTS ${PROJECT_DEPENDENCIES})

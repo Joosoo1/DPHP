@@ -21,6 +21,7 @@
 #include "explorer/misc_utils.h"
 #include "explorer/rolling_grid.h"
 #include "explorer/viewpoint.h"
+#include "onboard_detector/utils.h"  // 用于onboardDetector::box3D
 
 namespace viewpoint_manager_ns {
     struct ViewPointManagerParameter {
@@ -142,9 +143,7 @@ namespace viewpoint_manager_ns {
             // std::cout << "update cloud size: " << cloud->points.size() << std::endl;
             int update_viewpoint_count = 0;
             for (auto& viewpoint : viewpoints_) {
-                if (viewpoint.InCollision()) {
-                    continue;
-                }
+                if (viewpoint.InCollision()) { continue; }
                 update_viewpoint_count++;
             }
             // std::cout << "update viewpoint num: " << update_viewpoint_count << std::endl;
@@ -152,9 +151,7 @@ namespace viewpoint_manager_ns {
                 for (auto& viewpoint : viewpoints_)
                 // for (auto& viewpoint : viewpoints_)
                 {
-                    if (viewpoint.InCollision()) {
-                        continue;
-                    }
+                    if (viewpoint.InCollision()) { continue; }
                     geometry_msgs::Point viewpoint_position = viewpoint.GetPosition();
                     if (misc_utils_ns::InFOVSimple(
                             Eigen::Vector3d(point.x, point.y, point.z),
@@ -174,9 +171,7 @@ namespace viewpoint_manager_ns {
             for (const auto& point : cloud->points) {
                 for (const auto& viewpoint_ind : updated_viewpoint_indices_) {
                     int array_ind = grid_->GetArrayInd(viewpoint_ind);
-                    if (viewpoints_[array_ind].InCollision()) {
-                        continue;
-                    }
+                    if (viewpoints_[array_ind].InCollision()) { continue; }
                     geometry_msgs::Point viewpoint_position = viewpoints_[array_ind].GetPosition();
                     if (misc_utils_ns::InFOVSimple(
                             Eigen::Vector3d(point.x, point.y, point.z),
@@ -205,9 +200,7 @@ namespace viewpoint_manager_ns {
             MY_ASSERT(grid_->InRange(viewpoint_ind));
             int array_ind = grid_->GetArrayInd(viewpoint_ind);
             geometry_msgs::Point viewpoint_position = viewpoints_[array_ind].GetPosition();
-            if (std::abs(point.z - viewpoint_position.z) > vp_.kDiffZMax) {
-                return false;
-            }
+            if (std::abs(point.z - viewpoint_position.z) > vp_.kDiffZMax) { return false; }
             if (!misc_utils_ns::InFOVSimple(
                     Eigen::Vector3d(point.x, point.y, point.z),
                     Eigen::Vector3d(viewpoint_position.x, viewpoint_position.y,
@@ -325,6 +318,17 @@ namespace viewpoint_manager_ns {
         void GetCollisionViewPointVisCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud) const;
 
         typedef std::unique_ptr<ViewPointManager> Ptr;
+
+        // 动态物体预测和碰撞风险评估相关方法
+        Eigen::Vector3d PredictObstaclePosition(const Eigen::Vector3d& position,
+                                                const Eigen::Vector3d& velocity,
+                                                double time_horizon);
+        double CalculateCollisionRisk(const geometry_msgs::Point& viewpoint_pos,
+                                      const Eigen::Vector3d& obstacle_pos,
+                                      const Eigen::Vector3d& obstacle_vel);
+        void UpdateDynamicObstacleCollisionRisk(
+            const std::vector<onboardDetector::box3D>& dynamic_obstacles);
+        int GetOptimalViewPointCandidate();
 
     private:
         void ComputeConnectedNeighborIndices();

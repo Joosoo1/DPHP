@@ -43,8 +43,8 @@ namespace sensor_coverage_planner_3d_ns {
     struct PlannerParameters {
         // String
         std::string sub_start_exploration_topic_;  //
-        std::string sub_state_estimation_topic_;  // 订阅状态估计
-        std::string sub_registered_scan_topic_;  // 订阅配准后的点云
+        std::string sub_state_estimation_topic_;   // 订阅状态估计
+        std::string sub_registered_scan_topic_;    // 订阅配准后的点云
         std::string sub_coverage_boundary_topic_;
         std::string sub_viewpoint_boundary_topic_;
         std::string sub_nogo_boundary_topic_;
@@ -56,26 +56,26 @@ namespace sensor_coverage_planner_3d_ns {
         std::string pub_momentum_activation_count_topic_;
 
         // Bool
-        bool kAutoStart;  // 是否自动开始探索
-        bool kRushHome;  // 是否返回
-        bool kUseTerrainHeight;  // 是否使用地形高度
-        bool kCheckTerrainCollision;  // 是否检测地形碰撞
-        bool kExtendWayPoint;  // 是否扩展航点
+        bool kAutoStart;                     // 是否自动开始探索
+        bool kRushHome;                      // 是否返回
+        bool kUseTerrainHeight;              // 是否使用地形高度
+        bool kCheckTerrainCollision;         // 是否检测地形碰撞
+        bool kExtendWayPoint;                // 是否扩展航点
         bool kUseLineOfSightLookAheadPoint;  // 是否使用视距航点
-        bool kNoExplorationReturnHome;  // 无探索时返回home点
-        bool kUseMomentum;  // 是否使用惯性
+        bool kNoExplorationReturnHome;       // 无探索时返回home点
+        bool kUseMomentum;                   // 是否使用惯性
 
         // Double
         double kKeyposeCloudDwzFilterLeafSize;  // keypose点云降采样大小
-        double kRushHomeDist;  // 回家距离
-        double kAtHomeDistThreshold;  // 回家距离阈值
-        double kTerrainCollisionThreshold;  // 地形碰撞检测阈值
-        double kLookAheadDistance;  // 视距航点距离
-        double kExtendWayPointDistanceBig;  // 航点最大扩展距离
-        double kExtendWayPointDistanceSmall;  // 航点最小扩展距离
+        double kRushHomeDist;                   // 回家距离
+        double kAtHomeDistThreshold;            // 回家距离阈值
+        double kTerrainCollisionThreshold;      // 地形碰撞检测阈值
+        double kLookAheadDistance;              // 视距航点距离
+        double kExtendWayPointDistanceBig;      // 航点最大扩展距离
+        double kExtendWayPointDistanceSmall;    // 航点最小扩展距离
 
         // Int
-        int kDirectionChangeCounterThr;  // 方向改变计数阈值
+        int kDirectionChangeCounterThr;    // 方向改变计数阈值
         int kDirectionNoChangeCounterThr;  // 方向不改变计数阈值
 
         cv::Mat kTerrainCollisionMapSize;  // 地形碰撞检测地图大小
@@ -124,32 +124,32 @@ namespace sensor_coverage_planner_3d_ns {
         std::unique_ptr<pointcloud_utils_ns::PCLCloud<pcl::PointXYZI>>
             reordered_global_subspace_cloud_;  // 重新排序的子空间点云
 
-        nav_msgs::Odometry keypose_;  //
-        geometry_msgs::Point robot_position_;  // 机器人位置
-        geometry_msgs::Point last_robot_position_;  // 上一时刻机器人位置
-        lidar_model_ns::LiDARModel robot_viewpoint_;  // 机器人视点
+        nav_msgs::Odometry keypose_;                             //
+        geometry_msgs::Point robot_position_;                    // 机器人位置
+        geometry_msgs::Point last_robot_position_;               // 上一时刻机器人位置
+        lidar_model_ns::LiDARModel robot_viewpoint_;             // 机器人视点
         exploration_path_ns::ExplorationPath exploration_path_;  // 探索路径
-        Eigen::Vector3d lookahead_point_;  // 前向点
-        Eigen::Vector3d lookahead_point_direction_;  // 前向点方向
-        Eigen::Vector3d moving_direction_;  // 机器人运动方向
-        double robot_yaw_;  // 机器人航向角
-        bool moving_forward_;  // 机器人是否向前运动
-        std::vector<Eigen::Vector3d> visited_positions_;  // 访问过的位置
-        int cur_keypose_node_ind_;  // 当前关键点节点索引
-        Eigen::Vector3d initial_position_;  // 初始位置
+        Eigen::Vector3d lookahead_point_;                        // 前向点
+        Eigen::Vector3d lookahead_point_direction_;              // 前向点方向
+        Eigen::Vector3d moving_direction_;                       // 机器人运动方向
+        double robot_yaw_;                                       // 机器人航向角
+        bool moving_forward_;                                    // 机器人是否向前运动
+        std::vector<Eigen::Vector3d> visited_positions_;         // 访问过的位置
+        int cur_keypose_node_ind_;                               // 当前关键点节点索引
+        Eigen::Vector3d initial_position_;                       // 初始位置
 
         std::unique_ptr<keypose_graph_ns::KeyposeGraph> keypose_graph_;  // 关键位姿图
-        std::unique_ptr<planning_env_ns::PlanningEnv> planning_env_;  // 环境映射
+        std::unique_ptr<planning_env_ns::PlanningEnv> planning_env_;     // 环境映射
         std::shared_ptr<viewpoint_manager_ns::ViewPointManager> viewpoint_manager_;  // 视点管理对象
         std::unique_ptr<local_coverage_planner_ns::LocalCoveragePlanner>
-            local_coverage_planner_;  // 局部覆盖规划器
+            local_coverage_planner_;                            // 局部覆盖规划器
         std::unique_ptr<grid_world_ns::GridWorld> grid_world_;  // 网格世界
         std::unique_ptr<explorer_visualizer_ns::TAREVisualizer> visualizer_;  // 可视化对象
 
         std::unique_ptr<misc_utils_ns::Marker> keypose_graph_node_marker_;  //
         std::unique_ptr<misc_utils_ns::Marker> keypose_graph_edge_marker_;  //
-        std::unique_ptr<misc_utils_ns::Marker> nogo_boundary_marker_;  //
-        std::unique_ptr<misc_utils_ns::Marker> grid_world_marker_;  //
+        std::unique_ptr<misc_utils_ns::Marker> nogo_boundary_marker_;       //
+        std::unique_ptr<misc_utils_ns::Marker> grid_world_marker_;          //
         void Initialize(ros::NodeHandle& nh, ros::NodeHandle& nh_p);
     };
 
@@ -177,9 +177,15 @@ namespace sensor_coverage_planner_3d_ns {
         bool use_momentum_;
         bool lookahead_point_in_line_of_sight_;
         PlannerParameters pp_;  // planner参数
-        PlannerData pd_;  // planner数据
+        PlannerData pd_;        // planner数据
         pointcloud_utils_ns::PointCloudDownsizer<pcl::PointXYZ>
             pointcloud_downsizer_;  // 点云降采样
+
+        ros::Subscriber semi_dynamic_objects_sub_;
+        std::vector<geometry_msgs::PoseStamped> detected_doors_;
+
+        ros::Subscriber dynamic_obstacles_sub_;
+        std::vector<onboardDetector::box3D> current_dynamic_obstacles_;
 
         int update_representation_runtime_;  //
         int local_viewpoint_sampling_runtime_;
@@ -228,7 +234,13 @@ namespace sensor_coverage_planner_3d_ns {
         void TerrainMapCallback(const sensor_msgs::PointCloud2ConstPtr& terrain_map_msg) const;
         void TerrainMapExtCallback(
             const sensor_msgs::PointCloud2ConstPtr& terrain_cloud_large_msg) const;
-        void NogoBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg);
+        void NogoBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg) const;
+
+        // 半动态物体回调函数
+        void SemiDynamicObjectsCallback(const geometry_msgs::PoseStampedConstPtr& msg);
+
+        // 动态物体回调函数
+        void DynamicObstaclesCallback(const onboardDetector::box3D& msg);
 
         void SendInitialWaypoint() const;
         void UpdateKeyposeGraph() const;
