@@ -21,7 +21,16 @@ namespace local_coverage_planner_ns {
     }
 
     LocalCoveragePlanner::LocalCoveragePlanner(ros::NodeHandle& nh)
-        : lookahead_point_update_(false), use_frontier_(true), local_coverage_complete_(false) {
+        : lookahead_point_update_(false),
+          use_frontier_(true),
+          local_coverage_complete_(false),
+          robot_viewpoint_ind_(0),
+          start_viewpoint_ind_(0),
+          end_viewpoint_ind_(0),
+          lookahead_viewpoint_ind_(0),
+          find_path_runtime_(0),
+          viewpoint_sampling_runtime_(0),
+          tsp_runtime_(0) {
         parameters_.ReadParameters(nh);
     }
 
@@ -101,7 +110,8 @@ namespace local_coverage_planner_ns {
 
     // 更新视点的覆盖frontier point
     void LocalCoveragePlanner::UpdateViewPointCoveredFrontierPoint(
-        std::vector<bool>& frontier_point_list, int viewpoint_index, bool use_array_ind) const {
+        std::vector<bool>& frontier_point_list, const int viewpoint_index,
+        const bool use_array_ind) const {
         for (const auto& point_ind : viewpoint_manager_->GetViewPointCoveredFrontierPointList(
                  viewpoint_index, use_array_ind)) {
             MY_ASSERT(misc_utils_ns::InRange<bool>(frontier_point_list, point_ind));
@@ -169,14 +179,10 @@ namespace local_coverage_planner_ns {
                                                bool use_frontier) const {
         if (use_frontier)  // false
         {
-            if (queue.empty() || queue[0].first < parameters_.kMinAddFrontierPointNum) {
-                return;
-            }
+            if (queue.empty() || queue[0].first < parameters_.kMinAddFrontierPointNum) { return; }
         } else {
             // 保证队列不为空且队列中第一个元素的覆盖点数大于等于最小添加点数
-            if (queue.empty() || queue[0].first < parameters_.kMinAddPointNum) {
-                return;
-            }
+            if (queue.empty() || queue[0].first < parameters_.kMinAddPointNum) { return; }
         }
 
         // 拷贝队列和覆盖点列表
@@ -193,13 +199,9 @@ namespace local_coverage_planner_ns {
         // 遍历排序队列，获取满足最小添加点数的范围
         for (auto& i : queue_copy) {
             if (use_frontier) {
-                if (i.first >= parameters_.kMinAddFrontierPointNum) {
-                    sample_range++;
-                }
+                if (i.first >= parameters_.kMinAddFrontierPointNum) { sample_range++; }
             } else {
-                if (i.first >= parameters_.kMinAddPointNum) {
-                    sample_range++;
-                }
+                if (i.first >= parameters_.kMinAddPointNum) { sample_range++; }
             }
         }
         // 为sample_range参数比较的较小值 <= kGreedyViewPointSampleRange
@@ -226,18 +228,14 @@ namespace local_coverage_planner_ns {
 
                 {
                     MY_ASSERT(misc_utils_ns::InRange<bool>(covered_copy, point_ind));
-                    if (!covered_copy[point_ind]) {
-                        covered_copy[point_ind] = true;
-                    }
+                    if (!covered_copy[point_ind]) { covered_copy[point_ind] = true; }
                 }
             } else {
                 // 遍历当前视点的覆盖点列表，将covered_copy中相应的未覆盖的点标记为已覆盖
                 for (const auto& point_ind :
                      viewpoint_manager_->GetViewPointCoveredPointList(cur_array_ind, true)) {
                     MY_ASSERT(misc_utils_ns::InRange<bool>(covered_copy, point_ind));
-                    if (!covered_copy[point_ind]) {
-                        covered_copy[point_ind] = true;
-                    }
+                    if (!covered_copy[point_ind]) { covered_copy[point_ind] = true; }
                 }
             }  // 将该点加入已选中的视点索引列表中
             selected_viewpoint_indices.push_back(cur_ind);
@@ -256,18 +254,14 @@ namespace local_coverage_planner_ns {
                          viewpoint_manager_->GetViewPointCoveredFrontierPointList(array_ind,
                                                                                   true)) {
                         MY_ASSERT(misc_utils_ns::InRange<bool>(covered_copy, point_ind));
-                        if (!covered_copy[point_ind]) {
-                            add_point_num++;
-                        }
+                        if (!covered_copy[point_ind]) { add_point_num++; }
                     }
                 } else {
                     // 同样，获取当前视点的覆盖点列表，更与covered_copy列表相比较，更新该视点的covered reward
                     for (const auto& point_ind :
                          viewpoint_manager_->GetViewPointCoveredPointList(array_ind, true)) {
                         MY_ASSERT(misc_utils_ns::InRange<bool>(covered_copy, point_ind));
-                        if (!covered_copy[point_ind]) {
-                            add_point_num++;
-                        }
+                        if (!covered_copy[point_ind]) { add_point_num++; }
                     }
                 }
 
@@ -278,9 +272,7 @@ namespace local_coverage_planner_ns {
             std::sort(queue_copy.begin(), queue_copy.end(), SortPairInRev);
 
             // 同上-->loop，在范围内随机选取一个视点，并更新其他viewpoint的reward值
-            if (queue_copy.empty() || queue_copy[0].first < parameters_.kMinAddPointNum) {
-                break;
-            }
+            if (queue_copy.empty() || queue_copy[0].first < parameters_.kMinAddPointNum) { break; }
             if (use_frontier) {
                 if (queue_copy.empty()
                     || queue_copy[0].first < parameters_.kMinAddFrontierPointNum) {
@@ -292,13 +284,9 @@ namespace local_coverage_planner_ns {
             int sample_range = 0;
             for (const auto& i : queue) {
                 if (use_frontier) {
-                    if (i.first >= parameters_.kMinAddFrontierPointNum) {
-                        sample_range++;
-                    }
+                    if (i.first >= parameters_.kMinAddFrontierPointNum) { sample_range++; }
                 } else {
-                    if (i.first >= parameters_.kMinAddPointNum) {
-                        sample_range++;
-                    }
+                    if (i.first >= parameters_.kMinAddPointNum) { sample_range++; }
                 }
             }
             // 同上
@@ -341,9 +329,7 @@ namespace local_coverage_planner_ns {
         exploration_path_ns::ExplorationPath tsp_path;
 
         // 如果被选中的视点为空，则直接返回空路径
-        if (selected_viewpoint_indices.empty()) {
-            return tsp_path;
-        }
+        if (selected_viewpoint_indices.empty()) { return tsp_path; }
 
         // Get start and end index
         int start_ind = selected_viewpoint_indices.size() - 1;
@@ -354,18 +340,10 @@ namespace local_coverage_planner_ns {
 
         // 遍历所有被选中的视点，找到导航视点在列表中的索引
         for (int i = 0; i < selected_viewpoint_indices.size(); i++) {
-            if (selected_viewpoint_indices[i] == start_viewpoint_ind_) {
-                start_ind = i;
-            }
-            if (selected_viewpoint_indices[i] == end_viewpoint_ind_) {
-                end_ind = i;
-            }
-            if (selected_viewpoint_indices[i] == robot_viewpoint_ind_) {
-                robot_ind = i;
-            }
-            if (selected_viewpoint_indices[i] == lookahead_viewpoint_ind_) {
-                lookahead_ind = i;
-            }
+            if (selected_viewpoint_indices[i] == start_viewpoint_ind_) { start_ind = i; }
+            if (selected_viewpoint_indices[i] == end_viewpoint_ind_) { end_ind = i; }
+            if (selected_viewpoint_indices[i] == robot_viewpoint_ind_) { robot_ind = i; }
+            if (selected_viewpoint_indices[i] == lookahead_viewpoint_ind_) { lookahead_ind = i; }
         }
 
         bool has_start_end_dummy = start_ind != end_ind;  // 判断起点终点是否(不同)为dummy点
@@ -505,9 +483,7 @@ namespace local_coverage_planner_ns {
         }
 
         // Add the end node index
-        if (start_ind == end_ind && !path_index.empty()) {
-            path_index.push_back(path_index[0]);
-        }
+        if (start_ind == end_ind && !path_index.empty()) { path_index.push_back(path_index[0]); }
 
         tsp_timer.Stop(false);
         tsp_runtime_ += tsp_timer.GetDuration(kRuntimeUnit);
@@ -619,7 +595,7 @@ namespace local_coverage_planner_ns {
                                            false);  // 初始化frontier_covered向量，全为零
 
         std::vector<int> pre_selected_viewpoint_array_indices;  // 预选的viewpoint索引队列
-        std::vector<int> reused_viewpoint_indices;  // 重用viewpoint索引集合、
+        std::vector<int> reused_viewpoint_indices;              // 重用viewpoint索引集合、
 
         // 遍历上次选中的viewpoint索引队列
         for (auto& viewpoint_array_ind : last_selected_viewpoint_array_indices_) {
@@ -754,9 +730,7 @@ namespace local_coverage_planner_ns {
                                              selected_viewpoint_indices_itr);
 
             // 如果此时选取的视点为空，说明当前局部区域没有需要访问的viewpoint
-            if (selected_viewpoint_indices_itr.empty()) {
-                local_coverage_complete_ = true;
-            }
+            if (selected_viewpoint_indices_itr.empty()) { local_coverage_complete_ = true; }
 
             // Add viewpoints for navigation 将导航视点加入到选中的视点集合中
             for (const auto& ind : navigation_viewpoint_indices) {

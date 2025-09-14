@@ -679,13 +679,13 @@ namespace grid_world_ns {
         // 维护一个semi-explored状态的cell列表，按照频次回调更新其状态转换概率？如下：semi->exploring, exploring->semi?
         for (const auto& cell_ind : semi_explored_cell_indices_) {
             // todo,获取状态转换概率
-            if (GetSemiCellTransitionProbability(cell_ind) > kCellSemiExploredToExploringThr) {
-                subspaces_->GetCell(cell_ind).SetStatus(CellStatus::EXPLORING);
-                semi_explored_cell_indices_.erase(
-                    std::remove(semi_explored_cell_indices_.begin(),
-                                semi_explored_cell_indices_.end(), cell_ind),
-                    semi_explored_cell_indices_.end());
-            }
+            // if (GetSemiCellTransitionProbability(cell_ind) > kCellSemiExploredToExploringThr) {
+            //     subspaces_->GetCell(cell_ind).SetStatus(CellStatus::EXPLORING);
+            //     semi_explored_cell_indices_.erase(
+            //         std::remove(semi_explored_cell_indices_.begin(),
+            //                     semi_explored_cell_indices_.end(), cell_ind),
+            //         semi_explored_cell_indices_.end());
+            // }
         }
 
         // 对于处于Almost covered状态的cell，如果该cell未在neighbor_cell_indices_中，则设置为Covered
@@ -704,20 +704,20 @@ namespace grid_world_ns {
     }
 
     // todo：实现转换函数,求取转换概率
-    double GridWorld::GetSemiCellTransitionProbability(const int& cell_ind) {
-        double base_prob = 0.1;
-
-        double detection_frequency = CalculateDoorDetectionFrequency(cell_ind);
-
-        double time_factor = CalculateTimeBasedFactor();
-
-        double distance_factor = CalculateDistanceFactor(cell_ind);
-
-        double transition_prob =
-            base_prob + detection_frequency * 0.4 + time_factor * 0.2 + distance_factor * 0.1;
-
-        return std::min(1.0, std::max(0.0, transition_prob));
-    }
+    // double GridWorld::GetSemiCellTransitionProbability(const int& cell_ind) {
+    //     double base_prob = 0.1;
+    //
+    //     double detection_frequency = CalculateDoorDetectionFrequency(cell_ind);
+    //
+    //     double time_factor = CalculateTimeBasedFactor();
+    //
+    //     double distance_factor = CalculateDistanceFactor(cell_ind);
+    //
+    //     double transition_prob =
+    //         base_prob + detection_frequency * 0.4 + time_factor * 0.2 + distance_factor * 0.1;
+    //
+    //     return std::min(1.0, std::max(0.0, transition_prob));
+    // }
 
     // 求解全局引导路径
     exploration_path_ns::ExplorationPath GridWorld::SolveGlobalTSP(
@@ -742,7 +742,7 @@ namespace grid_world_ns {
                 keypose_graph->GetNodePosition(closest_node_ind);  // 以此节点作为机器人位置
         } else if (cur_keypose_graph_node_ind_ >= 0
                    && cur_keypose_graph_node_ind_ < keypose_graph->GetNodeNum()) {
-            // ROS_WARN("GridWorld::SolveGlobalTSP: using nearest keypose node for robot position");
+            // ROS_WARN("GridWorld::SolveGlobalTSP: using the nearest keypose node for robot position");
             global_path_robot_position =
                 keypose_graph->GetNodePosition(cur_keypose_graph_node_ind_);  // 同上
         } else  // 如果未能找到满足要求的最接近的节点
@@ -1377,15 +1377,15 @@ namespace grid_world_ns {
     }
 
     // 调试信息输出
-    void GridWorld::PrintSemiExploredCellsInfo() {
-        ROS_INFO("Number of semi-explored cells: %zu", semi_explored_cell_indices_.size());
-
-        for (int cell_ind : semi_explored_cell_indices_) {
-            double transition_prob = GetSemiCellTransitionProbability(cell_ind);
-            geometry_msgs::Point pos = GetCellPosition(cell_ind);
-
-            ROS_DEBUG("Cell [%d] at (%.2f, %.2f, %.2f) - Transition Prob: %.3f", cell_ind, pos.x,
-                      pos.y, pos.z, transition_prob);
-        }
-    }
+    // void GridWorld::PrintSemiExploredCellsInfo() {
+    //     ROS_INFO("Number of semi-explored cells: %zu", semi_explored_cell_indices_.size());
+    //
+    //     for (int cell_ind : semi_explored_cell_indices_) {
+    //         double transition_prob = GetSemiCellTransitionProbability(cell_ind);
+    //         geometry_msgs::Point pos = GetCellPosition(cell_ind);
+    //
+    //         ROS_DEBUG("Cell [%d] at (%.2f, %.2f, %.2f) - Transition Prob: %.3f", cell_ind, pos.x,
+    //                   pos.y, pos.z, transition_prob);
+    //     }
+    // }
 }  // namespace grid_world_ns

@@ -24,10 +24,11 @@
 #include "explorer/exploration_path.h"
 #include "explorer/explorer_visualizer.h"
 #include "explorer/grid_world.h"
-#include "explorer/keypose_graph.h"  // 用于全局引导路径规划---->在探索过程中不断建立Node&Edge
+#include "explorer/keypose_graph.h"
 #include "explorer/local_coverage_planner.h"
-#include "explorer/planning_env.h"  // 占据栅格地图
-#include "explorer/viewpoint_manager.h"  // 对Viewpoint进行操作，基于lidar模型和周围环境以及grid_world
+#include "explorer/planning_env.h"
+#include "explorer/viewpoint_manager.h"
+#include "onboard_detector/GetDynamicObstacles.h"
 
 #define cursup "\033[A"
 #define cursclean "\033[2K"
@@ -42,11 +43,9 @@ namespace sensor_coverage_planner_3d_ns {
     // 探索规划器的参数对象
     struct PlannerParameters {
         // String
-        std::string sub_start_exploration_topic_;  //
-        std::string sub_state_estimation_topic_;   // 订阅状态估计
+        std::string sub_start_exploration_topic_;  // 启动探索topic
+        std::string sub_state_estimation_topic_;   // 订阅机器人状态估计
         std::string sub_registered_scan_topic_;    // 订阅配准后的点云
-        std::string sub_coverage_boundary_topic_;
-        std::string sub_viewpoint_boundary_topic_;
         std::string sub_nogo_boundary_topic_;
 
         std::string pub_exploration_finish_topic_;
@@ -123,6 +122,9 @@ namespace sensor_coverage_planner_3d_ns {
             point_cloud_manager_neighbor_cloud_;  // 邻近点云
         std::unique_ptr<pointcloud_utils_ns::PCLCloud<pcl::PointXYZI>>
             reordered_global_subspace_cloud_;  // 重新排序的子空间点云
+        // 新增
+        std::vector<geometry_msgs::PoseStamped> cur_semi_obstacles_pose_;
+        std::vector<onboardDetector::box3D> current_dynamic_obstacles_;
 
         nav_msgs::Odometry keypose_;                             //
         geometry_msgs::Point robot_position_;                    // 机器人位置
@@ -181,12 +183,6 @@ namespace sensor_coverage_planner_3d_ns {
         pointcloud_utils_ns::PointCloudDownsizer<pcl::PointXYZ>
             pointcloud_downsizer_;  // 点云降采样
 
-        ros::Subscriber semi_dynamic_objects_sub_;
-        std::vector<geometry_msgs::PoseStamped> detected_doors_;
-
-        ros::Subscriber dynamic_obstacles_sub_;
-        std::vector<onboardDetector::box3D> current_dynamic_obstacles_;
-
         int update_representation_runtime_;  //
         int local_viewpoint_sampling_runtime_;
         int local_path_finding_runtime_;
@@ -211,6 +207,7 @@ namespace sensor_coverage_planner_3d_ns {
         ros::Subscriber terrain_map_sub_;
         ros::Subscriber terrain_map_ext_sub_;
         ros::Subscriber nogo_boundary_sub_;
+        ros::Subscriber semi_dynamic_objects_sub_;
 
         // ROS publishers
         ros::Publisher global_path_full_publisher_;
@@ -224,24 +221,25 @@ namespace sensor_coverage_planner_3d_ns {
         ros::Publisher runtime_breakdown_pub_;
         ros::Publisher runtime_pub_;
         ros::Publisher momentum_activation_count_pub_;
+
+        // ROS service
+        ros::ServiceClient dynamic_obstacles_client_;
+
         // Debug
         ros::Publisher pointcloud_manager_neighbor_cells_origin_pub_;
 
         // Callback functions
-        void ExplorationStartCallback(const std_msgs::Bool::ConstPtr& start_msg);
         void StateEstimationCallback(const nav_msgs::Odometry::ConstPtr& state_estimation_msg);
         void RegisteredScanCallback(const sensor_msgs::PointCloud2ConstPtr& registered_cloud_msg);
         void TerrainMapCallback(const sensor_msgs::PointCloud2ConstPtr& terrain_map_msg) const;
         void TerrainMapExtCallback(
             const sensor_msgs::PointCloud2ConstPtr& terrain_cloud_large_msg) const;
         void NogoBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg) const;
-
-        // 半动态物体回调函数
         void SemiDynamicObjectsCallback(const geometry_msgs::PoseStampedConstPtr& msg);
+        void getLocalDynamicObstacles(const geometry_msgs::Point& robot_position,
+                                      const double& range);
 
-        // 动态物体回调函数
-        void DynamicObstaclesCallback(const onboardDetector::box3D& msg);
-
+        // function
         void SendInitialWaypoint() const;
         void UpdateKeyposeGraph() const;
         int UpdateViewPoints();
@@ -263,7 +261,6 @@ namespace sensor_coverage_planner_3d_ns {
         exploration_path_ns::ExplorationPath ConcatenateGlobalLocalPath(
             const exploration_path_ns::ExplorationPath& global_path,
             const exploration_path_ns::ExplorationPath& local_path) const;
-
         void PublishRuntime();
         double GetRobotToHomeDistance() const;
         void PublishExplorationState() const;
@@ -272,7 +269,6 @@ namespace sensor_coverage_planner_3d_ns {
         bool GetLookAheadPoint(const exploration_path_ns::ExplorationPath& local_path,
                                const exploration_path_ns::ExplorationPath& global_path,
                                Eigen::Vector3d& lookahead_point);
-
         void CountDirectionChange();
         static Eigen::Quaterniond GetQuaternionFromYaw(double yaw);
     };

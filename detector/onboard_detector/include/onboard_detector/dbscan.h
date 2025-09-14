@@ -6,8 +6,8 @@
 #ifndef DBSCAN_H
 #define DBSCAN_H
 
-#include <vector>
 #include <cmath>
+#include <vector>
 
 #define UNCLASSIFIED -1
 #define CORE_POINT 1
@@ -17,39 +17,42 @@
 #define FAILURE -3
 
 using namespace std;
-namespace onboardDetector{
-    typedef struct Point_
-    {
+namespace onboardDetector {
+    typedef struct Point_ {
         float x, y, z;  // X, Y, Z position
         int clusterID;  // clustered ID
-    }Point;
+    } Point;
 
     class DBSCAN {
-    public:    
-        DBSCAN(unsigned int minPts, float eps, vector<Point> points){
+    public:
+        DBSCAN(const unsigned int minPts, const float eps, const vector<Point>& points) {
             m_minPoints = minPts;
             m_epsilon = eps;
-            m_points = points;
+            // m_points = points;
             m_pointSize = points.size();
         }
-        ~DBSCAN(){}
+        ~DBSCAN() {}
 
         int run();
         vector<int> calculateCluster(Point point);
         int expandCluster(Point point, int clusterID);
         inline double calculateDistance(const Point& pointCore, const Point& pointTarget);
+        int getTotalPointSize() const {
+            return m_pointSize;
+        }
+        int getMinimumClusterSize() const {
+            return m_minPoints;
+        }
+        int getEpsilonSize() const {
+            return m_epsilon;
+        }
 
-        int getTotalPointSize() {return m_pointSize;}
-        int getMinimumClusterSize() {return m_minPoints;}
-        int getEpsilonSize() {return m_epsilon;}
-        
-    public:
         vector<Point> m_points;
-        
-    private:    
+
+    private:
         unsigned int m_pointSize;
         unsigned int m_minPoints;
         float m_epsilon;
     };
-}
-#endif // DBSCAN_H
+}  // namespace onboardDetector
+#endif  // DBSCAN_H
