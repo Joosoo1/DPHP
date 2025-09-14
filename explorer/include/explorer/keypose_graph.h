@@ -24,7 +24,7 @@ namespace viewpoint_manager_ns {
 namespace keypose_graph_ns {
     struct KeyposeNode;
     class KeyposeGraph;
-    const double INF = 9999.0;
+    constexpr double INF = 9999.0;
     typedef std::pair<int, int> iPair;
 }  // namespace keypose_graph_ns
 
@@ -64,10 +64,10 @@ private:
     bool allow_vertical_edge_;
     int current_keypose_id_;
     geometry_msgs::Point current_keypose_position_;
-    std::vector<std::vector<int>> graph_;
-    std::vector<std::vector<double>> dist_;
+    std::vector<std::vector<int>> graph_;    // 存储索引
+    std::vector<std::vector<double>> dist_;  // 对应距离
     std::vector<bool> in_local_planning_horizon_;
-    std::vector<KeyposeNode> nodes_;
+    std::vector<KeyposeNode> nodes_;  // 节点
     std::vector<geometry_msgs::Point> node_positions_;
     pcl::KdTreeFLANN<pcl::PointXYZI>::Ptr kdtree_connected_nodes_;
     pcl::PointCloud<pcl::PointXYZI>::Ptr connected_nodes_cloud_;
@@ -100,25 +100,24 @@ public:
                         bool is_keypose, int connected_node_ind, double connected_node_dist);
     void AddEdge(int from_node_ind, int to_node_ind, double dist);
     bool HasNode(const Eigen::Vector3d& position);
-    bool InBound(const int index) {
+    bool InBound(const int index) const {
         return index >= 0 && index < graph_.size();
     }
-    int GetNodeNum() {
+    int GetNodeNum() const {
         return nodes_.size();
     }
-    int GetConnectedNodeNum();
+    int GetConnectedNodeNum() const;
     void GetMarker(visualization_msgs::Marker& node_marker,
-                   visualization_msgs::Marker& edge_marker);
-    void GetVisualizationCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
+                   visualization_msgs::Marker& edge_marker) const;
+    void GetVisualizationCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud) const;
     std::vector<int> GetConnectedGraphNodeIndices() {
         return connected_node_indices_;
     }
     void GetConnectedNodeIndices(int query_ind, std::vector<int>& connected_node_indices,
-                                 std::vector<bool> constraints);
+                                 std::vector<bool> constraints) const;
     void CheckLocalCollision(
-        const geometry_msgs::Point& robot_position,
         const std::shared_ptr<viewpoint_manager_ns::ViewPointManager>& viewpoint_manager);
-    void UpdateNodes();
+    void UpdateNodes() const;
     void CheckConnectivity(const geometry_msgs::Point& robot_position);
     int AddKeyposeNode(const nav_msgs::Odometry& keypose,
                        const planning_env_ns::PlanningEnv& planning_env);
@@ -129,22 +128,24 @@ public:
     void SetAllowVerticalEdge(const bool allow_vertical_edge) {
         allow_vertical_edge_ = allow_vertical_edge;
     }
-    bool IsPositionReachable(const geometry_msgs::Point& point, double dist_threshold);
-    bool IsPositionReachable(const geometry_msgs::Point& point);
-    int GetClosestNodeInd(const geometry_msgs::Point& point);
+    bool IsPositionReachable(const geometry_msgs::Point& point, double dist_threshold) const;
+    bool IsPositionReachable(const geometry_msgs::Point& point) const;
+    int GetClosestNodeInd(const geometry_msgs::Point& point) const;
     void GetClosestNodeIndAndDistance(const geometry_msgs::Point& point, int& node_ind,
-                                      double& dist);
+                                      double& dist) const;
     void GetClosestConnectedNodeIndAndDistance(const geometry_msgs::Point& point, int& node_ind,
-                                               double& dist);
-    int GetClosestKeyposeID(const geometry_msgs::Point& point);
-    geometry_msgs::Point GetClosestNodePosition(const geometry_msgs::Point& point);
+                                               double& dist) const;
+    int GetClosestKeyposeID(const geometry_msgs::Point& point) const;
+    geometry_msgs::Point GetClosestNodePosition(const geometry_msgs::Point& point) const;
     bool GetShortestPathWithMaxLength(const geometry_msgs::Point& start_point,
                                       const geometry_msgs::Point& target_point,
-                                      double max_path_length, bool get_path, nav_msgs::Path& path);
+                                      double max_path_length, bool get_path,
+                                      nav_msgs::Path& path) const;
     double GetShortestPath(const geometry_msgs::Point& start_point,
                            const geometry_msgs::Point& target_point, bool get_path,
                            nav_msgs::Path& path, bool use_connected_nodes = false) const;
 
+    // 设置参数
     double& SetAddNodeMinDist() {
         return kAddNodeMinDist;
     }
@@ -169,6 +170,7 @@ public:
     double& SetAddEdgeVerticalThreshold() {
         return kAddEdgeVerticalThreshold;
     }
+    // helper function
     geometry_msgs::Point GetFirstKeyposePosition() const;
     geometry_msgs::Point GetKeyposePosition(int keypose_id) const;
     void GetKeyposePositions(std::vector<Eigen::Vector3d>& positions) const;

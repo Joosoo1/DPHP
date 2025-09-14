@@ -86,7 +86,7 @@ namespace tsp_solver_ns {
     }
 
     double TSPSolver::getPathLength() const {
-        return (solution_->ObjectiveValue()) / 10.0;
+        return solution_->ObjectiveValue() / 10.0;
     }
 
 }  // namespace tsp_solver_ns

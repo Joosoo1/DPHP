@@ -12,12 +12,8 @@ namespace grid_ns {
         explicit Grid(const Eigen::Vector3i& size, T init_value,
                       const Eigen::Vector3d& origin = Eigen::Vector3d(0, 0, 0),
                       const Eigen::Vector3d& resolution = Eigen::Vector3d(1, 1, 1),
-                      const int dimension = 3) {
-            origin_ = origin;
-            size_ = size;
-            resolution_ = resolution;
-            dimension_ = dimension;
-
+                      const int dimension = 3)
+            : origin_(origin), size_(size), resolution_(resolution), dimension_(dimension) {
             for (int i = 0; i < dimension_; i++) {
                 resolution_inv_(i) = 1.0 / resolution_(i);  // 3轴分辨率
             }
@@ -77,16 +73,16 @@ namespace grid_ns {
         }
 
         // 根据全局索引判断是否在范围内
-        bool InRange(int ind) const {
+        bool InRange(const int ind) const {
             return ind >= 0 && ind < cell_number_;
         }
 
-        Eigen::Vector3i Ind2Sub(int ind) const {
+        Eigen::Vector3i Ind2Sub(const int ind) const {
             // MY_ASSERT(InRange(ind));
             return subs_[ind];
         }
 
-        int Sub2Ind(int x, int y, int z) const {
+        int Sub2Ind(const int x, const int y, const int z) const {
             return x + (y * size_.x()) + (z * size_.x() * size_.y());  // 层级
         }
 
@@ -95,7 +91,7 @@ namespace grid_ns {
             return Sub2Ind(sub.x(), sub.y(), sub.z());
         }
 
-        Eigen::Vector3d Sub2Pos(int x, int y, int z) const {
+        Eigen::Vector3d Sub2Pos(const int x, const int y, const int z) const {
             return Sub2Pos(Eigen::Vector3i(x, y, z));
         }
 
@@ -108,12 +104,12 @@ namespace grid_ns {
         }
 
         // 根据索引计算出位置
-        Eigen::Vector3d Ind2Pos(int ind) const {
+        Eigen::Vector3d Ind2Pos(const int ind) const {
             // MY_ASSERT(InRange(ind));
             return Sub2Pos(Ind2Sub(ind));
         }
 
-        Eigen::Vector3i Pos2Sub(double x, double y, double z) const {
+        Eigen::Vector3i Pos2Sub(const double x, const double y, const double z) const {
             return Pos2Sub(Eigen::Vector3d(x, y, z));
         }
 
@@ -149,7 +145,7 @@ namespace grid_ns {
 
         T GetCellValue(int x, int y, int z) const {
             int index = Sub2Ind(x, y, z);  // 全局一维索引
-            return cells_[index];  //
+            return cells_[index];          //
         }
 
         T GetCellValue(const Eigen::Vector3i& sub) const {
@@ -164,7 +160,7 @@ namespace grid_ns {
 
         void SetCellValue(int x, int y, int z, T value) {
             int index = Sub2Ind(x, y, z);  // 转全局索引
-            cells_[index] = value;  // 设置该index对应的cell
+            cells_[index] = value;         // 设置该index对应的cell
         }
 
         void SetCellValue(const Eigen::Vector3i& sub, T value) {
@@ -180,24 +176,24 @@ namespace grid_ns {
 
     private:
         Eigen::Vector3d origin_;  // 栅格空间的原点
-        Eigen::Vector3i size_;  // 整个栅格空间的大小
+        Eigen::Vector3i size_;    // 整个栅格空间的大小
         Eigen::Vector3d resolution_;
         Eigen::Vector3d resolution_inv_;  // 子空间分辨率
 
-        std::vector<T> cells_;  // 储存cell
+        std::vector<T> cells_;               // 储存cell
         std::vector<Eigen::Vector3i> subs_;  // 子空间三维索引
-        int cell_number_;  // 空间中cell的数量
-        int dimension_;  // 维度
+        int cell_number_;                    // 空间中cell的数量
+        int dimension_;                      // 维度
 
         // 全局索引转子空间三维索引x->y->z,sub从（0，0，0）开始
         Eigen::Vector3i ind2sub_(int ind) const {
             // MY_ASSERT(InRange(ind));
             Eigen::Vector3i sub;
-            sub.z() = ind / (size_.x() * size_.y());  // 取整
+            sub.z() = ind / (size_.x() * size_.y());   // 取整
             ind -= (sub.z() * size_.x() * size_.y());  // 得余
-            sub.y() = ind / size_.x();  // 取整
-            sub.x() = ind % size_.x();  // 取余
-            return sub;  // 三维索引
+            sub.y() = ind / size_.x();                 // 取整
+            sub.x() = ind % size_.x();                 // 取余
+            return sub;                                // 三维索引
         }
     };
 }  // namespace grid_ns

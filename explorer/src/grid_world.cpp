@@ -230,7 +230,8 @@ namespace grid_world_ns {
     void GridWorld::UpdateRobotPosition(const geometry_msgs::Point& robot_position) {
         robot_position_ = robot_position;
         // 根据robot所在的位置更新robot_cell_ind
-        int robot_cell_ind = GetCellInd(robot_position_.x, robot_position_.y, robot_position_.z);
+        const int robot_cell_ind =
+            GetCellInd(robot_position_.x, robot_position_.y, robot_position_.z);
         if (cur_robot_cell_ind_ != robot_cell_ind) {
             prev_robot_cell_ind_ = cur_robot_cell_ind_;
             cur_robot_cell_ind_ = robot_cell_ind;
@@ -240,7 +241,7 @@ namespace grid_world_ns {
     // 更新类型为EXPLORING的cell的keypose_graph节点
     void GridWorld::UpdateCellKeyposeGraphNodes(
         const std::unique_ptr<keypose_graph_ns::KeyposeGraph>& keypose_graph) const {
-        std::vector<int> keypose_graph_connected_node_indices =
+        const std::vector<int> keypose_graph_connected_node_indices =
             keypose_graph->GetConnectedGraphNodeIndices();
         // 获取可连接的keypose节点索引
 
@@ -251,7 +252,7 @@ namespace grid_world_ns {
             }
         }
 
-        // 遍历keypose_graph的每个节点，如果该节点对应的cell的状态为EXPLORING/SEMI_EXPLORING，则将该节点添加到该cell的keypose节点索引中
+        // 遍历keypose_graph的每个节点，如果该节点对应的cell的状态为EXPLORING/SEMI_EXPLORED，则将该节点添加到该cell的keypose节点索引中
         for (const auto& node_ind : keypose_graph_connected_node_indices) {
             const geometry_msgs::Point node_position =
                 keypose_graph->GetNodePosition(node_ind);  // 获取节点位置
@@ -270,12 +271,8 @@ namespace grid_world_ns {
         const Eigen::Vector3i cell_sub1 = subspaces_->Ind2Sub(cell_ind1);
         const Eigen::Vector3i cell_sub2 = subspaces_->Ind2Sub(cell_ind2);
         Eigen::Vector3i diff = cell_sub1 - cell_sub2;
-        if (std::abs(diff.x()) + std::abs(diff.y()) + std::abs(diff.z()) == 1)  // ？
-        {
-            return true;
-        } else {
-            return false;
-        }
+        if (std::abs(diff.x()) + std::abs(diff.y()) + std::abs(diff.z()) == 1) { return true; }
+        return false;
     }
 
     int GridWorld::GetCellInd(const double qx, const double qy, const double qz) const {
@@ -310,7 +307,7 @@ namespace grid_world_ns {
         for (int i = 0; i < kRowNum; i++) {
             for (int j = 0; j < kColNum; j++) {
                 for (int k = 0; k < kLevelNum; k++) {
-                    int cell_ind = subspaces_->Sub2Ind(i, j, k);
+                    const int cell_ind = subspaces_->Sub2Ind(i, j, k);
                     geometry_msgs::Point cell_center = subspaces_->GetCell(cell_ind).GetPosition();
                     std_msgs::ColorRGBA color;
                     bool add_marker = false;
@@ -703,21 +700,52 @@ namespace grid_world_ns {
         }
     }
 
-    // todo：实现转换函数,求取转换概率
-    // double GridWorld::GetSemiCellTransitionProbability(const int& cell_ind) {
-    //     double base_prob = 0.1;
-    //
-    //     double detection_frequency = CalculateDoorDetectionFrequency(cell_ind);
-    //
-    //     double time_factor = CalculateTimeBasedFactor();
-    //
-    //     double distance_factor = CalculateDistanceFactor(cell_ind);
-    //
-    //     double transition_prob =
-    //         base_prob + detection_frequency * 0.4 + time_factor * 0.2 + distance_factor * 0.1;
-    //
-    //     return std::min(1.0, std::max(0.0, transition_prob));
-    // }
+    double GridWorld::GetSemiCellTransitionProbability(const int& cell_ind) {
+        constexpr double base_prob = 0.05;
+        const double detection_frequency_factor = CalculateDoorDetectionFrequency(cell_ind);
+        const double time_factor = CalculateTimeBasedFactor();
+        const double distance_factor = CalculateDistanceFactor(cell_ind);
+
+        const double transition_prob = base_prob + detection_frequency_factor * 0.4
+            + time_factor * 0.2 + distance_factor * 0.1;
+
+        // Ensure probability is between 0 and 1
+        return std::min(1.0, std::max(0.0, transition_prob));
+    }
+
+    // 计算门检测频率因素
+    double GridWorld::CalculateDoorDetectionFrequency(int cell_ind) {
+        if (std::find(semi_explored_cell_indices_.begin(), semi_explored_cell_indices_.end(),
+                      cell_ind)
+            != semi_explored_cell_indices_.end()) {
+            return 0.7;
+        }
+        return 0.1;
+    }
+
+    // 计算时间因素
+    double GridWorld::CalculateTimeBasedFactor() {
+        // As a simple approximation, return a moderate value
+        return 0.3;
+    }
+
+    // 计算距离因素
+    double GridWorld::CalculateDistanceFactor(const int cell_ind) const {
+        // Get the position of the cell
+        const geometry_msgs::Point cell_position = GetCellPosition(cell_ind);
+
+        // Calculate Euclidean distance to robot
+        const double dx = cell_position.x - robot_position_.x;
+        const double dy = cell_position.y - robot_position_.y;
+        const double dz = cell_position.z - robot_position_.z;
+        const double distance = sqrt(dx * dx + dy * dy + dz * dz);
+
+        const double normalized_distance = distance / kCellSize;
+
+        const double distance_factor = exp(-normalized_distance * 0.5);
+
+        return distance_factor;
+    }
 
     // 求解全局引导路径
     exploration_path_ns::ExplorationPath GridWorld::SolveGlobalTSP(
@@ -1052,9 +1080,8 @@ namespace grid_world_ns {
                     && !viewpoint_manager->InCollision(
                         subspaces_->GetCell(cell_ind).GetRoadmapConnectionPoint())) {
                     continue;
-                } else {
-                    subspaces_->GetCell(cell_ind).ClearConnectedCellIndices();
                 }
+                subspaces_->GetCell(cell_ind).ClearConnectedCellIndices();
             }
             // 获取该cell内的候选viewpoint索引
             std::vector<int> candidate_viewpoint_indices =
@@ -1213,11 +1240,9 @@ namespace grid_world_ns {
                         subspaces_->GetCell(from_cell_ind).ClearConnectedCellIndices();
                         subspaces_->GetCell(to_cell_ind).ClearConnectedCellIndices();
                         continue;
-                    } else  // 如果连接成功，则将这两cell添加为互相的已连接的cell
-                    {
-                        subspaces_->GetCell(from_cell_ind).AddConnectedCell(to_cell_ind);
-                        subspaces_->GetCell(to_cell_ind).AddConnectedCell(from_cell_ind);
-                    }
+                    }  // 如果连接成功，则将这两cell添加为互相的已连接的cell
+                    subspaces_->GetCell(from_cell_ind).AddConnectedCell(to_cell_ind);
+                    subspaces_->GetCell(to_cell_ind).AddConnectedCell(from_cell_ind);
                 }
             }
         }
@@ -1274,7 +1299,6 @@ namespace grid_world_ns {
         const geometry_msgs::Point& robot_position) {
         // 清空之前的半动态cell列表
         semi_explored_cell_indices_.clear();
-
         // 遍历所有检测到的门
         for (const auto& door : detected_doors) {
             // 获取门所在的cell索引
@@ -1291,7 +1315,6 @@ namespace grid_world_ns {
                 MarkNeighborCellsAsSemiExplored(door_cell_ind, 1);  // 1层邻近cell
             }
         }
-
         // 更新半动态前沿点
         UpdateSemiDynamicFrontiers(robot_position);
     }
@@ -1307,16 +1330,13 @@ namespace grid_world_ns {
                 for (int dz = -neighbor_range; dz <= neighbor_range; ++dz) {
                     Eigen::Vector3i neighbor_sub(center_sub.x() + dx, center_sub.y() + dy,
                                                  center_sub.z() + dz);
-
                     // 检查索引是否在边界内
                     if (SubInBound(neighbor_sub)) {
                         int neighbor_cell_ind = sub2ind(neighbor_sub);
-
                         // 如果不是中心cell且状态不是NOGO，则标记为SEMI_EXPLORED
                         if (neighbor_cell_ind != center_cell_ind
                             && GetCellStatus(neighbor_cell_ind) != CellStatus::NOGO) {
                             SetCellStatus(neighbor_cell_ind, CellStatus::SEMI_EXPLORED);
-
                             // 添加到半动态cell列表（避免重复）
                             if (std::find(semi_explored_cell_indices_.begin(),
                                           semi_explored_cell_indices_.end(), neighbor_cell_ind)
@@ -1335,17 +1355,17 @@ namespace grid_world_ns {
         semi_dynamic_frontier_positions_.clear();
 
         // 对每个SEMI_EXPLORED状态的cell，计算其前沿点
-        for (int cell_ind : semi_explored_cell_indices_) {
+        for (const int cell_ind : semi_explored_cell_indices_) {
             Cell& cell = subspaces_->GetCell(cell_ind);
             geometry_msgs::Point cell_center = cell.GetPosition();
 
             // 计算cell到机器人的距离
-            double distance = sqrt(pow(cell_center.x - robot_position.x, 2)
-                                   + pow(cell_center.y - robot_position.y, 2)
-                                   + pow(cell_center.z - robot_position.z, 2));
+            const double distance = sqrt(pow(cell_center.x - robot_position.x, 2)
+                                         + pow(cell_center.y - robot_position.y, 2)
+                                         + pow(cell_center.z - robot_position.z, 2));
 
             // 只考虑在一定距离范围内的cell
-            double kSemiDynamicFrontierRange = 15.0;  // 半动态前沿点考虑范围
+            constexpr double kSemiDynamicFrontierRange = 15.0;  // 半动态前沿点考虑范围?
             if (distance < kSemiDynamicFrontierRange) {
                 // 将cell中心作为前沿点
                 Eigen::Vector3d frontier_pos(cell_center.x, cell_center.y, cell_center.z);
@@ -1354,38 +1374,41 @@ namespace grid_world_ns {
         }
     }
 
-    // 计算门检测频率
-    double GridWorld::CalculateDoorDetectionFrequency(int cell_ind) {
-        // TODO: 实现检测频率计算逻辑
-        // 这需要访问SensorCoveragePlanner3D中的detected_doors_历史数据
-        // 暂时返回固定值
-        return 0.5;
+    void GridWorld::UpdateSemiExploredCellStatus() {
+        // Iterate through all semi-explored cells to check if they should transition to EXPLORING
+        auto it = semi_explored_cell_indices_.begin();
+        while (it != semi_explored_cell_indices_.end()) {
+            int cell_ind = *it;
+
+            // Check if the cell is still within bounds
+            if (!IndInBound(cell_ind)) {
+                it = semi_explored_cell_indices_.erase(it);
+                continue;
+            }
+            // Calculate transition probability
+            const double transition_prob = GetSemiCellTransitionProbability(cell_ind);
+
+            // If probability exceeds threshold, transition to EXPLORING state
+            if (transition_prob > kCellSemiExploredToExploringThr) {
+                subspaces_->GetCell(cell_ind).SetStatus(CellStatus::EXPLORING);
+                // Remove from semi-explored list
+                it = semi_explored_cell_indices_.erase(it);
+            } else {
+                ++it;
+            }
+        }
     }
 
-    // 计算时间因素
-    double GridWorld::CalculateTimeBasedFactor() {
-        // TODO: 实现时间因素计算逻辑
-        // 暂时返回固定值
-        return 0.2;
-    }
+    // debug
+    void GridWorld::PrintSemiExploredCellsInfo() {
+        ROS_INFO("Number of semi-explored cells: %zu", semi_explored_cell_indices_.size());
 
-    // 计算距离因素
-    double GridWorld::CalculateDistanceFactor(int cell_ind) {
-        // TODO: 实现距离因素计算逻辑
-        // 暂时返回固定值
-        return 0.1;
-    }
+        for (int cell_ind : semi_explored_cell_indices_) {
+            const double transition_prob = GetSemiCellTransitionProbability(cell_ind);
+            const geometry_msgs::Point pos = GetCellPosition(cell_ind);
 
-    // 调试信息输出
-    // void GridWorld::PrintSemiExploredCellsInfo() {
-    //     ROS_INFO("Number of semi-explored cells: %zu", semi_explored_cell_indices_.size());
-    //
-    //     for (int cell_ind : semi_explored_cell_indices_) {
-    //         double transition_prob = GetSemiCellTransitionProbability(cell_ind);
-    //         geometry_msgs::Point pos = GetCellPosition(cell_ind);
-    //
-    //         ROS_DEBUG("Cell [%d] at (%.2f, %.2f, %.2f) - Transition Prob: %.3f", cell_ind, pos.x,
-    //                   pos.y, pos.z, transition_prob);
-    //     }
-    // }
+            ROS_DEBUG("Cell [%d] at (%.2f, %.2f, %.2f) - Transition Prob: %.3f", cell_ind, pos.x,
+                      pos.y, pos.z, transition_prob);
+        }
+    }
 }  // namespace grid_world_ns

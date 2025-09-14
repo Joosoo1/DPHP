@@ -51,9 +51,7 @@ namespace rolling_occupancy_grid_ns {
     }
 
     bool RollingOccupancyGrid::UpdateRobotPosition(const Eigen::Vector3d& robot_position) {
-        if (!initialized_) {
-            return false;
-        }
+        if (!initialized_) { return false; }
         robot_position_ = robot_position;
         Eigen::Vector3i robot_grid_sub;
         Eigen::Vector3d diff = robot_position_ - origin_;
@@ -68,9 +66,7 @@ namespace rolling_occupancy_grid_ns {
             sub_diff(i) = (grid_size_(i) / rollover_step_size_(i)) / 2 - robot_grid_sub(i);
         }
 
-        if (sub_diff.x() == 0 && sub_diff.y() == 0 && sub_diff.z() == 0) {
-            return false;
-        }
+        if (sub_diff.x() == 0 && sub_diff.y() == 0 && sub_diff.z() == 0) { return false; }
 
         Eigen::Vector3i rollover_step(0, 0, 0);
         for (int i = 0; i < dimension_; i++) {
@@ -125,15 +121,11 @@ namespace rolling_occupancy_grid_ns {
 
     void RollingOccupancyGrid::UpdateOccupancyStatus(
         const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud) const {
-        if (!initialized_) {
-            return;
-        }
+        if (!initialized_) { return; }
         for (const auto& point : cloud->points) {
             Eigen::Vector3i sub =
                 occupancy_array_->Pos2Sub(Eigen::Vector3d(point.x, point.y, point.z));
-            if (!occupancy_array_->InRange(sub)) {
-                continue;
-            }
+            if (!occupancy_array_->InRange(sub)) { continue; }
             const int array_ind = rolling_grid_->GetArrayInd(sub);
             if (point.intensity < 0.1) {
                 occupancy_array_->SetCellValue(array_ind, FREE);
@@ -144,11 +136,7 @@ namespace rolling_occupancy_grid_ns {
     }
 
     void RollingOccupancyGrid::RayTrace(const Eigen::Vector3d& origin) {
-        if (!initialized_) {
-            return;
-        }
-        // Eigen::Vector3i sub_max = occupancy_array_->GetSize() - Eigen::Vector3i::Ones();
-        // Eigen::Vector3i sub_min = Eigen::Vector3i(0, 0, 0);
+        if (!initialized_) { return; }
         Eigen::Vector3i origin_sub = occupancy_array_->Pos2Sub(origin);
         int ray_trace_count = 0;
         if (!occupancy_array_->InRange(origin_sub)) {
@@ -177,9 +165,7 @@ namespace rolling_occupancy_grid_ns {
                 RayTraceHelper(origin_sub, cur_sub, ray_cast_cells);
                 for (const auto& ray_sub : ray_cast_cells) {
                     int index = rolling_grid_->GetArrayInd(ray_sub);
-                    if (occupancy_array_->GetCellValue(index) == OCCUPIED) {
-                        break;
-                    }
+                    if (occupancy_array_->GetCellValue(index) == OCCUPIED) { break; }
                     if (occupancy_array_->GetCellValue(index) != OCCUPIED) {
                         occupancy_array_->SetCellValue(index, FREE);
                     }
@@ -250,9 +236,7 @@ namespace rolling_occupancy_grid_ns {
     void RollingOccupancyGrid::GetFrontier(
         const pcl::PointCloud<pcl::PointXYZI>::Ptr& frontier_cloud, const Eigen::Vector3d& origin,
         const Eigen::Vector3d& range) const {
-        if (!initialized_) {
-            return;
-        }
+        if (!initialized_) { return; }
         frontier_cloud->points.clear();
         const Eigen::Vector3i sub_max = occupancy_array_->Pos2Sub(origin + range);
         const Eigen::Vector3i sub_min = occupancy_array_->Pos2Sub(origin - range);
@@ -262,17 +246,12 @@ namespace rolling_occupancy_grid_ns {
             ROS_WARN("RollingOccupancyGrid::GetFrontierInRange(), robot not in range");
             return;
         }
-        int ray_trace_count = 0;
 
         const int cell_num = occupancy_array_->GetCellNumber();
         for (int ind = 0; ind < cell_num; ind++) {
             Eigen::Vector3i cur_sub = occupancy_array_->Ind2Sub(ind);
-            if (!occupancy_array_->InRange(cur_sub)) {
-                continue;
-            }
-            if (!InRange(cur_sub, sub_min, sub_max)) {
-                continue;
-            }
+            if (!occupancy_array_->InRange(cur_sub)) { continue; }
+            if (!InRange(cur_sub, sub_min, sub_max)) { continue; }
             int array_ind = rolling_grid_->GetArrayInd(cur_sub);
             if (occupancy_array_->GetCellValue(array_ind) == UNKNOWN) {
                 bool z_free = false;

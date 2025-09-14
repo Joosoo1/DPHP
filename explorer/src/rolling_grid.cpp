@@ -23,9 +23,7 @@ namespace rolling_grid_ns {
     }
 
     void RollingGrid::Roll(const Eigen::Vector3i& roll_dir) {
-        if (roll_dir.x() == 0 && roll_dir.y() == 0 && roll_dir.z() == 0) {
-            return;
-        }
+        if (roll_dir.x() == 0 && roll_dir.y() == 0 && roll_dir.z() == 0) { return; }
         if (which_grid_) {
             RollHelper(grid1_, grid0_, roll_dir);
         } else {
@@ -67,9 +65,9 @@ namespace rolling_grid_ns {
         const int cell_num = size_.x() * size_.y() * size_.z();
         for (int ind = 0; ind < cell_num; ind++) {
             Eigen::Vector3i sub = grid_out->Ind2Sub(ind);
-            int from_x = GetFromIdx(sub.x(), dir.x(), size_.x());
-            int from_y = GetFromIdx(sub.y(), dir.y(), size_.y());
-            int from_z = GetFromIdx(sub.z(), dir.z(), size_.z());
+            const int from_x = GetFromIdx(sub.x(), dir.x(), size_.x());
+            const int from_y = GetFromIdx(sub.y(), dir.y(), size_.y());
+            const int from_z = GetFromIdx(sub.z(), dir.z(), size_.z());
             grid_out->GetCell(ind) = grid_in->GetCellValue(from_x, from_y, from_z);
         }
     }

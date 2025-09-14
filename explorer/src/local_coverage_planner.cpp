@@ -216,7 +216,7 @@ namespace local_coverage_planner_ns {
             gen_next_queue_idx(gen);  // 通过随机数引擎生成一个随机数，该随机数表示队列中的索引
         int cur_ind = queue_copy[queue_idx].second;  // 该随机队列索引对应的视点索引
 
-        // 先在smaple_range范围内随机选一个视点，去更新covered
+        // 先在sample_range范围内随机选一个视点，去更新covered
         // 无限循环
         while (true) {
             // 获取当前视点的数组索引
@@ -244,8 +244,8 @@ namespace local_coverage_planner_ns {
             // Update the queue 更新队列
             for (auto& i : queue_copy) {
                 int add_point_num = 0;
-                int ind = i.second;  // 按顺序
-                int array_ind =
+                const int ind = i.second;  // 按顺序
+                const int array_ind =
                     viewpoint_manager_->GetViewPointArrayInd(ind);  // 获取当前视点的数组索引
 
                 if (use_frontier)  // false
@@ -281,18 +281,18 @@ namespace local_coverage_planner_ns {
             }
 
             // Randomly select the next point
-            int sample_range = 0;
+            int new_sample_range = 0;
             for (const auto& i : queue) {
                 if (use_frontier) {
-                    if (i.first >= parameters_.kMinAddFrontierPointNum) { sample_range++; }
+                    if (i.first >= parameters_.kMinAddFrontierPointNum) { new_sample_range++; }
                 } else {
-                    if (i.first >= parameters_.kMinAddPointNum) { sample_range++; }
+                    if (i.first >= parameters_.kMinAddPointNum) { new_sample_range++; }
                 }
             }
             // 同上
-            sample_range = std::min(parameters_.kGreedyViewPointSampleRange, sample_range);
-            std::uniform_int_distribution<int> gen_next_queue_idx(0, sample_range - 1);
-            queue_idx = gen_next_queue_idx(gen);
+            new_sample_range = std::min(parameters_.kGreedyViewPointSampleRange, new_sample_range);
+            std::uniform_int_distribution<> new_gen_next_queue_idx(0, new_sample_range - 1);
+            queue_idx = new_gen_next_queue_idx(gen);
             cur_ind = queue_copy[queue_idx].second;
         }
     }

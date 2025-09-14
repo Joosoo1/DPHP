@@ -77,8 +77,9 @@ public:
         parameters_.kUseFrontier = use_frontier;
     }
     void UpdateRobotPosition(const geometry_msgs::Point& robot_position) {
-        bool pointcloud_manager_rolling = pointcloud_manager_->UpdateRobotPosition(robot_position);
-        Eigen::Vector3d pointcloud_manager_neighbor_cells_origin =
+        const bool pointcloud_manager_rolling =
+            pointcloud_manager_->UpdateRobotPosition(robot_position);
+        const Eigen::Vector3d pointcloud_manager_neighbor_cells_origin =
             pointcloud_manager_->GetNeighborCellsOrigin();
         rolling_occupancy_grid_->InitializeOrigin(pointcloud_manager_neighbor_cells_origin);
         const bool occupancy_grid_rolling = rolling_occupancy_grid_->UpdateRobotPosition(
@@ -104,9 +105,7 @@ public:
         robot_position_.x() = robot_position.x;
         robot_position_.y() = robot_position.y;
         robot_position_.z() = robot_position.z;
-        if (!robot_position_update_) {
-            prev_robot_position_ = robot_position_;
-        }
+        if (!robot_position_update_) { prev_robot_position_ = robot_position_; }
         robot_position_update_ = true;
     }
     template<class PCLPointType>
@@ -214,15 +213,13 @@ public:
             UpdateFrontiers();
         }
     }
-    inline void UpdateCoverageBoundary(const geometry_msgs::Polygon& polygon) {
+    void UpdateCoverageBoundary(const geometry_msgs::Polygon& polygon) {
         coverage_boundary_ = polygon;
     }
 
     template<class PCLPointType>
     void GetCoverageCloudWithinBoundary(typename pcl::PointCloud<PCLPointType>::Ptr& cloud) {
-        if (cloud->points.empty()) {
-            return;
-        }
+        if (cloud->points.empty()) { return; }
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
         for (int i = 0; i < cloud->points.size(); i++) {
             geometry_msgs::Point geo_point;
@@ -243,18 +240,17 @@ public:
     pcl::PointCloud<pcl::PointXYZI>::Ptr GetCollisionCloud() {
         return collision_cloud_;
     }
-    pcl::PointCloud<PlannerCloudPointType>::Ptr GetStackedCloud() {
+    pcl::PointCloud<PlannerCloudPointType>::Ptr GetStackedCloud() const {
         return stacked_cloud_->cloud_;
     }
 
     void UpdateTerrainCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud) const;
-    void UpdateCollisionCostGrid();
     bool InCollision(double x, double y, double z) const;
 
-    inline pcl::PointCloud<PlannerCloudPointType>::Ptr GetDiffCloud() {
+    pcl::PointCloud<PlannerCloudPointType>::Ptr GetDiffCloud() const {
         return diff_cloud_->cloud_;
     }
-    inline pcl::PointCloud<PlannerCloudPointType>::Ptr GetPlannerCloud() {
+    pcl::PointCloud<PlannerCloudPointType>::Ptr GetPlannerCloud() const {
         return planner_cloud_->cloud_;
     }
     void UpdateCoveredArea(
@@ -265,7 +261,7 @@ public:
         const std::shared_ptr<viewpoint_manager_ns::ViewPointManager>& viewpoint_manager,
         int& uncovered_point_num, int& uncovered_frontier_point_num) const;
 
-    Eigen::Vector3d GetPointCloudManagerNeighborCellsOrigin() {
+    Eigen::Vector3d GetPointCloudManagerNeighborCellsOrigin() const {
         return pointcloud_manager_->GetNeighborCellsOrigin();
     }
     void GetVisualizationPointCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr vis_cloud) const;

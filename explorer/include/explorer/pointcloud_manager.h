@@ -20,7 +20,7 @@ namespace pointcloud_manager_ns {
     public:
         typedef pcl::PointXYZRGBNormal PCLPointType;
         typedef pcl::PointCloud<pcl::PointXYZRGBNormal> PCLCloudType;
-        typedef typename pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr PCLCloudTypePtr;
+        typedef pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr PCLCloudTypePtr;
 
         explicit PointCloudManager(int row_num = 20, int col_num = 20, int level_num = 10,
                                    int max_cell_point_num = 100000, double cell_size = 24,

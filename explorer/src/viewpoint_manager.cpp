@@ -212,7 +212,6 @@ namespace viewpoint_manager_ns {
         kdtree->setInputCloud(viewpoint_cloud);
         std::vector<int> nearby_viewpoint_indices;
         std::vector<float> nearby_viewpoint_sqdist;
-        int count = 0;
         for (int x = 0; x < vp_.kCollisionGridSize.x(); x++) {
             for (int y = 0; y < vp_.kCollisionGridSize.y(); y++) {
                 for (int z = 0; z < vp_.kCollisionGridSize.z(); z++) {
@@ -287,8 +286,6 @@ namespace viewpoint_manager_ns {
             ? vp_.kRolloverStepsize.z() * ((sub_diff.z() > 0) ? 1 : -1) * std::abs(sub_diff.z())
             : 0;
 
-        // std::cout << "rolling x: " << rollover_step.x() << " y: " << rollover_step.y() << " z: " << rollover_step.z()
-        //           << std::endl;
         grid_->Roll(rollover_step);
 
         misc_utils_ns::Timer reset_timer("reset viewpoint");
@@ -302,12 +299,12 @@ namespace viewpoint_manager_ns {
         grid_->GetUpdatedIndices(updated_viewpoint_indices_);
         for (const auto& ind : updated_viewpoint_indices_) {
             MY_ASSERT(grid_->InRange(ind));
-            Eigen::Vector3i sub = grid_->Ind2Sub(ind);
+            Eigen::Vector3i sub_index = grid_->Ind2Sub(ind);
             geometry_msgs::Point new_position;
             new_position.x =
-                origin_.x() + sub.x() * vp_.kResolution.x() + vp_.kResolution.x() / 2.0;
+                origin_.x() + sub_index.x() * vp_.kResolution.x() + vp_.kResolution.x() / 2.0;
             new_position.y =
-                origin_.y() + sub.y() * vp_.kResolution.y() + vp_.kResolution.y() / 2.0;
+                origin_.y() + sub_index.y() * vp_.kResolution.y() + vp_.kResolution.y() / 2.0;
             new_position.z = robot_position_.z();
             SetViewPointPosition(ind, new_position);
             ResetViewPoint(ind);
@@ -322,7 +319,8 @@ namespace viewpoint_manager_ns {
         }
     }
 
-    int ViewPointManager::GetViewPointArrayInd(int viewpoint_ind, bool use_array_ind) const {
+    int ViewPointManager::GetViewPointArrayInd(const int viewpoint_ind,
+                                               const bool use_array_ind) const {
         MY_ASSERT(grid_->InRange(viewpoint_ind));
         return (use_array_ind ? viewpoint_ind : grid_->GetArrayInd(viewpoint_ind));
     }
@@ -341,16 +339,13 @@ namespace viewpoint_manager_ns {
     }
 
     int ViewPointManager::GetViewPointInd(const Eigen::Vector3d& position) {
-        Eigen::Vector3i sub = GetViewPointSub(position);
-        if (grid_->InRange(sub)) {
-            return grid_->Sub2Ind(sub);
-        } else {
-            return -1;
-        }
+        const Eigen::Vector3i sub = GetViewPointSub(position);
+        if (grid_->InRange(sub)) { return grid_->Sub2Ind(sub); }
+        return -1;
     }
 
     void ViewPointManager::GetVisualizationCloud(
-        const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) {
+        const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const {
         vis_cloud->clear();
         for (int i = 0; i < vp_.kViewPointNumber; i++) {
             if (IsViewPointCandidate(i, true)) {
@@ -422,7 +417,6 @@ namespace viewpoint_manager_ns {
 
     bool ViewPointManager::InCurrentFrameLineOfSight(const Eigen::Vector3d& position) {
         const int viewpoint_ind = GetViewPointInd(position);
-        bool in_line_of_sight = false;
         if (InRange(viewpoint_ind)) {
             if (ViewPointInCurrentFrameLineOfSight(viewpoint_ind)) { return true; }
         }
@@ -622,15 +616,12 @@ namespace viewpoint_manager_ns {
     bool ViewPointManager::InFOVAndRange(const Eigen::Vector3d& point_position,
                                          const Eigen::Vector3d& viewpoint_position) const {
         Eigen::Vector3d diff = point_position - viewpoint_position;
-        double z_diff = std::abs(diff.z());
+        const double z_diff = std::abs(diff.z());
         if (z_diff > vp_.kDiffZMax) { return false; }
-        double xy_diff = sqrt(diff.x() * diff.x() + diff.y() * diff.y());
+        const double xy_diff = sqrt(diff.x() * diff.x() + diff.y() * diff.y());
         if (xy_diff > vp_.kSensorRange) { return false; }
-        if (z_diff < vp_.kVerticalFOVRatio * xy_diff) {
-            return true;
-        } else {
-            return false;
-        }
+        if (z_diff < vp_.kVerticalFOVRatio * xy_diff) { return true; }
+        return false;
     }
 
     bool ViewPointManager::InRobotFOV(const Eigen::Vector3d& position) const {
@@ -715,7 +706,6 @@ namespace viewpoint_manager_ns {
                      in_range_neighbor_indices_[viewpoint_ind]) {
                     MY_ASSERT(grid_->InRange(neighbor_viewpoint_ind));
                     SetViewPointVisited(neighbor_viewpoint_ind, true);
-                    int neighbor_array_ind = grid_->GetArrayInd(neighbor_viewpoint_ind);
                 }
             }
         }
@@ -1098,7 +1088,7 @@ namespace viewpoint_manager_ns {
     }
 
     nav_msgs::Path ViewPointManager::GetViewPointShortestPath(int start_viewpoint_ind,
-                                                              int target_viewpoint_ind) {
+                                                              int target_viewpoint_ind) const {
         nav_msgs::Path path;
         if (!InRange(start_viewpoint_ind)) {
             ROS_WARN_STREAM("ViewPointManager::GetViewPointShortestPath start viewpoint ind: "
@@ -1305,22 +1295,23 @@ namespace viewpoint_manager_ns {
     double ViewPointManager::CalculateCollisionRisk(const geometry_msgs::Point& viewpoint_pos,
                                                     const Eigen::Vector3d& obstacle_pos,
                                                     const Eigen::Vector3d& obstacle_vel) {
-        double kPredictionHorizon = 1.0;  // 预测时间窗口（秒）
+        constexpr double kPredictionHorizon = 1.0;  // 预测时间窗口（秒）
         Eigen::Vector3d predicted_position =
             PredictObstaclePosition(obstacle_pos, obstacle_vel, kPredictionHorizon);
 
-        double distance = sqrt(pow(viewpoint_pos.x - predicted_position.x(), 2)
-                               + pow(viewpoint_pos.y - predicted_position.y(), 2)
-                               + pow(viewpoint_pos.z - predicted_position.z(), 2));
+        const double distance = sqrt(pow(viewpoint_pos.x - predicted_position.x(), 2)
+                                     + pow(viewpoint_pos.y - predicted_position.y(), 2)
+                                     + pow(viewpoint_pos.z - predicted_position.z(), 2));
 
-        double speed =
+        const double speed =
             sqrt(obstacle_vel.x() * obstacle_vel.x() + obstacle_vel.y() * obstacle_vel.y());
 
-        double min_safe_distance = 2.0;
+        constexpr double min_safe_distance = 2.0;
 
         if (distance < min_safe_distance) {
             // 距离越近，风险越高；速度越快，风险越高
-            double risk = (min_safe_distance - distance) / min_safe_distance * (1.0 + speed * 0.1);
+            const double risk =
+                (min_safe_distance - distance) / min_safe_distance * (1.0 + speed * 0.1);
             return std::min(1.0, risk);
         }
 
@@ -1337,7 +1328,8 @@ namespace viewpoint_manager_ns {
                 Eigen::Vector3d obstacle_pos(obstacle.x, obstacle.y, obstacle.z);
                 Eigen::Vector3d obstacle_vel(obstacle.Vx, obstacle.Vy, obstacle.Vz);
 
-                double risk = CalculateCollisionRisk(viewpoint_pos, obstacle_pos, obstacle_vel);
+                const double risk =
+                    CalculateCollisionRisk(viewpoint_pos, obstacle_pos, obstacle_vel);
                 total_collision_risk += risk;
             }
 
@@ -1351,29 +1343,27 @@ namespace viewpoint_manager_ns {
         int best_viewpoint_ind = -1;
 
         // 碰撞风险权重
-        double kCollisionRiskWeight = 0.5;
-
-        for (int viewpoint_ind : candidate_indices_) {
-            int array_ind = GetViewPointArrayInd(viewpoint_ind);
+        for (const int viewpoint_ind : candidate_indices_) {
+            constexpr double kCollisionRiskWeight = 0.5;
+            const int array_ind = GetViewPointArrayInd(viewpoint_ind);
             viewpoint_ns::ViewPoint& viewpoint = viewpoints_[array_ind];
 
             // 获取视点的基础得分（覆盖率等）
             // 这里简化处理，实际应该使用视点的覆盖率得分
-            double base_score =
+            const double base_score =
                 viewpoint.GetCoveredPointNum() + viewpoint.GetCoveredFrontierPointNum();
 
             // 获取碰撞风险
-            double collision_risk = viewpoint.GetCollisionRisk();
+            const double collision_risk = viewpoint.GetCollisionRisk();
 
             // 综合得分 = 基础得分 - 碰撞风险惩罚
-            double final_score = base_score - collision_risk * kCollisionRiskWeight;
+            const double final_score = base_score - collision_risk * kCollisionRiskWeight;
 
             if (final_score > best_score) {
                 best_score = final_score;
                 best_viewpoint_ind = viewpoint_ind;
             }
         }
-
         return best_viewpoint_ind;
     }
 }  // namespace viewpoint_manager_ns

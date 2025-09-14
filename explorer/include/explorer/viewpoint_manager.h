@@ -295,7 +295,8 @@ namespace viewpoint_manager_ns {
         std::vector<int> GetViewPointCandidateIndices() const {
             return candidate_indices_;
         }
-        nav_msgs::Path GetViewPointShortestPath(int start_viewpoint_ind, int target_viewpoint_ind);
+        nav_msgs::Path GetViewPointShortestPath(int start_viewpoint_ind,
+                                                int target_viewpoint_ind) const;
         nav_msgs::Path GetViewPointShortestPath(const Eigen::Vector3d& start_position,
                                                 const Eigen::Vector3d& target_position);
         bool GetViewPointShortestPathWithMaxLength(const Eigen::Vector3d& start_position,
@@ -314,18 +315,18 @@ namespace viewpoint_manager_ns {
             return vp_.kUseFrontier;
         }
         // For visualization
-        void GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud);
+        void GetVisualizationCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& vis_cloud) const;
         void GetCollisionViewPointVisCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud) const;
 
         typedef std::unique_ptr<ViewPointManager> Ptr;
 
         // 动态物体预测和碰撞风险评估相关方法
-        Eigen::Vector3d PredictObstaclePosition(const Eigen::Vector3d& position,
-                                                const Eigen::Vector3d& velocity,
-                                                double time_horizon);
-        double CalculateCollisionRisk(const geometry_msgs::Point& viewpoint_pos,
-                                      const Eigen::Vector3d& obstacle_pos,
-                                      const Eigen::Vector3d& obstacle_vel);
+        static Eigen::Vector3d PredictObstaclePosition(const Eigen::Vector3d& position,
+                                                       const Eigen::Vector3d& velocity,
+                                                       double time_horizon);
+        static double CalculateCollisionRisk(const geometry_msgs::Point& viewpoint_pos,
+                                             const Eigen::Vector3d& obstacle_pos,
+                                             const Eigen::Vector3d& obstacle_vel);
         void UpdateDynamicObstacleCollisionRisk(
             const std::vector<onboardDetector::box3D>& dynamic_obstacles);
         int GetOptimalViewPointCandidate();

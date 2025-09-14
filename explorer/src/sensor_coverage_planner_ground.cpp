@@ -7,7 +7,6 @@
 #include <std_msgs/Int32MultiArray.h>
 #include <visualization_msgs/MarkerArray.h>
 
-#include "explorer/graph.h"
 #include "explorer/misc_utils.h"
 // 从配置文件中读取参数
 namespace sensor_coverage_planner_3d_ns {
@@ -319,7 +318,7 @@ namespace sensor_coverage_planner_3d_ns {
         // 清空扫描点云
         pd_.registered_cloud_->cloud_->clear();
         // 将下采样后的配准点云赋值给配准点云管理器
-        pcl::copyPointCloud(*registered_scan_tmp, *(pd_.registered_cloud_->cloud_));
+        pcl::copyPointCloud(*registered_scan_tmp, *pd_.registered_cloud_->cloud_);
 
         // 更新planning_env_的输入数据（机器人和当前的世界坐标系下的点云）
         pd_.planning_env_->UpdateRobotPosition(pd_.robot_position_);
@@ -374,7 +373,6 @@ namespace sensor_coverage_planner_3d_ns {
             pcl::fromROSMsg<pcl::PointXYZI>(*terrain_cloud_large_msg,
                                             *pd_.large_terrain_cloud_->cloud_);
         }
-
         if (pp_.kCheckTerrainCollision) {
             pd_.terrain_ext_collision_cloud_->cloud_->clear();
 
@@ -427,7 +425,7 @@ namespace sensor_coverage_planner_3d_ns {
         pd_.keypose_graph_edge_marker_->Publish();
         pd_.keypose_graph_vis_cloud_->cloud_->clear();
         //
-        pd_.keypose_graph_->CheckLocalCollision(pd_.robot_position_, pd_.viewpoint_manager_);
+        pd_.keypose_graph_->CheckLocalCollision(pd_.viewpoint_manager_);
         pd_.keypose_graph_->CheckConnectivity(pd_.robot_position_);
         pd_.keypose_graph_->GetVisualizationCloud(pd_.keypose_graph_vis_cloud_->cloud_);
         pd_.keypose_graph_vis_cloud_->Publish();
@@ -557,7 +555,7 @@ namespace sensor_coverage_planner_3d_ns {
             Eigen::Vector3d(pd_.robot_position_.x, pd_.robot_position_.y,
                             pd_.robot_position_.z));  // 在局部规划器中，更新机器人位置
 
-        bool viewpoint_rollover = pd_.viewpoint_manager_->UpdateRobotPosition(
+        const bool viewpoint_rollover = pd_.viewpoint_manager_->UpdateRobotPosition(
             Eigen::Vector3d(pd_.robot_position_.x, pd_.robot_position_.y,
                             pd_.robot_position_.z));  // 更新机器人位置，并判断是否发生了回绕？
 
@@ -595,8 +593,9 @@ namespace sensor_coverage_planner_3d_ns {
 
         const int closest_node_ind = pd_.keypose_graph_->GetClosestNodeInd(
             pd_.robot_position_);  // 获取当前机器人位置最近的keypose节点索引
-        geometry_msgs::Point closest_node_position = pd_.keypose_graph_->GetClosestNodePosition(
-            pd_.robot_position_);  // 获取当前机器人位置最近的keypose节点的位置
+        const geometry_msgs::Point closest_node_position =
+            pd_.keypose_graph_->GetClosestNodePosition(
+                pd_.robot_position_);  // 获取当前机器人位置最近的keypose节点的位置
         pd_.grid_world_->SetCurKeyposeGraphNodeInd(
             closest_node_ind);  // grid_world_设置当前keypose节点索引和位置
         pd_.grid_world_->SetCurKeyposeGraphNodePosition(
@@ -913,12 +912,12 @@ namespace sensor_coverage_planner_3d_ns {
                     local_path.nodes_[i + 1].position_);  // 判断是否在当前帧的视场内
             }
             // 如果该点距离超过kLookAheadDistance，或者不在当前帧的视场内，或者为LOCAL_VIEWPOINT，LOCAL_PATH_START，LOCAL_PATH_END，或者为最后一个点
-            if ((length_from_robot > pp_.kLookAheadDistance
-                 || (pp_.kUseLineOfSightLookAheadPoint && !in_line_of_sight)
-                 || local_path.nodes_[i].type_ == exploration_path_ns::NodeType::LOCAL_VIEWPOINT
-                 || local_path.nodes_[i].type_ == exploration_path_ns::NodeType::LOCAL_PATH_START
-                 || local_path.nodes_[i].type_ == exploration_path_ns::NodeType::LOCAL_PATH_END
-                 || i == local_path.GetNodeNum() - 1))
+            if (length_from_robot > pp_.kLookAheadDistance
+                || (pp_.kUseLineOfSightLookAheadPoint && !in_line_of_sight)
+                || local_path.nodes_[i].type_ == exploration_path_ns::NodeType::LOCAL_VIEWPOINT
+                || local_path.nodes_[i].type_ == exploration_path_ns::NodeType::LOCAL_PATH_START
+                || local_path.nodes_[i].type_ == exploration_path_ns::NodeType::LOCAL_PATH_END
+                || i == local_path.GetNodeNum() - 1)
 
             {
                 // 如果该点不在当前帧的视场内，则lookahead_point_in_los置为false，引导点不在当前范围内
@@ -1158,14 +1157,12 @@ namespace sensor_coverage_planner_3d_ns {
         runtime_breakdown_msg.data.push_back(trajectory_optimization_runtime_);
         runtime_breakdown_msg.data.push_back(overall_runtime_);
         runtime_breakdown_pub_.publish(runtime_breakdown_msg);
-
         float runtime = 0;
         if (!exploration_finished_ && pp_.kNoExplorationReturnHome) {
             for (int i = 0; i < runtime_breakdown_msg.data.size() - 1; i++) {
                 runtime += runtime_breakdown_msg.data[i];
             }
         }
-
         std_msgs::Float32 runtime_msg;
         runtime_msg.data = runtime / 1000.0;
         runtime_pub_.publish(runtime_msg);
@@ -1206,7 +1203,6 @@ namespace sensor_coverage_planner_3d_ns {
             - Eigen::Vector3d(pd_.last_robot_position_.x, pd_.last_robot_position_.y,
                               pd_.last_robot_position_.z);
 
-        //
         if (current_moving_direction_.norm() > 0.5) {
             // 点积：大于零表示向量方向相同（锐角），小于零表示向量方向相反（钝角），等于零（正交）
             if (pd_.moving_direction_.dot(current_moving_direction_)
@@ -1283,7 +1279,7 @@ namespace sensor_coverage_planner_3d_ns {
 
         srv.request.range = range;
         if (dynamic_obstacles_client_.call(srv)) {
-            ROS_INFO_STREAM("Explorer: Dynamic Obstacles is detected");
+            ROS_DEBUG("Explorer: Dynamic Obstacles is detected");
             pd_.current_dynamic_obstacles_.clear();
             for (int i = 0; i < srv.response.position.size(); ++i) {
                 onboardDetector::box3D dynamic_box3d;
@@ -1299,7 +1295,7 @@ namespace sensor_coverage_planner_3d_ns {
                 pd_.current_dynamic_obstacles_.push_back(dynamic_box3d);
             }
         } else {
-            ROS_INFO_STREAM("Explorer: GetDynamicObstacles service is not existing");
+            ROS_DEBUG("Explorer: GetDynamicObstacles service is not existing");
         }
     }
 
@@ -1333,13 +1329,13 @@ namespace sensor_coverage_planner_3d_ns {
             misc_utils_ns::Timer update_representation_timer("update representation");
             update_representation_timer.Start();
 
-            // 半动态物体->全局规划
-            // pd_.grid_world_->UpdateSemiExploredCellsFromYOLODetection(pd_.cur_semi_obstacles_pose_,
-            //                                                           pd_.robot_position_);
-            // // 更新半动态cell状态转换
-            // pd_.grid_world_->UpdateSemiExploredCellStatus();
-            // // 输出调试信息
-            // pd_.grid_world_->PrintSemiExploredCellsInfo();
+            // // 半动态物体->全局规划
+            pd_.grid_world_->UpdateSemiExploredCellsFromYOLODetection(pd_.cur_semi_obstacles_pose_,
+                                                                      pd_.robot_position_);
+            // 更新半动态cell状态转换
+            pd_.grid_world_->UpdateSemiExploredCellStatus();
+            // 输出调试信息
+            pd_.grid_world_->PrintSemiExploredCellsInfo();
 
             // Update grid world
             UpdateGlobalRepresentation();  // for global planning
@@ -1353,7 +1349,7 @@ namespace sensor_coverage_planner_3d_ns {
 
             // 获取局部动态障碍物及其预测信息
             getLocalDynamicObstacles(pd_.robot_position_, 5.0);
-            // 局部规划->基于预测的碰撞风险
+            // 局部规划->基于预测的碰撞风险->用于选取视点
             pd_.viewpoint_manager_->UpdateDynamicObstacleCollisionRisk(
                 pd_.current_dynamic_obstacles_);
 

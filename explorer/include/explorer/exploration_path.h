@@ -46,7 +46,6 @@ namespace exploration_path_ns {
         int GetNodeNum() const {
             return nodes_.size();
         }
-
         void Append(const Node& node);
         void Append(const ExplorationPath& path);
         void Reverse();

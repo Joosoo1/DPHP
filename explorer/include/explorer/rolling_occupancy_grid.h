@@ -15,12 +15,7 @@
 namespace rolling_occupancy_grid_ns {
     class RollingOccupancyGrid {
     public:
-        enum CellState : char {
-            UNKNOWN = 0,
-            OCCUPIED = 1,
-            FREE = 2,
-            NOT_FRONTIER = 3
-        };
+        enum CellState : char { UNKNOWN = 0, OCCUPIED = 1, FREE = 2, NOT_FRONTIER = 3 };
 
         explicit RollingOccupancyGrid(ros::NodeHandle& nh);
         ~RollingOccupancyGrid() = default;
@@ -33,9 +28,7 @@ namespace rolling_occupancy_grid_ns {
         bool UpdateRobotPosition(const Eigen::Vector3d& robot_position);
         template<class PointType>
         void UpdateOccupancy(typename pcl::PointCloud<PointType>::Ptr& cloud) {
-            if (!initialized_) {
-                return;
-            }
+            if (!initialized_) { return; }
             updated_grid_indices_.clear();
             for (const auto& point : cloud->points) {
                 Eigen::Vector3i sub =
@@ -77,7 +70,5 @@ namespace rolling_occupancy_grid_ns {
 
         static bool InRange(const Eigen::Vector3i& sub, const Eigen::Vector3i& sub_min,
                             const Eigen::Vector3i& sub_max);
-
-        // void InitializeOrigin();
     };
 }  // namespace rolling_occupancy_grid_ns

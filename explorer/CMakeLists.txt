@@ -96,7 +96,6 @@ catkin_package(
 add_library(${PROJECT_NAME}
         src/exploration_path.cpp
         src/explorer_visualizer.cpp
-        src/graph.cpp
         src/grid_world.cpp
         src/keypose_graph.cpp
         src/lidar_model.cpp

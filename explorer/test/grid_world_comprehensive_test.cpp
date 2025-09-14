@@ -16,9 +16,7 @@ class GridWorldComprehensiveTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // Initialize ROS node for testing
-        if (!ros::isInitialized()) {
-            ros::init(ros::M_string(), "grid_world_comprehensive_test");
-        }
+        if (!ros::isInitialized()) { ros::init(ros::M_string(), "grid_world_comprehensive_test"); }
         nh_ = std::make_unique<ros::NodeHandle>();
 
         // Create grid world instance with test parameters
@@ -373,9 +371,10 @@ TEST_F(GridWorldComprehensiveTest, VisualizationTest) {
 // Test semi-explored cell functions
 TEST_F(GridWorldComprehensiveTest, SemiExploredCellTest) {
     // Test semi-explored cell transition probability
-    int cell_ind = grid_world_->GetCellInd(robot_position_.x, robot_position_.y, robot_position_.z);
+    const int cell_ind =
+        grid_world_->GetCellInd(robot_position_.x, robot_position_.y, robot_position_.z);
 
-    double transition_prob = grid_world_->GetSemiCellTransitionProbability(cell_ind);
+    const double transition_prob = grid_world_->GetSemiCellTransitionProbability(cell_ind);
     EXPECT_GE(transition_prob, 0.0);
     EXPECT_LE(transition_prob, 1.0);
 

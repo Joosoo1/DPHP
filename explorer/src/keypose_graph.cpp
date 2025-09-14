@@ -7,9 +7,9 @@
 namespace keypose_graph_ns {
     KeyposeNode::KeyposeNode(double x, double y, double z, int node_ind, int keypose_id,
                              bool is_keypose)
-        : cell_ind_(0),
+        : keypose_id_(keypose_id),
           node_ind_(node_ind),
-          keypose_id_(keypose_id),
+          cell_ind_(0),
           is_keypose_(is_keypose),
           is_connected_(true) {
         position_.x = x;
@@ -29,11 +29,11 @@ namespace keypose_graph_ns {
         : allow_vertical_edge_(false),
           current_keypose_id_(0),
           kAddNodeMinDist(1.0),
-          kAddEdgeCollisionCheckResolution(0.4),
-          kAddEdgeCollisionCheckRadius(0.3),
           kAddEdgeConnectDistThr(3.0),
           kAddEdgeToLastKeyposeDistThr(3.0),
           kAddEdgeVerticalThreshold(1.0),
+          kAddEdgeCollisionCheckResolution(0.4),
+          kAddEdgeCollisionCheckRadius(0.3),
           kAddEdgeCollisionCheckPointNumThr(1) {
         ReadParameters(nh);
         kdtree_connected_nodes_ =
@@ -65,11 +65,11 @@ namespace keypose_graph_ns {
 
     void KeyposeGraph::AddNode(const geometry_msgs::Point& position, int node_ind, int keypose_id,
                                bool is_keypose) {
-        KeyposeNode new_node(position, node_ind, keypose_id, is_keypose);
+        const KeyposeNode new_node(position, node_ind, keypose_id, is_keypose);
         nodes_.push_back(new_node);
-        std::vector<int> neighbors;
+        const std::vector<int> neighbors;
         graph_.push_back(neighbors);
-        std::vector<double> neighbor_dist;
+        const std::vector<double> neighbor_dist;
         dist_.push_back(neighbor_dist);
     }
     void KeyposeGraph::AddNodeAndEdge(const geometry_msgs::Point& position, int node_ind,
@@ -103,14 +103,12 @@ namespace keypose_graph_ns {
             double xy_dist = misc_utils_ns::PointXYDist<geometry_msgs::Point>(
                 geo_position, nodes_[closest_node_ind].position_);
             double z_dist = std::abs(geo_position.z - nodes_[closest_node_ind].position_.z);
-            if (xy_dist < kAddNonKeyposeNodeMinDist && z_dist < 1.0) {
-                return true;
-            }
+            if (xy_dist < kAddNonKeyposeNodeMinDist && z_dist < 1.0) { return true; }
         }
         return false;
     }
 
-    bool KeyposeGraph::HasEdgeBetween(int node_ind1, int node_ind2) {
+    bool KeyposeGraph::HasEdgeBetween(const int node_ind1, const int node_ind2) {
         if (node_ind1 >= 0 && node_ind1 < nodes_.size() && node_ind2 >= 0
             && node_ind2 < nodes_.size()) {
             if (std::find(graph_[node_ind1].begin(), graph_[node_ind1].end(), node_ind2)
@@ -118,12 +116,10 @@ namespace keypose_graph_ns {
                 || std::find(graph_[node_ind2].begin(), graph_[node_ind2].end(), node_ind1)
                     != graph_[node_ind2].end()) {
                 return true;
-            } else {
-                return false;
             }
-        } else {
             return false;
         }
+        return false;
     }
 
     bool KeyposeGraph::IsConnected(const Eigen::Vector3d& from_position,
@@ -145,13 +141,13 @@ namespace keypose_graph_ns {
         double closest_to_node_dist = DBL_MAX;
         GetClosestNodeIndAndDistance(to_node_position, closest_to_node_ind, closest_to_node_dist);
 
+        // 同一个节点
         if (closest_from_node_ind != -1 && closest_from_node_ind == closest_to_node_ind) {
             return true;
-        } else if (HasEdgeBetween(closest_from_node_ind, closest_to_node_ind)) {
-            return true;
-        } else {
-            return false;
         }
+        // 两个节点之间存在相连
+        if (HasEdgeBetween(closest_from_node_ind, closest_to_node_ind)) { return true; }
+        return false;
     }
 
     int KeyposeGraph::AddNonKeyposeNode(const geometry_msgs::Point& new_node_position) {
@@ -163,9 +159,7 @@ namespace keypose_graph_ns {
             double xy_dist = misc_utils_ns::PointXYDist<geometry_msgs::Point>(
                 new_node_position, nodes_[closest_node_ind].position_);
             double z_dist = std::abs(new_node_position.z - nodes_[closest_node_ind].position_.z);
-            if (xy_dist < kAddNonKeyposeNodeMinDist && z_dist < 1.0) {
-                return closest_node_ind;
-            }
+            if (xy_dist < kAddNonKeyposeNodeMinDist && z_dist < 1.0) { return closest_node_ind; }
         }
         new_node_index = nodes_.size();
         KeyposeNode new_node(new_node_position, new_node_index, current_keypose_id_, false);
@@ -180,9 +174,7 @@ namespace keypose_graph_ns {
     }
 
     void KeyposeGraph::AddPath(const nav_msgs::Path& path) {
-        if (path.poses.size() < 2) {
-            return;
-        }
+        if (path.poses.size() < 2) { return; }
         int prev_node_index = -1;
         for (int i = 0; i < path.poses.size(); i++) {
             int cur_node_index = AddNonKeyposeNode(path.poses[i].pose.position);
@@ -214,7 +206,7 @@ namespace keypose_graph_ns {
     }
 
     void KeyposeGraph::GetMarker(visualization_msgs::Marker& node_marker,
-                                 visualization_msgs::Marker& edge_marker) {
+                                 visualization_msgs::Marker& edge_marker) const {
         node_marker.points.clear();
         edge_marker.points.clear();
 
@@ -240,17 +232,15 @@ namespace keypose_graph_ns {
         }
     }
 
-    int KeyposeGraph::GetConnectedNodeNum() {
+    int KeyposeGraph::GetConnectedNodeNum() const {
         int connected_node_num = 0;
         for (int i = 0; i < nodes_.size(); i++) {
-            if (nodes_[i].is_connected_) {
-                connected_node_num++;
-            }
+            if (nodes_[i].is_connected_) { connected_node_num++; }
         }
         return connected_node_num;
     }
 
-    void KeyposeGraph::GetVisualizationCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud) {
+    void KeyposeGraph::GetVisualizationCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud) const {
         cloud->clear();
         for (const auto& node : nodes_) {
             pcl::PointXYZI point;
@@ -268,7 +258,7 @@ namespace keypose_graph_ns {
 
     void KeyposeGraph::GetConnectedNodeIndices(int query_ind,
                                                std::vector<int>& connected_node_indices,
-                                               std::vector<bool> constraints) {
+                                               std::vector<bool> constraints) const {
         if (nodes_.size() != constraints.size()) {
             ROS_ERROR(
                 "KeyposeGraph::GetConnectedNodeIndices: constraints size not equal to node size");
@@ -287,9 +277,7 @@ namespace keypose_graph_ns {
             int current_ind = dfs_stack.top();
             connected_node_indices.push_back(current_ind);
             dfs_stack.pop();
-            if (!visited[current_ind]) {
-                visited[current_ind] = true;
-            }
+            if (!visited[current_ind]) { visited[current_ind] = true; }
             for (int i = 0; i < graph_[current_ind].size(); i++) {
                 int neighbor_ind = graph_[current_ind][i];
                 if (!visited[neighbor_ind] && constraints[neighbor_ind]) {
@@ -300,7 +288,6 @@ namespace keypose_graph_ns {
     }
 
     void KeyposeGraph::CheckLocalCollision(
-        const geometry_msgs::Point& robot_position,
         const std::shared_ptr<viewpoint_manager_ns::ViewPointManager>& viewpoint_manager) {
         // Get local planning horizon xy size
         int in_local_planning_horizon_count = 0;
@@ -308,16 +295,12 @@ namespace keypose_graph_ns {
         int collision_edge_count = 0;
         int in_viewpoint_range_count = 0;
         Eigen::Vector3d viewpoint_resolution = viewpoint_manager->GetResolution();
-        double max_z_diff = std::max(viewpoint_resolution.x(), viewpoint_resolution.y()) * 2;
+        const double max_z_diff = std::max(viewpoint_resolution.x(), viewpoint_resolution.y()) * 2;
         for (int i = 0; i < nodes_.size(); i++) {
-            if (nodes_[i].is_keypose_) {
-                continue;
-            }
-
-            Eigen::Vector3d node_position = Eigen::Vector3d(
-                nodes_[i].position_.x, nodes_[i].position_.y, nodes_[i].position_.z);
-            int viewpoint_ind = viewpoint_manager->GetViewPointInd(node_position);
-            bool node_in_collision = false;
+            if (nodes_[i].is_keypose_) { continue; }
+            auto node_position = Eigen::Vector3d(nodes_[i].position_.x, nodes_[i].position_.y,
+                                                 nodes_[i].position_.z);
+            const int viewpoint_ind = viewpoint_manager->GetViewPointInd(node_position);
             if (viewpoint_manager->InRange(viewpoint_ind)
                 && std::abs(viewpoint_manager->GetViewPointHeight(viewpoint_ind)
                             - node_position.z())
@@ -325,7 +308,6 @@ namespace keypose_graph_ns {
                 in_local_planning_horizon_count++;
                 in_viewpoint_range_count++;
                 if (viewpoint_manager->ViewPointInCollision(viewpoint_ind)) {
-                    node_in_collision = true;
                     collision_node_count++;
                     // Delete all the associated edges
                     for (int j = 0; j < graph_[i].size(); j++) {
@@ -341,26 +323,23 @@ namespace keypose_graph_ns {
                     graph_[i].clear();
                     dist_[i].clear();
                 } else {
-                    Eigen::Vector3d viewpoint_resolution = viewpoint_manager->GetResolution();
-                    double collision_check_resolution =
+                    const double collision_check_resolution =
                         std::min(viewpoint_resolution.x(), viewpoint_resolution.y()) / 2;
                     // Check edge collision
                     for (int j = 0; j < graph_[i].size(); j++) {
-                        int neighbor_ind = graph_[i][j];
+                        const int neighbor_ind = graph_[i][j];
                         Eigen::Vector3d start_position = node_position;
-                        Eigen::Vector3d end_position = Eigen::Vector3d(
-                            nodes_[neighbor_ind].position_.x, nodes_[neighbor_ind].position_.y,
-                            nodes_[neighbor_ind].position_.z);
+                        auto end_position = Eigen::Vector3d(nodes_[neighbor_ind].position_.x,
+                                                            nodes_[neighbor_ind].position_.y,
+                                                            nodes_[neighbor_ind].position_.z);
                         std::vector<Eigen::Vector3d> interp_points;
                         misc_utils_ns::LinInterpPoints(start_position, end_position,
                                                        collision_check_resolution, interp_points);
                         for (const auto& collision_check_position : interp_points) {
-                            int viewpoint_ind =
+                            const int viewpoint_index =
                                 viewpoint_manager->GetViewPointInd(collision_check_position);
-                            if (viewpoint_manager->InRange(viewpoint_ind)) {
-                                if (viewpoint_manager->ViewPointInCollision(viewpoint_ind)) {
-                                    geometry_msgs::Point viewpoint_position =
-                                        viewpoint_manager->GetViewPointPosition(viewpoint_ind);
+                            if (viewpoint_manager->InRange(viewpoint_index)) {
+                                if (viewpoint_manager->ViewPointInCollision(viewpoint_index)) {
                                     // Delete neighbors' edges
                                     for (int k = 0; k < graph_[neighbor_ind].size(); k++) {
                                         if (graph_[neighbor_ind][k] == i) {
@@ -386,7 +365,7 @@ namespace keypose_graph_ns {
         }
     }
 
-    void KeyposeGraph::UpdateNodes() {
+    void KeyposeGraph::UpdateNodes() const {
         nodes_cloud_->clear();
         for (int i = 0; i < nodes_.size(); i++) {
             pcl::PointXYZI point;
@@ -396,20 +375,15 @@ namespace keypose_graph_ns {
             point.intensity = i;
             nodes_cloud_->points.push_back(point);
         }
-        if (!nodes_cloud_->points.empty()) {
-            kdtree_nodes_->setInputCloud(nodes_cloud_);
-        }
+        if (!nodes_cloud_->points.empty()) { kdtree_nodes_->setInputCloud(nodes_cloud_); }
     }
 
     void KeyposeGraph::CheckConnectivity(const geometry_msgs::Point& robot_position) {
-        if (nodes_.empty()) {
-            return;
-        }
+        if (nodes_.empty()) { return; }
         UpdateNodes();
 
         // The first keypose node is always connected, set all the others to be disconnected
         int first_keypose_node_ind = -1;
-        bool found_connected = false;
 
         for (int i = 0; i < nodes_.size(); i++) {
             if (nodes_[i].is_keypose_) {
@@ -466,118 +440,109 @@ namespace keypose_graph_ns {
         int new_node_ind = nodes_.size();
         int keypose_node_count = 0;
         for (int i = 0; i < nodes_.size(); i++) {
-            if (nodes_[i].is_keypose_) {
-                keypose_node_count++;
-            }
+            if (nodes_[i].is_keypose_) { keypose_node_count++; }
         }
         if (nodes_.empty() || keypose_node_count == 0) {
             AddNode(current_keypose_position_, new_node_ind, current_keypose_id_, true);
             return new_node_ind;
-        } else {
-            double min_dist = DBL_MAX;
-            int min_dist_ind = -1;
-            double last_keypose_dist = DBL_MAX;
-            int last_keypose_ind = -1;
-            int max_keypose_id = 0;
-            std::vector<int> in_range_node_indices;
-            std::vector<double> in_range_node_dist;
-            for (int i = 0; i < nodes_.size(); i++) {
-                if (!allow_vertical_edge_) {
-                    if (std::abs(nodes_[i].position_.z - current_keypose_position_.z)
-                        > kAddEdgeVerticalThreshold) {
-                        continue;
-                    }
-                }
-                double dist =
-                    misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
-                        nodes_[i].position_, current_keypose_position_);
-                if (dist < min_dist && nodes_[i].is_keypose_) {
-                    min_dist = dist;
-                    min_dist_ind = i;
-                }
-                int keypose_id = nodes_[i].keypose_id_;
-                if (keypose_id > max_keypose_id && nodes_[i].is_keypose_) {
-                    last_keypose_dist = dist;
-                    last_keypose_ind = i;
-                    max_keypose_id = keypose_id;
-                }
-                if (dist < kAddEdgeConnectDistThr) {
-                    in_range_node_indices.push_back(i);
-                    in_range_node_dist.push_back(dist);
+        }
+        double min_dist = DBL_MAX;
+        int min_dist_ind = -1;
+        double last_keypose_dist = DBL_MAX;
+        int last_keypose_ind = -1;
+        int max_keypose_id = 0;
+        std::vector<int> in_range_node_indices;
+        std::vector<double> in_range_node_dist;
+        for (int i = 0; i < nodes_.size(); i++) {
+            if (!allow_vertical_edge_) {
+                if (std::abs(nodes_[i].position_.z - current_keypose_position_.z)
+                    > kAddEdgeVerticalThreshold) {
+                    continue;
                 }
             }
-            // If the closest keypose node is some distance away
-            if (min_dist_ind >= 0 && min_dist_ind < nodes_.size()) {
-                if (min_dist > kAddNodeMinDist) {
-                    // If the last keypose is within range
-                    if (last_keypose_dist < kAddEdgeToLastKeyposeDistThr && last_keypose_ind >= 0
-                        && last_keypose_ind < nodes_.size()) {
-                        // Add edge to the last keypose node
-                        AddNodeAndEdge(current_keypose_position_, new_node_ind, current_keypose_id_,
-                                       true, last_keypose_ind, last_keypose_dist);
-                    } else {
-                        // Add edge to the nearest node
-                        AddNodeAndEdge(current_keypose_position_, new_node_ind, current_keypose_id_,
-                                       true, min_dist_ind, min_dist);
-                    }
-                    // Check other nodes
-                    if (!in_range_node_indices.empty()) {
-                        for (int idx = 0; idx < in_range_node_indices.size(); idx++) {
-                            int in_range_ind = in_range_node_indices[idx];
-                            if (in_range_ind >= 0 && in_range_ind < nodes_.size()) {
-                                // Collision check
-                                KeyposeNode neighbor_node = nodes_[in_range_ind];
-                                if (std::find(graph_[new_node_ind].begin(),
-                                              graph_[new_node_ind].end(), in_range_ind)
-                                    != graph_[new_node_ind].end())
-                                    continue;
-                                double neighbor_node_dist = in_range_node_dist[idx];
-                                double diff_x =
-                                    neighbor_node.position_.x - current_keypose_position_.x;
-                                double diff_y =
-                                    neighbor_node.position_.y - current_keypose_position_.y;
-                                double diff_z =
-                                    neighbor_node.position_.z - current_keypose_position_.z;
-                                int check_point_num = static_cast<int>(
-                                    neighbor_node_dist / kAddEdgeCollisionCheckResolution);
-                                bool in_collision = false;
-                                for (int i = 0; i < check_point_num; i++) {
-                                    // std::cout << "checking the " << i << " collision point" << std::endl;
-                                    double check_point_x = current_keypose_position_.x
-                                        + kAddEdgeCollisionCheckResolution * i * diff_x
-                                            / neighbor_node_dist;
-                                    double check_point_y = current_keypose_position_.y
-                                        + kAddEdgeCollisionCheckResolution * i * diff_y
-                                            / neighbor_node_dist;
-                                    double check_point_z = current_keypose_position_.z
-                                        + kAddEdgeCollisionCheckResolution * i * diff_z
-                                            / neighbor_node_dist;
-                                    if (planning_env.InCollision(check_point_x, check_point_y,
-                                                                 check_point_z)) {
-                                        in_collision = true;
-                                        break;
-                                    }
+            double dist = misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
+                nodes_[i].position_, current_keypose_position_);
+            if (dist < min_dist && nodes_[i].is_keypose_) {
+                min_dist = dist;
+                min_dist_ind = i;
+            }
+            int keypose_id = nodes_[i].keypose_id_;
+            if (keypose_id > max_keypose_id && nodes_[i].is_keypose_) {
+                last_keypose_dist = dist;
+                last_keypose_ind = i;
+                max_keypose_id = keypose_id;
+            }
+            if (dist < kAddEdgeConnectDistThr) {
+                in_range_node_indices.push_back(i);
+                in_range_node_dist.push_back(dist);
+            }
+        }
+        // If the closest keypose node is some distance away
+        if (min_dist_ind >= 0 && min_dist_ind < nodes_.size()) {
+            if (min_dist > kAddNodeMinDist) {
+                // If the last keypose is within range
+                if (last_keypose_dist < kAddEdgeToLastKeyposeDistThr && last_keypose_ind >= 0
+                    && last_keypose_ind < nodes_.size()) {
+                    // Add edge to the last keypose node
+                    AddNodeAndEdge(current_keypose_position_, new_node_ind, current_keypose_id_,
+                                   true, last_keypose_ind, last_keypose_dist);
+                } else {
+                    // Add edge to the nearest node
+                    AddNodeAndEdge(current_keypose_position_, new_node_ind, current_keypose_id_,
+                                   true, min_dist_ind, min_dist);
+                }
+                // Check other nodes
+                if (!in_range_node_indices.empty()) {
+                    for (int idx = 0; idx < in_range_node_indices.size(); idx++) {
+                        int in_range_ind = in_range_node_indices[idx];
+                        if (in_range_ind >= 0 && in_range_ind < nodes_.size()) {
+                            // Collision check
+                            KeyposeNode neighbor_node = nodes_[in_range_ind];
+                            if (std::find(graph_[new_node_ind].begin(), graph_[new_node_ind].end(),
+                                          in_range_ind)
+                                != graph_[new_node_ind].end())
+                                continue;
+                            double neighbor_node_dist = in_range_node_dist[idx];
+                            double diff_x = neighbor_node.position_.x - current_keypose_position_.x;
+                            double diff_y = neighbor_node.position_.y - current_keypose_position_.y;
+                            double diff_z = neighbor_node.position_.z - current_keypose_position_.z;
+                            int check_point_num = static_cast<int>(
+                                neighbor_node_dist / kAddEdgeCollisionCheckResolution);
+                            bool in_collision = false;
+                            for (int i = 0; i < check_point_num; i++) {
+                                // std::cout << "checking the " << i << " collision point" << std::endl;
+                                double check_point_x = current_keypose_position_.x
+                                    + kAddEdgeCollisionCheckResolution * i * diff_x
+                                        / neighbor_node_dist;
+                                double check_point_y = current_keypose_position_.y
+                                    + kAddEdgeCollisionCheckResolution * i * diff_y
+                                        / neighbor_node_dist;
+                                double check_point_z = current_keypose_position_.z
+                                    + kAddEdgeCollisionCheckResolution * i * diff_z
+                                        / neighbor_node_dist;
+                                if (planning_env.InCollision(check_point_x, check_point_y,
+                                                             check_point_z)) {
+                                    in_collision = true;
+                                    break;
                                 }
-                                if (!in_collision) {
-                                    AddEdge(new_node_ind, in_range_ind, neighbor_node_dist);
-                                }
+                            }
+                            if (!in_collision) {
+                                AddEdge(new_node_ind, in_range_ind, neighbor_node_dist);
                             }
                         }
                     }
-                    return new_node_ind;
-                } else {
-                    return min_dist_ind;
                 }
-            } else {
-                ROS_ERROR_STREAM("KeyposeGraph::AddKeyposeNode: Nearest keypose ind out of range: "
-                                 << min_dist_ind);
                 return new_node_ind;
             }
+            return min_dist_ind;
         }
+        ROS_ERROR_STREAM(
+            "KeyposeGraph::AddKeyposeNode: Nearest keypose ind out of range: " << min_dist_ind);
+        return new_node_ind;
     }
 
     bool KeyposeGraph::IsPositionReachable(const geometry_msgs::Point& point,
-                                           double dist_threshold) {
+                                           const double dist_threshold) const {
         int closest_node_ind = 0;
         double closest_node_dist = DBL_MAX;
         GetClosestConnectedNodeIndAndDistance(point, closest_node_ind, closest_node_dist);
@@ -589,19 +554,18 @@ namespace keypose_graph_ns {
         }
     }
 
-    bool KeyposeGraph::IsPositionReachable(const geometry_msgs::Point& point) {
+    bool KeyposeGraph::IsPositionReachable(const geometry_msgs::Point& point) const {
         int closest_node_ind = 0;
         double closest_node_dist = DBL_MAX;
         GetClosestConnectedNodeIndAndDistance(point, closest_node_ind, closest_node_dist);
         if (closest_node_ind >= 0 && closest_node_ind < nodes_.size()
             && closest_node_dist < kAddNonKeyposeNodeMinDist) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
-    int KeyposeGraph::GetClosestNodeInd(const geometry_msgs::Point& point) {
+    int KeyposeGraph::GetClosestNodeInd(const geometry_msgs::Point& point) const {
         int node_ind = 0;
         double min_dist = DBL_MAX;
         GetClosestNodeIndAndDistance(point, node_ind, min_dist);
@@ -609,7 +573,7 @@ namespace keypose_graph_ns {
     }
 
     void KeyposeGraph::GetClosestNodeIndAndDistance(const geometry_msgs::Point& point,
-                                                    int& node_ind, double& dist) {
+                                                    int& node_ind, double& dist) const {
         node_ind = -1;
         dist = DBL_MAX;
         if (nodes_cloud_->points.empty()) {
@@ -653,7 +617,7 @@ namespace keypose_graph_ns {
 
     // 获取离该位置最近的节点的索引和距离
     void KeyposeGraph::GetClosestConnectedNodeIndAndDistance(const geometry_msgs::Point& point,
-                                                             int& node_ind, double& dist) {
+                                                             int& node_ind, double& dist) const {
         if (connected_nodes_cloud_->points.empty())  // 如果已连接节点集合为空，则直接返回
         {
             node_ind = -1;
@@ -687,32 +651,32 @@ namespace keypose_graph_ns {
         }
     }
 
-    int KeyposeGraph::GetClosestKeyposeID(const geometry_msgs::Point& point) {
-        int closest_node_ind = GetClosestNodeInd(point);
+    int KeyposeGraph::GetClosestKeyposeID(const geometry_msgs::Point& point) const {
+        const int closest_node_ind = GetClosestNodeInd(point);
         if (closest_node_ind >= 0 && closest_node_ind < nodes_.size()) {
             return nodes_[closest_node_ind].keypose_id_;
-        } else {
-            return -1;
         }
+        return -1;
     }
 
-    geometry_msgs::Point KeyposeGraph::GetClosestNodePosition(const geometry_msgs::Point& point) {
-        int closest_node_ind = GetClosestNodeInd(point);
+    geometry_msgs::Point KeyposeGraph::GetClosestNodePosition(
+        const geometry_msgs::Point& point) const {
+        const int closest_node_ind = GetClosestNodeInd(point);
         if (closest_node_ind >= 0 && closest_node_ind < nodes_.size()) {
             return nodes_[closest_node_ind].position_;
         } else {
-            geometry_msgs::Point point;
-            point.x = 0;
-            point.y = 0;
-            point.z = 0;
-            return point;
+            geometry_msgs::Point geo_point;
+            geo_point.x = 0;
+            geo_point.y = 0;
+            geo_point.z = 0;
+            return geo_point;
         }
     }
 
     bool KeyposeGraph::GetShortestPathWithMaxLength(const geometry_msgs::Point& start_point,
                                                     const geometry_msgs::Point& target_point,
                                                     double max_path_length, bool get_path,
-                                                    nav_msgs::Path& path) {
+                                                    nav_msgs::Path& path) const {
         if (nodes_.size() < 2) {
             if (get_path) {
                 geometry_msgs::PoseStamped start_pose;
@@ -814,9 +778,7 @@ namespace keypose_graph_ns {
         auto min_dist_to_start = DBL_MAX;
         auto min_dist_to_target = DBL_MAX;
         for (int i = 0; i < nodes_.size(); i++) {
-            if (use_connected_nodes && !nodes_[i].is_connected_) {
-                continue;
-            }
+            if (use_connected_nodes && !nodes_[i].is_connected_) { continue; }
             if (allow_vertical_edge_) {
                 double dist_to_start =
                     misc_utils_ns::PointXYZDist<geometry_msgs::Point, geometry_msgs::Point>(
@@ -874,7 +836,6 @@ namespace keypose_graph_ns {
                 path.poses.push_back(pose);
             }
         }
-
         return shortest_dist;
     }
 
@@ -929,5 +890,4 @@ namespace keypose_graph_ns {
         }
         return node_position;
     }
-
 }  // namespace keypose_graph_ns

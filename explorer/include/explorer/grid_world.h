@@ -315,7 +315,7 @@ namespace grid_world_ns {
         std::vector<int> GetNeighborCellIndices() {
             return neighbor_cell_indices_;
         }
-
+        // 更新semi—Explored状态Cell状态
         void UpdateSemiExploredCellStatus();
         // 获取该cell的临近cell列表
         void GetNeighborCellIndices(const Eigen::Vector3i& center_cell_sub,
@@ -344,7 +344,7 @@ namespace grid_world_ns {
         // 重置所有cell的状态、访问次数、机器人位置、视点列表、keypose graph节点列表、临近cell列表
         void Reset() const;
         // 获取处于该状态的cell数量
-        int GetCellStatusCount(grid_world_ns::CellStatus status) const;
+        int GetCellStatusCount(CellStatus status) const;
         // 根据视点及covered的point和frontier更新cell的状态
         void UpdateCellStatus(
             const std::shared_ptr<viewpoint_manager_ns::ViewPointManager>& viewpoint_manager);
@@ -407,7 +407,7 @@ namespace grid_world_ns {
             const std::unique_ptr<keypose_graph_ns::KeyposeGraph>& keypose_graph,
             const Eigen::Vector3d& start_position, const Eigen::Vector3d& goal_position) const;
 
-        static double GetSemiCellTransitionProbability(const int& cell_ind);
+        double GetSemiCellTransitionProbability(const int& cell_ind);
         void getSemiExploredCellIndices(
             const std::vector<Eigen::Vector3d>& semi_dynamic_frontier_positions);
 
@@ -421,41 +421,40 @@ namespace grid_world_ns {
 
         double CalculateDoorDetectionFrequency(int cell_ind);
 
-        double CalculateTimeBasedFactor();
+        static double CalculateTimeBasedFactor();
 
-        double CalculateDistanceFactor(int cell_ind);
+        double CalculateDistanceFactor(int cell_ind) const;
 
         void PrintSemiExploredCellsInfo();
 
     private:
         // 3维栅格空间行列层数
-        int kRowNum{};
-        int kColNum{};
-        int kLevelNum{};
+        int kRowNum;
+        int kColNum;
+        int kLevelNum;
 
         // cell的尺寸，长和宽为局部规划区域的1/5，高为自定义
-        double kCellSize{};
-        double kCellHeight{};
+        double kCellSize;
+        double kCellHeight;
 
         // 邻近的cell范围，单位单元格个数
-        int KNearbyGridNum{};
+        int KNearbyGridNum;
         // 视点最小covered的point数量小阈值
-        int kMinAddPointNumSmall{};
+        int kMinAddPointNumSmall;
         // 视点最小covered的point数量大阈值
-        int kMinAddPointNumBig{};
+        int kMinAddPointNumBig;
         // 视点最小frontier数量阈值
-        int kMinAddFrontierPointNum{};
+        int kMinAddFrontierPointNum;
 
         // cell的状态转换阈值->指的是cell中包含的有效的viewpoint数量，小于阈值则状态为COVERED
-        int kCellExploringToCoveredThr{};
-        int kCellCoveredToExploringThr{};
-        int kCellExploringToAlmostCoveredThr{};
-        int kCellAlmostCoveredToExploringThr{};
-        int kCellUnknownToExploringThr{};
+        int kCellExploringToCoveredThr;
+        int kCellCoveredToExploringThr;
+        int kCellExploringToAlmostCoveredThr;
+        int kCellAlmostCoveredToExploringThr;
+        int kCellUnknownToExploringThr;
         // 这个是根据概率函数推算出来的概率值
-        double kCellSemiExploredToExploringThr{};
+        double kCellSemiExploredToExploringThr;
 
-        // std::vector<Cell> cells_;// gridworld单元格集合
         std::unique_ptr<grid_ns::Grid<Cell>>
             subspaces_;  // 全局子空间栅格对象，子空间集合->在构造函数中初始化
         // 是否完成初始化
@@ -468,7 +467,7 @@ namespace grid_world_ns {
         geometry_msgs::Point robot_position_;
         // 栅格世界原点
         geometry_msgs::Point origin_;
-        // 临近cell列表
+        // 临近cell列表->robot当前位置临近cell
         std::vector<int> neighbor_cell_indices_;
         // 几乎covered的cell列表
         std::vector<int> almost_covered_cell_indices_;

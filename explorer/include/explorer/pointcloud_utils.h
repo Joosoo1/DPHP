@@ -39,10 +39,10 @@ public:
     void SetRadiusThreshold(double radius_threshold) {
         kRadiusThreshold = radius_threshold;
     }
-    void SetZDiffMax(double z_diff_max) {
+    void SetZDiffMax(const double z_diff_max) {
         kZDiffMax = z_diff_max;
     }
-    void SetZDiffMin(double z_diff_min) {
+    void SetZDiffMin(const double z_diff_min) {
         kZDiffMin = z_diff_min;
     }
     void SetNeighborThreshold(int neighbor_threshold) {
@@ -50,10 +50,8 @@ public:
     }
     template<class PCLPointType>
     void ExtractVerticalSurface(typename pcl::PointCloud<PCLPointType>::Ptr& cloud,
-                                double z_max = DBL_MAX, double z_min = -DBL_MAX) {
-        if (cloud->points.empty()) {
-            return;
-        }
+                                const double z_max = DBL_MAX, const double z_min = -DBL_MAX) {
+        if (cloud->points.empty()) { return; }
         pcl::copyPointCloud(*cloud, *extractor_cloud_);
         for (auto& point : extractor_cloud_->points) {
             point.intensity = point.z;
@@ -80,9 +78,7 @@ public:
                     }
                 }
             }
-            if (is_vertical) {
-                inliers->indices.push_back(i);
-            }
+            if (is_vertical) { inliers->indices.push_back(i); }
         }
         pcl::ExtractIndices<PCLPointType> extract;
         extract.setInputCloud(cloud);
@@ -95,9 +91,7 @@ public:
     void ExtractVerticalSurface(typename pcl::PointCloud<InputPCLPointType>::Ptr& cloud_in,
                                 typename pcl::PointCloud<OutputPCLPointType>::Ptr& cloud_out,
                                 double z_max = DBL_MAX, double z_min = -DBL_MAX) {
-        if (cloud_in->points.empty()) {
-            return;
-        }
+        if (cloud_in->points.empty()) { return; }
         pcl::copyPointCloud(*cloud_in, *extractor_cloud_);
         for (auto& point : extractor_cloud_->points) {
             point.intensity = point.z;
@@ -145,9 +139,7 @@ public:
     ~PointCloudDownsizer() = default;
     void Downsize(typename pcl::PointCloud<PCLPointType>::Ptr& cloud, double leaf_size_x,
                   double leaf_size_y, double leaf_size_z) {
-        if (cloud->points.empty()) {
-            return;
-        }
+        if (cloud->points.empty()) { return; }
         pointcloud_downsize_filter_.setLeafSize(leaf_size_x, leaf_size_y, leaf_size_z);
         pointcloud_downsize_filter_.setInputCloud(cloud);
         pointcloud_downsize_filter_.filter(*cloud);
