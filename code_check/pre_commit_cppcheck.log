@@ -1,0 +1,3 @@
+simulation/velodyne_simulator/velodyne_gazebo_plugins/src/GazeboRosVelodyneLaser.cpp:68:5: error: There is an unknown macro here somewhere. Configuration is required. If GZ_REGISTER_SENSOR_PLUGIN is a macro then please configure it. [unknownMacro]
+    GZ_REGISTER_SENSOR_PLUGIN(GazeboRosVelodyneLaser)
+    ^

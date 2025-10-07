@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scenario>
+  <waypoint id="0" x="-28.00" y="-19.60" r="1"/>
+  <waypoint id="1" x="-40.30" y="-19.60" r="1"/>
+  <waypoint id="2" x="-40.60" y="-19.30" r="1"/>
+  <waypoint id="3" x="-45.10" y="-19.30" r="1"/>
+  <agent x="-28.00" y="-19.60" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="1"/>
+    <addwaypoint id="2"/>
+    <addwaypoint id="3"/>
+  </agent>
+  <waypoint id="4" x="-44.60" y="-18.10" r="1"/>
+  <waypoint id="5" x="-34.00" y="-18.10" r="1"/>
+  <waypoint id="6" x="-32.50" y="-19.60" r="1"/>
+  <waypoint id="7" x="-29.60" y="-19.60" r="1"/>
+  <agent x="-44.60" y="-18.10" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="5"/>
+    <addwaypoint id="6"/>
+    <addwaypoint id="7"/>
+  </agent>
+  <waypoint id="8" x="-28.10" y="-18.20" r="1"/>
+  <waypoint id="9" x="-43.90" y="-18.20" r="1"/>
+  <waypoint id="10" x="-44.00" y="-18.30" r="1"/>
+  <waypoint id="11" x="-44.10" y="-18.30" r="1"/>
+  <agent x="-28.10" y="-18.20" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="9"/>
+    <addwaypoint id="10"/>
+    <addwaypoint id="11"/>
+  </agent>
+  <waypoint id="12" x="-29.40" y="-19.40" r="1"/>
+  <waypoint id="13" x="-42.00" y="-19.40" r="1"/>
+  <waypoint id="14" x="-42.20" y="-19.60" r="1"/>
+  <waypoint id="15" x="-45.20" y="-19.60" r="1"/>
+  <waypoint id="16" x="-45.30" y="-19.70" r="1"/>
+  <waypoint id="17" x="-45.40" y="-19.70" r="1"/>
+  <agent x="-29.40" y="-19.40" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="13"/>
+    <addwaypoint id="14"/>
+    <addwaypoint id="15"/>
+    <addwaypoint id="16"/>
+    <addwaypoint id="17"/>
+  </agent>
+  <waypoint id="18" x="-29.50" y="-19.60" r="1"/>
+  <waypoint id="19" x="-45.50" y="-19.60" r="1"/>
+  <waypoint id="20" x="-45.60" y="-19.50" r="1"/>
+  <agent x="-29.50" y="-19.60" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="19"/>
+    <addwaypoint id="20"/>
+  </agent>
+  <waypoint id="21" x="-45.60" y="-18.60" r="1"/>
+  <waypoint id="22" x="-33.00" y="-18.60" r="1"/>
+  <waypoint id="23" x="-32.80" y="-18.80" r="1"/>
+  <waypoint id="24" x="-28.30" y="-18.80" r="1"/>
+  <agent x="-45.60" y="-18.60" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="22"/>
+    <addwaypoint id="23"/>
+    <addwaypoint id="24"/>
+  </agent>
+  <waypoint id="25" x="-28.20" y="-19.20" r="1"/>
+  <waypoint id="26" x="-40.50" y="-19.20" r="1"/>
+  <waypoint id="27" x="-40.80" y="-18.90" r="1"/>
+  <waypoint id="28" x="-45.10" y="-18.90" r="1"/>
+  <agent x="-28.20" y="-19.20" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="26"/>
+    <addwaypoint id="27"/>
+    <addwaypoint id="28"/>
+  </agent>
+  <waypoint id="29" x="-52.70" y="-23.90" r="1"/>
+  <waypoint id="30" x="-64.50" y="-23.90" r="1"/>
+  <waypoint id="31" x="-65.20" y="-23.20" r="1"/>
+  <waypoint id="32" x="-73.50" y="-23.20" r="1"/>
+  <agent x="-52.70" y="-23.90" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="30"/>
+    <addwaypoint id="31"/>
+    <addwaypoint id="32"/>
+  </agent>
+  <waypoint id="33" x="-44.30" y="-18.10" r="1"/>
+  <waypoint id="34" x="-33.70" y="-18.10" r="1"/>
+  <waypoint id="35" x="-32.20" y="-19.60" r="1"/>
+  <waypoint id="36" x="-28.00" y="-19.60" r="1"/>
+  <agent x="-44.30" y="-18.10" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="34"/>
+    <addwaypoint id="35"/>
+    <addwaypoint id="36"/>
+  </agent>
+  <waypoint id="37" x="-45.30" y="-18.40" r="1"/>
+  <waypoint id="38" x="-33.00" y="-18.40" r="1"/>
+  <waypoint id="39" x="-32.70" y="-18.70" r="1"/>
+  <waypoint id="40" x="-29.10" y="-18.70" r="1"/>
+  <waypoint id="41" x="-29.00" y="-18.80" r="1"/>
+  <waypoint id="42" x="-28.90" y="-18.80" r="1"/>
+  <agent x="-45.30" y="-18.40" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="38"/>
+    <addwaypoint id="39"/>
+    <addwaypoint id="40"/>
+    <addwaypoint id="41"/>
+    <addwaypoint id="42"/>
+  </agent>
+  <waypoint id="43" x="-45.50" y="-17.60" r="1"/>
+  <waypoint id="44" x="-35.70" y="-17.60" r="1"/>
+  <waypoint id="45" x="-35.60" y="-17.70" r="1"/>
+  <waypoint id="46" x="-35.30" y="-17.70" r="1"/>
+  <waypoint id="47" x="-33.50" y="-19.50" r="1"/>
+  <waypoint id="48" x="-28.40" y="-19.50" r="1"/>
+  <agent x="-45.50" y="-17.60" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="44"/>
+    <addwaypoint id="45"/>
+    <addwaypoint id="46"/>
+    <addwaypoint id="47"/>
+    <addwaypoint id="48"/>
+  </agent>
+  <waypoint id="49" x="-43.40" y="-19.20" r="1"/>
+  <waypoint id="50" x="-32.20" y="-19.20" r="1"/>
+  <waypoint id="51" x="-31.10" y="-18.10" r="1"/>
+  <waypoint id="52" x="-27.40" y="-18.10" r="1"/>
+  <agent x="-43.40" y="-19.20" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="50"/>
+    <addwaypoint id="51"/>
+    <addwaypoint id="52"/>
+  </agent>
+  <waypoint id="53" x="-45.80" y="-19.50" r="1"/>
+  <waypoint id="54" x="-33.50" y="-19.50" r="1"/>
+  <waypoint id="55" x="-33.20" y="-19.20" r="1"/>
+  <waypoint id="56" x="-30.40" y="-19.20" r="1"/>
+  <agent x="-45.80" y="-19.50" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="54"/>
+    <addwaypoint id="55"/>
+    <addwaypoint id="56"/>
+  </agent>
+  <waypoint id="57" x="-44.90" y="-19.00" r="1"/>
+  <waypoint id="58" x="-32.60" y="-19.00" r="1"/>
+  <waypoint id="59" x="-32.30" y="-18.70" r="1"/>
+  <waypoint id="60" x="-28.80" y="-18.70" r="1"/>
+  <waypoint id="61" x="-28.70" y="-18.60" r="1"/>
+  <agent x="-44.90" y="-19.00" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="58"/>
+    <addwaypoint id="59"/>
+    <addwaypoint id="60"/>
+    <addwaypoint id="61"/>
+  </agent>
+  <waypoint id="62" x="-43.30" y="-18.00" r="1"/>
+  <waypoint id="63" x="-32.70" y="-18.00" r="1"/>
+  <waypoint id="64" x="-31.20" y="-19.50" r="1"/>
+  <waypoint id="65" x="-28.30" y="-19.50" r="1"/>
+  <agent x="-43.30" y="-18.00" n="1" dx="0.1" dy="0.1" type="1">
+    <addwaypoint id="63"/>
+    <addwaypoint id="64"/>
+    <addwaypoint id="65"/>
+  </agent>
+</scenario>

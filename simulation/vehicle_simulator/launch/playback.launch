@@ -1,0 +1,12 @@
+<launch>
+    <arg name="method" default="fael"/>
+    <arg name="world_name" default="hospital_large"/>
+    <!-- 在launch文件中配置参数示例 -->
+    <node name="map_visualization_node" pkg="vehicle_simulator" type="playblack" output="screen">
+        <param name="map_file" value="/home/joosoo/Dynamic_explorer/base_workspace/src/vehicle_simulator/ply/corridor.ply"/>
+        <param name="traj_file" value="/home/joosoo/Dynamic_explorer/LOG/trajectory_2025-4-6-22-25-22.txt"/>
+        <param name="publish_rate" value="1.0"/>
+    </node>
+
+    <node launch-prefix="nice" pkg="rviz" type="rviz" name="rvizGA" args="-d $(find vehicle_simulator)/rviz/playback.rviz" respawn="true"/>
+</launch>
